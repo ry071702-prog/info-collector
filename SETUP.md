@@ -4,7 +4,7 @@
 
 ## チェックリスト
 
-- [ ] 1. GitHubリポジトリ作成
+- [x] 1. GitHubリポジトリ作成
 - [ ] 2. Google Gemini APIキー取得（無料・カード不要）
 - [ ] 3. X (Twitter) 捨てアカウント作成
 - [ ] 4. Discord サーバー＆Webhook作成
