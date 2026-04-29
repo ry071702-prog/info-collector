@@ -1,0 +1,66 @@
+# ============================================================
+# 全体設定
+# ============================================================
+[general]
+timezone = "Asia/Tokyo"
+default_language = "ja"
+
+# ============================================================
+# モデル選択
+# ============================================================
+[models]
+# Gemini free tier:
+# - flash: 15 RPM / 1500 RPD（量を捌く処理向け）
+# - pro:    2 RPM / 50  RPD（高品質・低頻度処理向け）
+filter = "gemini-2.0-flash"
+classify = "gemini-2.0-flash"
+dedup = "gemini-2.0-flash-lite"
+digest = "gemini-2.0-flash"
+weekly_report = "gemini-1.5-pro"
+maintenance = "gemini-1.5-pro"
+
+# ============================================================
+# 各ジョブのバッチサイズ（メモリ管理）
+# ============================================================
+[batch_sizes]
+classify_batch = 20
+dedup_batch = 50
+
+# ============================================================
+# リトライポリシー
+# ============================================================
+[retry]
+network_max = 3
+ratelimit_max = 5
+claude_max = 10
+backoff_base = 2.0
+backoff_max = 300.0
+jitter_pct = 0.2
+
+# ============================================================
+# サーキットブレーカー
+# ============================================================
+[circuit_breaker]
+x_consecutive_failures = 3
+notion_failure_rate_24h = 0.5
+
+# ============================================================
+# 通知レート制限
+# ============================================================
+[notification_throttle]
+same_error_window_minutes = 30
+priority_dedup_window_hours = 24
+
+# ============================================================
+# コレクター設定
+# ============================================================
+[collectors.x]
+tweets_per_user_max = 50
+search_results_max = 30
+
+[collectors.youtube]
+rss_entries_max = 15
+
+[collectors.twitch]
+recent_streams_max = 10
+recent_videos_max = 5

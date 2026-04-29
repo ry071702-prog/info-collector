@@ -1,0 +1,10 @@
+# Reference snippet for env vars (copy into each workflow as needed).
+# Not actually triggered.
+name: shared-env-template
+on:
+  workflow_dispatch:
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "This is a reference template, not used at runtime."

@@ -1,0 +1,11 @@
+id,name,handle,url,platform,genre,source_type,subcategory_hints,priority,enabled,check_frequency,language,notes
+W001,4Gamer.net,@4GamerNews,https://x.com/4GamerNews,X,games,メディア,"A,B,C,F,G",high,TRUE,hourly,ja,国内最大手ゲームメディア
+W002,ファミ通.com,@famitsu,https://x.com/famitsu,X,games,メディア,"A,B,C,F,G,K",high,TRUE,hourly,ja,雑誌系ゲームメディア
+W003,Automaton,@AUTOMATONJapan,https://x.com/AUTOMATONJapan,X,games,メディア,"A,B,F,J,KK",high,TRUE,hourly,ja,海外情報・インディー強い
+W101,任天堂株式会社,@Nintendo,https://x.com/Nintendo,X,games,公式,"A,B,JJ",high,TRUE,hourly,ja,自社IP発表が早い
+W102,プレイステーション,@PlayStation_jp,https://x.com/PlayStation_jp,X,games,公式,"A,B,JJ",high,TRUE,hourly,ja,PSプラットフォーム公式
+W201,VCT Pacific,@vctpacific,https://x.com/vctpacific,X,games,大会,"C",high,TRUE,realtime,en,VALORANT国際大会
+W501,コミックナタリー,@comic_natalie,https://x.com/comic_natalie,X,anime,メディア,"M,Q,X,BB",high,TRUE,hourly,ja,アニメ・漫画総合最大手
+W502,アニメイトタイムズ,@atimes_news,https://x.com/atimes_news,X,anime,メディア,"M,N,O,V,W",high,TRUE,hourly,ja,アニメ・グッズ・声優情報
+W601,集英社 少年ジャンプ＋,@jump_henshubu,https://x.com/jump_henshubu,X,anime,公式,"Q,M",high,TRUE,hourly,ja,ジャンプ＋編集部
+W602,週刊少年ジャンプ,@WSJ_manga,https://x.com/WSJ_manga,X,anime,公式,"Q",high,TRUE,hourly,ja,本誌

@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Environment
+.env
+.env.local
+*.local
+
+# Secrets (only example committed)
+config/secrets/*
+!config/secrets/.gitkeep
+
+# Generated data
+data/raw/
+data/cache/
+data/logs/
+
+# Keep processed data committed (it's the archive)
+!data/processed/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/

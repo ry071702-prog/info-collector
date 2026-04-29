@@ -1,0 +1,32 @@
+name: Weekly Report
+on:
+  schedule:
+    - cron: '0 23 * * 0'  # JST Mon 08:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Report
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DISCORD_WEBHOOK_OPS: ${{ secrets.DISCORD_WEBHOOK_OPS }}
+          DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
+        run: python -m src.jobs.report_weekly
+      - name: Commit
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add docs/weekly || true
+          git diff --quiet --staged || git commit -m "weekly $(date -u +%F)"
+          git pull --rebase
+          git push

@@ -1,0 +1,41 @@
+name: Process & Daily Digest
+on:
+  schedule:
+    - cron: '0 22 * * *'  # JST 07:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: process-digest
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Process
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
+          NOTION_DATABASE_ID_ANIME: ${{ secrets.NOTION_DATABASE_ID_ANIME }}
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+          DISCORD_WEBHOOK_PRIORITY: ${{ secrets.DISCORD_WEBHOOK_PRIORITY }}
+          DISCORD_WEBHOOK_OPS: ${{ secrets.DISCORD_WEBHOOK_OPS }}
+          DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
+        run: python -m src.jobs.process_digest
+      - name: Commit
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add data/processed docs/digests data/cache data/logs || true
+          git diff --quiet --staged || git commit -m "digest $(date -u +%F)"
+          git pull --rebase
+          git push
