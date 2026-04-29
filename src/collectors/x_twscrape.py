@@ -89,4 +89,9 @@ def collect(sources: list[WatchSource], since: datetime) -> list[RawItem]:
     x_sources = [s for s in sources if s.platform == "X"]
     if not x_sources:
         return []
+    # graceful degradation: X_ACCOUNTS未設定時はINFOログでスキップ（ERRORを出さない）
+    accounts = env_json("X_ACCOUNTS", default=[])
+    if not accounts:
+        log.info("X_ACCOUNTS not configured; skipping X collection (set X_ACCOUNTS to enable)")
+        return []
     return asyncio.run(_collect_async(x_sources, since))
