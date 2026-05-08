@@ -38,6 +38,9 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
     if genre == "anime":
         system = prompts.CLASSIFY_ANIME_SYSTEM
         tax = taxonomy.ANIME_TAXONOMY
+    elif genre == "disney":
+        system = prompts.CLASSIFY_DISNEY_SYSTEM
+        tax = taxonomy.DISNEY_TAXONOMY
     else:
         system = prompts.CLASSIFY_GAMES_SYSTEM
         tax = taxonomy.GAMES_TAXONOMY
@@ -88,8 +91,13 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
         fr = filter_and_genre(item)
         if not fr or fr.spam or fr.genre == "neither":
             continue
-        # both ⇒ classify under games taxonomy primarily; cross_genre flag captures both
-        target = "anime" if fr.genre == "anime" else "games"
+        # disney は単独 taxonomy で分類。both は games/anime のクロスのみ扱う
+        if fr.genre == "disney":
+            target = "disney"
+        elif fr.genre == "anime":
+            target = "anime"
+        else:
+            target = "games"
         proc = classify_full(item, target)
         if proc:
             # if "both", run anime classification too and pick the higher importance one

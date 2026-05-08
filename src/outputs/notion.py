@@ -23,7 +23,7 @@ def _properties(item: ProcessedItem) -> dict:
     - Title (title): summary
     - Importance (select): S/A/B/C
     - Category (select): subcategory_id
-    - Genre (select): games/anime/both
+    - Genre (select): games/anime/disney/both
     - URL (url)
     - Author (rich_text)
     - Timestamp (date)
@@ -56,7 +56,8 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
 
     db_games = env("NOTION_DATABASE_ID_GAMES")
     db_anime = env("NOTION_DATABASE_ID_ANIME")
-    if not (db_games or db_anime):
+    db_disney = env("NOTION_DATABASE_ID_DISNEY")
+    if not (db_games or db_anime or db_disney):
         log.warning("Notion DB IDs not set; skipping")
         return 0, 0
 
@@ -68,7 +69,12 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
 
     success, failed = 0, 0
     for it in items:
-        db_id = db_anime if it.genre == "anime" else db_games
+        if it.genre == "disney":
+            db_id = db_disney
+        elif it.genre == "anime":
+            db_id = db_anime
+        else:
+            db_id = db_games
         if not db_id:
             continue
         try:
