@@ -9,3 +9,18 @@ W501,コミックナタリー,@comic_natalie,https://x.com/comic_natalie,X,anime
 W502,アニメイトタイムズ,@atimes_news,https://x.com/atimes_news,X,anime,メディア,"M,N,O,V,W",high,TRUE,hourly,ja,アニメ・グッズ・声優情報
 W601,集英社 少年ジャンプ＋,@jump_henshubu,https://x.com/jump_henshubu,X,anime,公式,"Q,M",high,TRUE,hourly,ja,ジャンプ＋編集部
 W602,週刊少年ジャンプ,@WSJ_manga,https://x.com/WSJ_manga,X,anime,公式,"Q",high,TRUE,hourly,ja,本誌
+DSY001,Disney 公式,@Disney,https://x.com/Disney,X,disney,公式,"DA,DB,DC,DG",high,TRUE,6h,en,Walt Disney Company 米国本社の総合公式
+DSY002,Disney+ 公式 (US),@DisneyPlus,https://x.com/DisneyPlus,X,disney,公式,"DC,DA",high,TRUE,6h,en,Disney+ 米国
+DSY003,Disney+ Japan,@DisneyPlusJP,https://x.com/DisneyPlusJP,X,disney,公式,"DC,DA",high,TRUE,6h,ja,Disney+ 日本
+DSY004,Disney Japan,@DisneyJapan,https://x.com/DisneyJapan,X,disney,公式,"DA,DB,DC,DG",high,TRUE,6h,ja,ウォルト・ディズニー・ジャパン
+DSY005,Marvel,@Marvel,https://x.com/Marvel,X,disney,公式,"DA,DB,DC,DG",high,TRUE,6h,en,Marvel Entertainment 公式
+DSY006,Marvel Studios,@MarvelStudios,https://x.com/MarvelStudios,X,disney,公式,"DB,DO,DA",high,TRUE,6h,en,Marvel Studios（映画）
+DSY007,Star Wars,@starwars,https://x.com/starwars,X,disney,公式,"DA,DB,DC,DG",high,TRUE,6h,en,Star Wars 公式
+DSY008,Pixar,@Pixar,https://x.com/Pixar,X,disney,公式,"DA,DB,DI",high,TRUE,6h,en,Pixar Animation Studios
+DSY009,Lucasfilm,@lucasfilm,https://x.com/lucasfilm,X,disney,公式,"DA,DB,DG",medium,TRUE,daily,en,Lucasfilm
+DSY010,Walt Disney Animation,@DisneyAnimation,https://x.com/DisneyAnimation,X,disney,公式,"DA,DB",medium,TRUE,daily,en,Walt Disney Animation Studios
+DSY011,東京ディズニーリゾートPR,@TDR_PR,https://x.com/TDR_PR,X,disney,公式,"DA,DE,DH",high,TRUE,6h,ja,東京ディズニーリゾート公式PR
+DSY012,Disney Parks,@DisneyParks,https://x.com/DisneyParks,X,disney,公式,"DE",medium,TRUE,daily,en,Disney Parks 全体（米国系）
+DSY013,Walt Disney World,@WaltDisneyWorld,https://x.com/WaltDisneyWorld,X,disney,公式,"DE",low,TRUE,daily,en,WDW（フロリダ）
+DSY014,Disneyland,@Disneyland,https://x.com/Disneyland,X,disney,公式,"DE",low,TRUE,daily,en,Anaheim ディズニーランド
+DSY015,D23,@DisneyD23,https://x.com/DisneyD23,X,disney,公式,"DA,DH",medium,TRUE,daily,en,Disney 公式ファンクラブ D23
