@@ -28,5 +28,5 @@ jobs:
           git config user.name "github-actions"
           git add docs/weekly || true
           git diff --quiet --staged || git commit -m "weekly $(date -u +%F)"
-          git pull --rebase
+          git pull --rebase --autostash
           git push

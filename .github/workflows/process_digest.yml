@@ -37,5 +37,5 @@ jobs:
           git config user.name "github-actions"
           git add data/processed docs/digests data/cache data/logs || true
           git diff --quiet --staged || git commit -m "digest $(date -u +%F)"
-          git pull --rebase
+          git pull --rebase --autostash
           git push

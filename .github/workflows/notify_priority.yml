@@ -31,5 +31,5 @@ jobs:
           git config user.name "github-actions"
           git add data/cache || true
           git diff --quiet --staged || git commit -m "notify cache $(date -u +%FT%TZ)"
-          git pull --rebase
+          git pull --rebase --autostash
           git push
