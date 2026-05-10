@@ -24,3 +24,17 @@ DSY012,Disney Parks,@DisneyParks,https://x.com/DisneyParks,X,disney,公式,"DE",
 DSY013,Walt Disney World,@WaltDisneyWorld,https://x.com/WaltDisneyWorld,X,disney,公式,"DE",low,TRUE,daily,en,WDW（フロリダ）
 DSY014,Disneyland,@Disneyland,https://x.com/Disneyland,X,disney,公式,"DE",low,TRUE,daily,en,Anaheim ディズニーランド
 DSY015,D23,@DisneyD23,https://x.com/DisneyD23,X,disney,公式,"DA,DH",medium,TRUE,daily,en,Disney 公式ファンクラブ D23
+DSY016,Disney YouTube,UC_5niPa-d35gg88HaS7RrIw,https://www.youtube.com/channel/UC_5niPa-d35gg88HaS7RrIw,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,en,Disney 公式 YouTube（DSY001 対応）
+DSY017,Disney+ YouTube,UCIrgJInjLS2BhlHOMDW7v0g,https://www.youtube.com/channel/UCIrgJInjLS2BhlHOMDW7v0g,YouTube,disney,公式,"DC,DA",high,TRUE,daily,en,Disney Plus 公式（DSY002 対応）
+DSY018,Disney+ Japan YouTube,UCm9iPGnmMYtZkNQ3IoBIPIA,https://www.youtube.com/channel/UCm9iPGnmMYtZkNQ3IoBIPIA,YouTube,disney,公式,"DC,DA",high,TRUE,daily,ja,ディズニープラス公式（DSY003 対応）
+DSY019,Disney Japan YouTube,UCGlhF-USvOYyo-VUbS7fKAA,https://www.youtube.com/channel/UCGlhF-USvOYyo-VUbS7fKAA,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,ja,ディズニー公式 日本（DSY004 対応）
+DSY020,Marvel YouTube,UCvC4D8onUfXzvjTOM-dBfEA,https://www.youtube.com/channel/UCvC4D8onUfXzvjTOM-dBfEA,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,en,Marvel Entertainment 公式（DSY005 対応）
+DSY021,Marvel Studios YouTube,UC2Q8nbdegCumMZy2qxmkPNQ,https://www.youtube.com/channel/UC2Q8nbdegCumMZy2qxmkPNQ,YouTube,disney,公式,"DB,DO,DA",high,TRUE,daily,en,Marvel Studios 公式（DSY006 対応）
+DSY022,Star Wars YouTube,UCZGYJFUizSax-yElQaFDp5Q,https://www.youtube.com/channel/UCZGYJFUizSax-yElQaFDp5Q,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,en,Star Wars 公式（DSY007 対応）
+DSY023,Pixar YouTube,UC_IRYSp4auq7hKLvziWVH6w,https://www.youtube.com/channel/UC_IRYSp4auq7hKLvziWVH6w,YouTube,disney,公式,"DA,DB,DI",high,TRUE,daily,en,Pixar 公式（DSY008 対応）
+DSY024,Lucasfilm YouTube,UCnwY6fAhE3ePu0F2nMP-DLg,https://www.youtube.com/channel/UCnwY6fAhE3ePu0F2nMP-DLg,YouTube,disney,公式,"DA,DB,DG",medium,TRUE,daily,en,Lucasfilm 公式（DSY009 対応）
+DSY025,Walt Disney Animation YouTube,UC_976xMxPgzIa290Hqtk-9g,https://www.youtube.com/channel/UC_976xMxPgzIa290Hqtk-9g,YouTube,disney,公式,"DA,DB",medium,TRUE,daily,en,Walt Disney Animation Studios 公式（DSY010 対応）
+DSY026,Tokyo Disney Resort YouTube,UCLz9NUWuVLmYTuwCRG2WykQ,https://www.youtube.com/channel/UCLz9NUWuVLmYTuwCRG2WykQ,YouTube,disney,公式,"DA,DE,DH",high,TRUE,daily,ja,東京ディズニーリゾート公式（DSY011 対応）
+DSY027,Disney Parks YouTube,UC1xwwLwm6WSMbUn_Tp597hQ,https://www.youtube.com/channel/UC1xwwLwm6WSMbUn_Tp597hQ,YouTube,disney,公式,"DE",medium,TRUE,daily,en,Disney Parks 公式（DSY012 対応）
+DSY028,Disneyland Resort YouTube,UCuRtXPHmnpkZetkb8ft7mzw,https://www.youtube.com/channel/UCuRtXPHmnpkZetkb8ft7mzw,YouTube,disney,公式,"DE",low,TRUE,daily,en,Disneyland Resort 公式（DSY014 対応）
+DSY029,D23 YouTube,UC83IJ4TTV8pCCPkE42ptmGw,https://www.youtube.com/channel/UC83IJ4TTV8pCCPkE42ptmGw,YouTube,disney,公式,"DA,DH",medium,TRUE,daily,en,D23 公式（DSY015 対応）
