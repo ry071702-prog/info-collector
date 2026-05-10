@@ -11,6 +11,7 @@ from notion_client import Client
 
 from .. import logger
 from ..config import env
+from ..outputs.notion import normalize_db_id
 
 log = logger.get(__name__)
 
@@ -54,14 +55,6 @@ def ensure_props(client: Client, db_id: str, label: str) -> None:
     log.info(f"[{label}] updated")
 
 
-def _normalize_db_id(raw: str) -> str:
-    """32桁hex → UUID形式に整形。既にハイフン付きならそのまま返す。"""
-    s = raw.strip().replace("-", "")
-    if len(s) == 32 and all(c in "0123456789abcdefABCDEF" for c in s):
-        return f"{s[0:8]}-{s[8:12]}-{s[12:16]}-{s[16:20]}-{s[20:32]}"
-    return raw.strip()
-
-
 def main() -> int:
     token = env("NOTION_TOKEN", required=True)
     client = Client(auth=token)
@@ -75,7 +68,7 @@ def main() -> int:
         if not db_id:
             log.info(f"[{label}] DB ID not configured; skipping")
             continue
-        normalized = _normalize_db_id(db_id)
+        normalized = normalize_db_id(db_id)
         log.info(f"[{label}] DB id length={len(db_id.strip())} normalized={'YES' if normalized != db_id.strip() else 'NO'}")
         any_done = True
         try:

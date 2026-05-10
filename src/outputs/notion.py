@@ -1,5 +1,6 @@
 """Notion DB writer. One DB per genre. Schema is defined in the DB itself."""
 from __future__ import annotations
+import re
 from datetime import datetime
 
 from .. import logger
@@ -7,6 +8,20 @@ from ..config import env, is_dry_run
 from ..models import ProcessedItem
 
 log = logger.get(__name__)
+
+_HEX32 = re.compile(r"([0-9a-fA-F]{32})")
+
+
+def normalize_db_id(raw: str | None) -> str | None:
+    """secret に URL がまるごと入っているケースを救済して UUID 形式に整形。"""
+    if not raw:
+        return raw
+    s = raw.strip()
+    m = _HEX32.search(s.replace("-", ""))
+    if m:
+        h = m.group(1)
+        return f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
+    return s
 
 
 def _client():
@@ -82,9 +97,9 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
         log.info(f"[DRY_RUN] would write {len(items)} items to Notion")
         return 0, 0
 
-    db_games = env("NOTION_DATABASE_ID_GAMES")
-    db_anime = env("NOTION_DATABASE_ID_ANIME")
-    db_disney = env("NOTION_DATABASE_ID_DISNEY")
+    db_games = normalize_db_id(env("NOTION_DATABASE_ID_GAMES"))
+    db_anime = normalize_db_id(env("NOTION_DATABASE_ID_ANIME"))
+    db_disney = normalize_db_id(env("NOTION_DATABASE_ID_DISNEY"))
     if not (db_games or db_anime or db_disney):
         log.warning("Notion DB IDs not set; skipping")
         return 0, 0
