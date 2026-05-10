@@ -65,6 +65,15 @@ rss_entries_max = 15
 recent_streams_max = 10
 recent_videos_max = 5
 
+[collectors.youtube_search]
+# search.list 1 回 = 100 quota units（YouTube Data API v3 free tier 10000/日）
+max_results = 25      # 1 クエリあたり取得件数（最大 50）
+order = "date"        # date | relevance | viewCount | rating
+
+[collectors.youtube_trending]
+# videos.list (chart=mostPopular) 1 回 = 1 quota unit
+max_results = 30      # 1 リクエストあたり取得件数（最大 50）
+
 # ============================================================
 # データ保持期間（maintenance_monthly が古い分を削除）
 # ============================================================

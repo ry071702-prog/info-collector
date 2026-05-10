@@ -16,7 +16,7 @@ class WatchSource(BaseModel):
     name: str
     handle: str = ""
     url: str = ""
-    platform: Literal["X", "YouTube", "Twitch", "RSS", "Web"]
+    platform: Literal["X", "YouTube", "Twitch", "RSS", "Web", "YouTubeSearch", "YouTubeTrending"]
     genre: Genre
     source_type: SourceRole
     subcategory_hints: list[str] = Field(default_factory=list)

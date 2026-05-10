@@ -10,7 +10,14 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from .. import logger, watchlist
-from ..collectors import rss_generic, twitch_api, x_twscrape, youtube_rss
+from ..collectors import (
+    rss_generic,
+    twitch_api,
+    x_twscrape,
+    youtube_rss,
+    youtube_search,
+    youtube_trending,
+)
 from ..storage import write_raw
 
 log = logger.get(__name__)
@@ -37,7 +44,9 @@ def main(tier: str) -> None:
 
     all_items = []
     for collector_name, collector in [
-        ("youtube", youtube_rss),
+        ("youtube_rss", youtube_rss),
+        ("youtube_search", youtube_search),
+        ("youtube_trending", youtube_trending),
         ("twitch", twitch_api),
         ("rss", rss_generic),
         ("x", x_twscrape),
