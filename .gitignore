@@ -18,10 +18,11 @@ env/
 config/secrets/*
 !config/secrets/.gitkeep
 
-# Generated data
-data/raw/
-data/cache/
-data/logs/
+# Generated data: collect → commit → process フロー上、raw/cache/logs は git で受け渡しする
+# 容量が膨らんだら maintenance_monthly で古い分を整理する想定
+# data/raw/
+# data/cache/
+# data/logs/
 
 # Keep processed data committed (it's the archive)
 !data/processed/
