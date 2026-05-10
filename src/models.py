@@ -6,7 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-Genre = Literal["games", "anime", "both", "neither"]
+Genre = Literal["games", "anime", "disney", "both", "neither"]
 Importance = Literal["S", "A", "B", "C"]
 SourceRole = Literal["公式", "メディア", "個人", "リーカー", "大会", "VTuber"]
 
