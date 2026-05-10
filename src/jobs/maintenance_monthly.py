@@ -1,15 +1,60 @@
-"""Monthly maintenance: aggregate stats, find noisy sources, quota report."""
+"""Monthly maintenance: aggregate stats, find noisy sources, quota report, prune old data."""
 from __future__ import annotations
 import json
+import shutil
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
+from pathlib import Path
 
 from .. import llm_client, logger
-from ..config import settings
+from ..config import DATA_DIR, settings
 from ..outputs import discord, markdown
 from ..storage import read_processed_range
 
 log = logger.get(__name__)
+
+
+def _prune_dated_subdirs(parent: Path, retain_days: int) -> int:
+    """parent 配下の YYYY-MM-DD ディレクトリで cutoff より古いものを削除。返り値は削除件数。"""
+    if not parent.exists():
+        return 0
+    cutoff = datetime.utcnow().date() - timedelta(days=retain_days)
+    removed = 0
+    for entry in parent.iterdir():
+        if not entry.is_dir():
+            continue
+        try:
+            d = datetime.strptime(entry.name, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+        if d < cutoff:
+            shutil.rmtree(entry)
+            removed += 1
+    return removed
+
+
+def _prune_logs(parent: Path, retain_days: int) -> int:
+    """data/logs/ 配下のファイルを mtime ベースで cutoff より古いものを削除。"""
+    if not parent.exists():
+        return 0
+    cutoff_ts = (datetime.utcnow() - timedelta(days=retain_days)).timestamp()
+    removed = 0
+    for entry in parent.rglob("*"):
+        if entry.is_file() and entry.stat().st_mtime < cutoff_ts:
+            entry.unlink()
+            removed += 1
+    return removed
+
+
+def cleanup() -> dict[str, int]:
+    """retention 設定に従って古いデータを削除。"""
+    cfg = settings().get("retention", {})
+    raw_days = int(cfg.get("raw_days", 60))
+    logs_days = int(cfg.get("logs_days", 30))
+    raw_pruned = _prune_dated_subdirs(DATA_DIR / "raw", raw_days)
+    logs_pruned = _prune_logs(DATA_DIR / "logs", logs_days)
+    log.info(f"cleanup: raw_pruned={raw_pruned} (>{raw_days}d), logs_pruned={logs_pruned} (>{logs_days}d)")
+    return {"raw_pruned": raw_pruned, "logs_pruned": logs_pruned}
 
 
 def _aggregate_stats(items):
@@ -39,6 +84,7 @@ def main() -> None:
 
     stats = _aggregate_stats(items)
     quota = llm_client.quota_status()
+    pruned = cleanup()
 
     # Optional Gemini analysis (skip if data is too thin)
     if stats["total"] >= 50:
@@ -74,6 +120,10 @@ def main() -> None:
 
 ## ノイズソース候補（C率 > 70%）
 {chr(10).join(f'- {a}' for a in stats['noisy_candidates']) or '- なし'}
+
+## クリーンアップ実績
+- data/raw/ から削除: {pruned['raw_pruned']} 日分
+- data/logs/ から削除: {pruned['logs_pruned']} ファイル
 
 ## AI分析
 
