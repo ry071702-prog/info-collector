@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadDigestDocument, loadDigests } from "../../lib/articles";
+
+export function getStaticPaths() {
+  return loadDigests().map((digest) => ({
+    params: { date: digest.slug },
+    props: { date: digest.slug },
+  }));
+}
+
+interface Props {
+  date: string;
+}
+
+const { date } = Astro.props;
+const digest = loadDigestDocument(date);
+---
+
+<BaseLayout title={digest?.title ?? `Digest ${date}`}>
+  {
+    digest ? (
+      <article class="digest-content" set:html={digest.html} />
+    ) : (
+      <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        指定されたデイリーまとめは見つかりません。
+      </p>
+    )
+  }
+</BaseLayout>

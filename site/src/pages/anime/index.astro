@@ -1,0 +1,25 @@
+---
+import NewsCard from "../../components/NewsCard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { articlesByGenre } from "../../lib/articles";
+
+const articles = articlesByGenre("anime");
+---
+
+<BaseLayout title="アニメ">
+  <section class="mb-6">
+    <h1 class="text-3xl font-bold tracking-tight">アニメ</h1>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">直近30日のアニメニュース全件。</p>
+  </section>
+  {
+    articles.length > 0 ? (
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {articles.map((article) => <NewsCard article={article} />)}
+      </div>
+    ) : (
+      <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+        表示できるアニメニュースはまだありません。
+      </p>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+import type { Priority } from "../lib/articles";
+
+interface Props {
+  priority: Priority;
+}
+
+const { priority } = Astro.props;
+const colors: Record<Priority, string> = {
+  S: "#dc2626",
+  A: "#ea580c",
+  B: "#ca8a04",
+  C: "#6b7280",
+};
+---
+
+<span
+  class="inline-flex min-w-8 items-center justify-center rounded px-2 py-1 text-xs font-bold text-white"
+  style={`background-color: ${colors[priority] ?? colors.C}`}
+>
+  {priority}
+</span>

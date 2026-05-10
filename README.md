@@ -87,6 +87,20 @@ DRY_RUN=true python -m src.jobs.process_digest
 
 `DRY_RUN=true` で外部書き込みを抑制。
 
+## ニュースサイト
+
+既存の `data/processed/*.jsonl` と `docs/digests/*.md` から、Astro ベースの統合ニュースサイトを生成できます。
+ローカルプレビューは次の手順です。
+
+```bash
+python scripts/build_site_data.py
+cd site
+npm install
+npm run dev
+```
+
+GitHub Pages への公開は `.github/workflows/publish_site.yml` が担当します。`Process & Daily Digest` の成功後、または手動実行で `site/dist/` をビルドして Pages にデプロイします。
+
 ## カスタマイズ
 
 - **監視対象を増やす**: Google Sheets の `watchlist` シートを編集（コード触らず）

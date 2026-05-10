@@ -10,3 +10,4 @@ pydantic>=2.8.0
 tomli>=2.0.1
 tenacity>=9.0.0
 loguru>=0.7.2
+selectolax>=0.3.21

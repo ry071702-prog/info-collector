@@ -1,0 +1,70 @@
+---
+import DigestCard from "../components/DigestCard.astro";
+import NewsCard from "../components/NewsCard.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { genres, genreLabels, latestArticles, latestByGenre, loadDigests } from "../lib/articles";
+
+const latest = latestArticles(20);
+const digests = loadDigests().slice(0, 8);
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title="ホーム">
+  <section class="mb-10">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">統合ニュース</h1>
+    <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+      直近30日の収集データを、重要度と新しさで整理しています。
+    </p>
+  </section>
+
+  {
+    genres.map((genre) => {
+      const articles = latestByGenre(genre, 8);
+      return (
+        <section class="mb-12">
+          <div class="mb-4 flex items-end justify-between gap-4">
+            <h2 class="text-2xl font-bold">{genreLabels[genre]}</h2>
+            <a href={`${base}/${genre}/`} class="text-sm font-medium text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white">
+              すべて見る
+            </a>
+          </div>
+          {articles.length > 0 ? (
+            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {articles.map((article) => <NewsCard article={article} />)}
+            </div>
+          ) : (
+            <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              このカテゴリのニュースはまだありません。
+            </p>
+          )}
+        </section>
+      );
+    })
+  }
+
+  <section class="mb-12">
+    <h2 class="mb-4 text-2xl font-bold">全体新着</h2>
+    {
+      latest.length > 0 ? (
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {latest.map((article) => <NewsCard article={article} />)}
+        </div>
+      ) : (
+        <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+          表示できるニュースはまだありません。
+        </p>
+      )
+    }
+  </section>
+
+  {
+    digests.length > 0 && (
+      <section>
+        <h2 class="mb-4 text-2xl font-bold">デイリーまとめ</h2>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {digests.map((digest) => <DigestCard digest={digest} />)}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

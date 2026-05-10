@@ -1,0 +1,42 @@
+---
+import CategoryNav from "../components/CategoryNav.astro";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "X / YouTube / Twitch から収集したゲーム、アニメ、Disney の統合ニュース。" } = Astro.props;
+const pageTitle = `${title} | info-collector`;
+const basePath = import.meta.env.BASE_URL;
+const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <header class="border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8">
+        <div>
+          <a href={homePath} class="text-2xl font-bold tracking-tight">
+            info-collector
+          </a>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            ゲーム、アニメ、Disney の重要ニュースを30日分から集約
+          </p>
+        </div>
+        <CategoryNav currentPath={Astro.url.pathname} />
+      </div>
+    </header>
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <slot />
+    </main>
+  </body>
+</html>

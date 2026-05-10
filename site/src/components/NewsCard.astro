@@ -1,0 +1,86 @@
+---
+import PriorityBadge from "./PriorityBadge.astro";
+import { genreColors, genreLabels, type Article } from "../lib/articles";
+
+interface Props {
+  article: Article;
+}
+
+const { article } = Astro.props;
+const relativeFormatter = new Intl.RelativeTimeFormat("ja", { numeric: "auto" });
+const timestamp = new Date(article.timestamp);
+const diffHours = Math.round((timestamp.getTime() - Date.now()) / 3_600_000);
+const relativeTime =
+  Number.isNaN(timestamp.getTime())
+    ? ""
+    : Math.abs(diffHours) < 24
+      ? relativeFormatter.format(diffHours, "hour")
+      : relativeFormatter.format(Math.round(diffHours / 24), "day");
+const entities = article.entity_tags.slice(0, 3);
+const fallbackStyle = `background: linear-gradient(135deg, ${genreColors[article.genre]}, #0f172a);`;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
+---
+
+<a
+  href={article.url}
+  target="_blank"
+  rel="noreferrer"
+  class="group flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+>
+  <div class="aspect-[16/9] overflow-hidden bg-slate-200 dark:bg-slate-800">
+    {
+      imageSrc ? (
+        <img
+          src={imageSrc}
+          alt=""
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div class="flex h-full w-full items-center justify-center" style={fallbackStyle}>
+          <span class="text-sm font-semibold text-white/90">{genreLabels[article.genre]}</span>
+        </div>
+      )
+    }
+  </div>
+  <div class="flex flex-1 flex-col gap-3 p-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <PriorityBadge priority={article.final_priority} />
+      <span class="rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+        {genreLabels[article.genre]}
+      </span>
+      {
+        article.flags.speed === "速報" && (
+          <span class="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white">速報</span>
+        )
+      }
+      {
+        article.flags.spoiler !== "なし" && (
+          <span class="rounded bg-fuchsia-700 px-2 py-1 text-xs font-bold text-white">ネタバレ注意</span>
+        )
+      }
+    </div>
+    <h3 class="text-base font-bold leading-snug text-slate-950 group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-200">
+      {article.category_name}
+    </h3>
+    <p class="line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+      {article.summary || "概要はまだありません。"}
+    </p>
+    {
+      entities.length > 0 && (
+        <div class="flex flex-wrap gap-1.5">
+          {entities.map((tag) => (
+            <span class="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              {tag}
+            </span>
+          ))}
+        </div>
+      )
+    }
+    <div class="mt-auto flex items-center justify-between gap-3 pt-1 text-xs text-slate-500 dark:text-slate-400">
+      <span class="min-w-0 truncate">{article.author || "unknown"}</span>
+      <time datetime={article.timestamp} class="shrink-0">{relativeTime}</time>
+    </div>
+  </div>
+</a>

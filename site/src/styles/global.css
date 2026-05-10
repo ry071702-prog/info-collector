@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-950 antialiased dark:bg-slate-950 dark:text-slate-100;
+  }
+
+  a {
+    @apply transition-colors;
+  }
+}
+
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .digest-content {
+    @apply max-w-none text-slate-800 dark:text-slate-200;
+  }
+
+  .digest-content h1 {
+    @apply mb-6 text-3xl font-bold tracking-tight text-slate-950 dark:text-white;
+  }
+
+  .digest-content h2 {
+    @apply mb-3 mt-8 text-2xl font-bold text-slate-950 dark:text-white;
+  }
+
+  .digest-content h3 {
+    @apply mb-2 mt-6 text-lg font-bold text-slate-950 dark:text-white;
+  }
+
+  .digest-content p {
+    @apply my-4 leading-7;
+  }
+
+  .digest-content ul {
+    @apply my-4 list-disc space-y-2 pl-6;
+  }
+
+  .digest-content a {
+    @apply font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300;
+  }
+}

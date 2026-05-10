@@ -31,8 +31,16 @@ config/secrets/*
 .vscode/
 .idea/
 .DS_Store
+.claude/
 
 # Test artifacts
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Static news site
+site/node_modules/
+site/dist/
+site/.astro/
+site/src/data/articles.json
+site/public/og-cache/
