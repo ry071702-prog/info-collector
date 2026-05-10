@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: '0 22 * * *'  # JST 07:00
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '外部書き込みをスキップ（Notion/Sheets/Discord）。Gemini呼び出しは実行する'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -21,6 +26,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Process
         env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
@@ -33,6 +39,7 @@ jobs:
           DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
         run: python -m src.jobs.process_digest
       - name: Commit
+        if: ${{ inputs.dry_run != true }}
         run: |
           git config user.email "actions@github.com"
           git config user.name "github-actions"
