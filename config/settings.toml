@@ -64,3 +64,26 @@ rss_entries_max = 15
 [collectors.twitch]
 recent_streams_max = 10
 recent_videos_max = 5
+
+# ============================================================
+# スコアリング（β: risk_level + 配信者文脈スコア）
+# 設定値だけでチューニング可能。コード再デプロイ不要。
+# ============================================================
+[scoring]
+# final_priority 合成時の重み（合計 1.0 推奨）
+weight_importance = 0.5      # Gemini の S/A/B/C ベース重要度
+weight_freshness = 0.2       # 鮮度（投稿からの経過時間）
+weight_streamer = 0.15       # streamer_influence_score
+weight_virality = 0.10       # clip_virality_score
+weight_trend = 0.05          # game_trend_from_streamers_score
+
+# final_priority 閾値（合成スコア 0-100 ベース）
+final_S_threshold = 80
+final_A_threshold = 60
+final_B_threshold = 35
+
+# 鮮度スコア（時間→点数。線形補間）
+freshness_24h = 100
+freshness_72h = 70
+freshness_1week = 40
+freshness_old = 10

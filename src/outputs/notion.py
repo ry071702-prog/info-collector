@@ -31,6 +31,14 @@ def _properties(item: ProcessedItem) -> dict:
     - Spoiler (select): なし/軽微/重大
     - Source (select): source_role
     - DedupKey (rich_text)
+
+    Optional β properties (auto-skipped if column missing on the DB):
+    - RiskLevel (select): low/middle/high
+    - FinalPriority (select): S/A/B/C  (importance + scores 合成)
+    - FreshnessScore (number): 0-100
+    - StreamerInfluence (number): 0-100
+    - ClipVirality (number): 0-100
+    - GameTrendFromStreamers (number): 0-100
     """
     tags = list({*item.title_tags, *item.entity_tags})[:50]
     return {
@@ -45,7 +53,27 @@ def _properties(item: ProcessedItem) -> dict:
         "Spoiler": {"select": {"name": item.flags.spoiler}},
         "Source": {"select": {"name": item.flags.source_role}},
         "DedupKey": {"rich_text": [{"text": {"content": item.dedup_key[:200]}}]},
+        "RiskLevel": {"select": {"name": item.risk_level}},
+        "FinalPriority": {"select": {"name": item.final_priority}},
+        "FreshnessScore": {"number": item.freshness_score},
+        "StreamerInfluence": {"number": item.streamer_influence_score},
+        "ClipVirality": {"number": item.clip_virality_score},
+        "GameTrendFromStreamers": {"number": item.game_trend_from_streamers_score},
     }
+
+
+def _filter_existing(props: dict, allowed: set[str]) -> dict:
+    """Drop properties not present in DB schema so create() does not fail."""
+    return {k: v for k, v in props.items() if k in allowed}
+
+
+def _db_property_names(client, db_id: str) -> set[str]:
+    try:
+        schema = client.databases.retrieve(database_id=db_id)
+        return set(schema.get("properties", {}).keys())
+    except Exception as e:  # noqa: BLE001
+        log.warning(f"Could not retrieve Notion DB schema for {db_id}: {e}")
+        return set()
 
 
 def write(items: list[ProcessedItem]) -> tuple[int, int]:
@@ -66,13 +94,23 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
         log.error(f"Notion auth failed: {e}")
         return 0, len(items)
 
+    # Cache schema per DB so we only fetch once per run
+    schema_cache: dict[str, set[str]] = {}
+    for db_id in (db_games, db_anime):
+        if db_id and db_id not in schema_cache:
+            schema_cache[db_id] = _db_property_names(client, db_id)
+
     success, failed = 0, 0
     for it in items:
         db_id = db_anime if it.genre == "anime" else db_games
         if not db_id:
             continue
+        allowed = schema_cache.get(db_id, set())
+        props = _properties(it)
+        if allowed:
+            props = _filter_existing(props, allowed)
         try:
-            client.pages.create(parent={"database_id": db_id}, properties=_properties(it))
+            client.pages.create(parent={"database_id": db_id}, properties=props)
             success += 1
         except Exception as e:  # noqa: BLE001
             log.warning(f"Notion write failed for {it.dedup_key}: {e}")

@@ -62,6 +62,9 @@ class FilterResult(BaseModel):
     reason: str = ""
 
 
+RiskLevel = Literal["low", "middle", "high"]
+
+
 class ProcessedItem(BaseModel):
     """Step 3 output (full classification)."""
     source_id: str
@@ -79,3 +82,10 @@ class ProcessedItem(BaseModel):
     flags: Flags
     dedup_key: str
     raw_text: str = ""
+    # β: risk_level + 配信者文脈スコア
+    risk_level: RiskLevel = "low"
+    streamer_influence_score: int = 0           # 0-100, 配信者界隈での話題量
+    clip_virality_score: int = 0                # 0-100, 切り抜き拡散スコア
+    game_trend_from_streamers_score: int = 0    # 0-100, 配信者起点のゲームトレンド
+    freshness_score: int = 0                    # 0-100, タイムスタンプから自動計算
+    final_priority: Importance = "C"            # importance + scores の合成結果
