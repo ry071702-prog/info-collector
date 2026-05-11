@@ -17,6 +17,16 @@ const relativeTime =
       ? relativeFormatter.format(diffHours, "hour")
       : relativeFormatter.format(Math.round(diffHours / 24), "day");
 const entities = article.entity_tags.slice(0, 3);
+const searchBlob = [
+  article.category_name,
+  ...article.entity_tags,
+  ...article.title_tags,
+  article.summary,
+  article.author,
+]
+  .filter(Boolean)
+  .join(" ")
+  .toLowerCase();
 const fallbackStyle = `background: linear-gradient(135deg, ${genreColors[article.genre]}, #0f172a);`;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
@@ -30,6 +40,7 @@ const isUrgent = article.final_priority === "S" || article.final_priority === "A
   data-article-card
   data-timestamp={article.timestamp}
   data-priority={article.final_priority}
+  data-search-blob={searchBlob}
   class="group flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
 >
   <div class="aspect-[16/9] overflow-hidden bg-slate-200 dark:bg-slate-800">
@@ -86,9 +97,13 @@ const isUrgent = article.final_priority === "S" || article.final_priority === "A
       entities.length > 0 && (
         <div class="flex flex-wrap gap-1.5">
           {entities.map((tag) => (
-            <span class="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+            <button
+              type="button"
+              class="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+              data-search-tag={tag}
+            >
               {tag}
-            </span>
+            </button>
           ))}
         </div>
       )
