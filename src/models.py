@@ -88,5 +88,6 @@ class ProcessedItem(BaseModel):
     clip_virality_score: int = 0                # 0-100, 切り抜き拡散スコア
     game_trend_from_streamers_score: int = 0    # 0-100, 配信者起点のゲームトレンド
     live_trend_score: int = 0                   # 0-100, Twitch 同接ベースの live トレンド
+    video_trend_score: int = 0                  # 0-100, YouTube 動画の views/hour レート
     freshness_score: int = 0                    # 0-100, タイムスタンプから自動計算
     final_priority: Importance = "C"            # importance + scores の合成結果

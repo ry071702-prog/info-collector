@@ -95,6 +95,7 @@ weight_streamer = 0.15       # streamer_influence_score
 weight_virality = 0.10       # clip_virality_score
 weight_trend = 0.05          # game_trend_from_streamers_score
 weight_live = 0.10           # live_trend_score (Twitch 同接)
+weight_video = 0.10          # video_trend_score (YouTube views/hour)
 
 # final_priority 閾値（合成スコア 0-100 ベース）
 final_S_threshold = 80

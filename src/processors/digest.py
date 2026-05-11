@@ -28,6 +28,7 @@ def _items_to_json(items: list[ProcessedItem]) -> str:
             "clip_virality_score": it.clip_virality_score,
             "game_trend_from_streamers_score": it.game_trend_from_streamers_score,
             "live_trend_score": it.live_trend_score,
+            "video_trend_score": it.video_trend_score,
             "summary": it.summary,
             "title_tags": it.title_tags,
             "entity_tags": it.entity_tags,

@@ -41,6 +41,7 @@ BETA_PROPS: dict[str, dict] = {
     "ClipVirality": {"number": {"format": "number"}},
     "GameTrendFromStreamers": {"number": {"format": "number"}},
     "LiveTrendScore": {"number": {"format": "number"}},
+    "VideoTrendScore": {"number": {"format": "number"}},
 }
 
 

@@ -26,8 +26,10 @@ def main() -> None:
 
     processed = classify.process(raw_items)
     fresh, _ = dedup.filter_new(processed)
-    sa = [it for it in fresh if it.importance in ("S", "A")]
-    log.info(f"S/A items to notify: {len(sa)}")
+    # importance S/A だけ拾い、risk_level=high は確認待ちなので priority 通知から除外
+    sa = [it for it in fresh if it.importance in ("S", "A") and it.risk_level != "high"]
+    suppressed = sum(1 for it in fresh if it.importance in ("S", "A") and it.risk_level == "high")
+    log.info(f"S/A items to notify: {len(sa)} (suppressed {suppressed} high-risk)")
 
     sent = discord.notify_priority(sa)
     log.info(f"Sent {sent} notifications")

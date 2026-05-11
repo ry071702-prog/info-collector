@@ -10,6 +10,40 @@ from ..models import Flags, FilterResult, ProcessedItem, RawItem
 log = logger.get(__name__)
 
 
+def _video_trend_score(view_count: int | None, timestamp: datetime) -> int:
+    """YouTube 動画の views-per-hour レートから 0-100。
+
+    履歴を持たないので「公開からの経過時間」を分母にした
+    平均 views/hour で擬似トレンドを表現する。
+    急上昇 (mostPopular) で拾った動画ほど高くなる傾向。
+
+      <100 view/hour       -> 0
+      100-1k               -> 30
+      1k-10k               -> 50
+      10k-50k              -> 70
+      50k-200k             -> 90
+      200k+                -> 100
+    """
+    n = int(view_count or 0)
+    if n < 1000:
+        return 0
+    if timestamp.tzinfo is None:
+        timestamp = timestamp.replace(tzinfo=timezone.utc)
+    age_hours = max(1.0, (datetime.now(timezone.utc) - timestamp).total_seconds() / 3600.0)
+    rate = n / age_hours
+    if rate < 100:
+        return 0
+    if rate < 1000:
+        return 30
+    if rate < 10000:
+        return 50
+    if rate < 50000:
+        return 70
+    if rate < 200000:
+        return 90
+    return 100
+
+
 def _live_trend_score(viewer_count: int | None) -> int:
     """Twitch 同接ベースの live トレンドスコア 0-100。
 
@@ -58,6 +92,7 @@ def _final_priority(
     virality: int,
     trend: int,
     live: int = 0,
+    video: int = 0,
 ) -> str:
     """Compose S/A/B/C from importance + scores using configured weights."""
     cfg = settings().get("scoring", {})
@@ -69,6 +104,7 @@ def _final_priority(
         + virality * cfg.get("weight_virality", 0.10)
         + trend * cfg.get("weight_trend", 0.05)
         + live * cfg.get("weight_live", 0.10)
+        + video * cfg.get("weight_video", 0.10)
     )
     if composite >= cfg.get("final_S_threshold", 80):
         return "S"
@@ -141,7 +177,12 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
         freshness = _freshness_score(item.timestamp)
         # live_trend_score: Twitch コレクターが extra.viewer_count を入れている前提（live のみ非0）
         live = _live_trend_score(item.extra.get("viewer_count") if item.extra else 0)
-        final_pri = _final_priority(importance, freshness, streamer, virality, trend, live)
+        # video_trend_score: YouTube 急上昇等で view_count が取得できる場合のみ非0
+        video = _video_trend_score(
+            item.extra.get("view_count") if item.extra else 0,
+            item.timestamp,
+        )
+        final_pri = _final_priority(importance, freshness, streamer, virality, trend, live, video)
         return ProcessedItem(
             source_id=item.source_id,
             raw_fingerprint=item.fingerprint,
@@ -163,6 +204,7 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             clip_virality_score=virality,
             game_trend_from_streamers_score=trend,
             live_trend_score=live,
+            video_trend_score=video,
             freshness_score=freshness,
             final_priority=final_pri,
         )

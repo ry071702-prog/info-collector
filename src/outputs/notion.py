@@ -99,6 +99,7 @@ def _properties(item: ProcessedItem) -> dict:
         "ClipVirality": {"number": item.clip_virality_score},
         "GameTrendFromStreamers": {"number": item.game_trend_from_streamers_score},
         "LiveTrendScore": {"number": item.live_trend_score},
+        "VideoTrendScore": {"number": item.video_trend_score},
     }
 
 
