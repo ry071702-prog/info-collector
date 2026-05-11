@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any
 
 import google.generativeai as genai
+from google.api_core import exceptions as gx
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -20,6 +21,32 @@ from .config import cache_dir, env
 
 log = logger.get(__name__)
 _configured = False
+
+
+class QuotaExhausted(RuntimeError):
+    """Gemini の日次クォータが枯渇したことを示す。リトライ対象外。"""
+
+
+# 一度 429 を食らったモデルはそのプロセス内では再呼び出ししない。
+_QUOTA_EXHAUSTED: set[str] = set()
+
+# 一過性エラー（リトライ対象）。ResourceExhausted (=daily quota) は除外。
+_TRANSIENT_EXC: tuple[type[Exception], ...] = (
+    gx.InternalServerError,
+    gx.ServiceUnavailable,
+    gx.DeadlineExceeded,
+    gx.TooManyRequests,
+)
+
+
+def quota_exhausted(model: str) -> bool:
+    """そのプロセスで該当モデルがクォータ枯渇判定されているか。"""
+    return model in _QUOTA_EXHAUSTED
+
+
+def _guard_quota(model: str) -> None:
+    if model in _QUOTA_EXHAUSTED:
+        raise QuotaExhausted(f"Gemini daily quota exhausted for {model}")
 
 # Per-model RPM limits (free tier as of 2025).
 # Adjust if Google updates limits or you upgrade to paid tier.
@@ -63,8 +90,9 @@ def _throttle(model: str) -> None:
 
 
 @retry(
-    stop=stop_after_attempt(5),
-    wait=wait_exponential_jitter(initial=2, max=60, jitter=2),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential_jitter(initial=2, max=30, jitter=2),
+    retry=retry_if_exception_type(_TRANSIENT_EXC),
     reraise=True,
 )
 def call_json(
@@ -76,25 +104,32 @@ def call_json(
     temperature: float = 0.0,
 ) -> dict[str, Any]:
     """Single Gemini call returning parsed JSON."""
+    _guard_quota(model)
     _ensure_configured()
     _throttle(model)
     m = genai.GenerativeModel(model, system_instruction=system)
-    resp = m.generate_content(
-        user,
-        generation_config={
-            "max_output_tokens": max_tokens,
-            "temperature": temperature,
-            "response_mime_type": "application/json",
-        },
-    )
+    try:
+        resp = m.generate_content(
+            user,
+            generation_config={
+                "max_output_tokens": max_tokens,
+                "temperature": temperature,
+                "response_mime_type": "application/json",
+            },
+        )
+    except gx.ResourceExhausted as e:
+        _QUOTA_EXHAUSTED.add(model)
+        log.error(f"Gemini daily quota exhausted for {model}; subsequent calls will short-circuit")
+        raise QuotaExhausted(str(e)) from e
     text = (resp.text or "").strip()
     _track_usage(model)
     return _parse_json(text)
 
 
 @retry(
-    stop=stop_after_attempt(5),
-    wait=wait_exponential_jitter(initial=2, max=60, jitter=2),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential_jitter(initial=2, max=30, jitter=2),
+    retry=retry_if_exception_type(_TRANSIENT_EXC),
     reraise=True,
 )
 def call_text(
@@ -106,16 +141,22 @@ def call_text(
     temperature: float = 0.3,
 ) -> str:
     """Single Gemini call returning plain text."""
+    _guard_quota(model)
     _ensure_configured()
     _throttle(model)
     m = genai.GenerativeModel(model, system_instruction=system)
-    resp = m.generate_content(
-        user,
-        generation_config={
-            "max_output_tokens": max_tokens,
-            "temperature": temperature,
-        },
-    )
+    try:
+        resp = m.generate_content(
+            user,
+            generation_config={
+                "max_output_tokens": max_tokens,
+                "temperature": temperature,
+            },
+        )
+    except gx.ResourceExhausted as e:
+        _QUOTA_EXHAUSTED.add(model)
+        log.error(f"Gemini daily quota exhausted for {model}; subsequent calls will short-circuit")
+        raise QuotaExhausted(str(e)) from e
     _track_usage(model)
     return resp.text or ""
 

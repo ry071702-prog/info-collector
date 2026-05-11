@@ -70,6 +70,8 @@ def filter_and_genre(item: RawItem) -> FilterResult | None:
             max_tokens=256,
         )
         return FilterResult(**data)
+    except llm_client.QuotaExhausted:
+        raise
     except Exception as e:  # noqa: BLE001
         log.warning(f"filter_and_genre failed for {item.fingerprint}: {e}")
         return None
@@ -134,16 +136,24 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             freshness_score=freshness,
             final_priority=final_pri,
         )
+    except llm_client.QuotaExhausted:
+        raise
     except Exception as e:  # noqa: BLE001
         log.warning(f"classify_full failed for {item.fingerprint}: {e}")
         return None
 
 
 def process(items: list[RawItem]) -> list[ProcessedItem]:
-    """Pipeline: filter -> classify."""
+    """Pipeline: filter -> classify. Gemini クォータ枯渇時は残りバッチを早期終了。"""
     out: list[ProcessedItem] = []
-    for item in items:
-        fr = filter_and_genre(item)
+    for idx, item in enumerate(items):
+        try:
+            fr = filter_and_genre(item)
+        except llm_client.QuotaExhausted as e:
+            log.error(
+                f"Aborting classify batch at {idx}/{len(items)} due to Gemini quota exhaustion: {e}"
+            )
+            break
         if not fr or fr.spam or fr.genre == "neither":
             continue
         # disney は単独 taxonomy で分類。both は games/anime のクロスのみ扱う
@@ -153,11 +163,20 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
             target = "anime"
         else:
             target = "games"
-        proc = classify_full(item, target)
+        try:
+            proc = classify_full(item, target)
+        except llm_client.QuotaExhausted as e:
+            log.error(
+                f"Aborting classify batch at {idx}/{len(items)} due to Gemini quota exhaustion: {e}"
+            )
+            break
         if proc:
             # if "both", run anime classification too and pick the higher importance one
             if fr.genre == "both":
-                alt = classify_full(item, "anime")
+                try:
+                    alt = classify_full(item, "anime")
+                except llm_client.QuotaExhausted:
+                    alt = None
                 if alt and _imp_rank(alt.importance) > _imp_rank(proc.importance):
                     proc = alt
             out.append(proc)
