@@ -2,14 +2,13 @@ name: Weekly Maintenance (Claude)
 
 on:
   schedule:
-    - cron: '0 18 * * 6'  # 03:00 JST Sunday (18:00 UTC Saturday)
+    - cron: '0 18 * * 6'  # 03:00 JST Sunday
   workflow_dispatch:
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
-  id-token: write
 
 jobs:
   maintenance:
@@ -19,75 +18,78 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Run Claude Code maintenance
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: '--model claude-haiku-4-5 --max-turns 30 --verbose'
-          show_full_output: true
-          display_report: true
-          track_progress: true
-          prompt: |
-            あなたは info-collector プロジェクトの自動メンテナンス担当エージェントです。
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
 
-            # 目的
-            プロジェクトの品質を維持・向上させるため、以下を実行する。
+      - name: Configure git for bot
+        run: |
+          git config user.name "claude-bot"
+          git config user.email "claude-bot@users.noreply.github.com"
 
-            # 必読
-            プロジェクトルートの CLAUDE.md を必ず最初に熟読してから作業すること。
-            「🤖 自動メンテナンスエージェント向け」セクションに禁止/推奨事項が書かれている。
+      - name: Run maintenance
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          claude --print \
+            --model claude-haiku-4-5 \
+            --max-turns 30 \
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(pytest:*),Bash(ruff:*),Bash(black:*),Bash(isort:*),Bash(pip:*),Bash(python3:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(date:*),Bash(echo:*),Bash(rm:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*)" \
+            <<'PROMPT'
+          あなたは info-collector プロジェクトの自動メンテナンス担当エージェントです。
 
-            # 実行する作業
-            ## 1. テスト
-            - pytest 等の既存テストを実行
-            - カバレッジが低い/テストがないモジュールを特定
-            - 重要処理 (jobs/, processors/, outputs/ 等) に単体テスト追加
+          # 必読
+          まず CLAUDE.md を読んでプロジェクトの方針/構造/規約を把握すること。
+          「🤖 自動メンテナンスエージェント向け」セクションに禁止/推奨事項あり。
 
-            ## 2. 修繕 (積極的)
-            - ruff/black/isort によるフォーマット自動修正
-            - 型ヒント追加・型エラー修正
-            - 単純なバグ修正 (None チェック、エラーハンドリング不足)
-            - requirements.txt の依存パッケージ更新 (1パッケージ1 PR)
-            - 軽微なリファクタ
+          # 実行する作業
+          1. CLAUDE.md を熟読
+          2. プロジェクト構造を把握 (ls, find, Read で主要ファイル確認)
+          3. 既存テスト実行 (pytest があれば)
+          4. 改善ポイントを 1-3 個ピックアップ
+          5. それぞれ別ブランチを切る (`git checkout -b claude/auto-XXX-$(date +%Y%m%d-%H%M)`)
+          6. 変更を実装
+          7. `git add` → `git commit` → `git push origin <branch>`
+          8. `gh pr create` で PR を作成
 
-            # 厳守ルール (CLAUDE.md にも記載)
-            ⛔ 絶対禁止:
-            - main への直接コミット (必ず別ブランチ + PR)
-            - force push, git reset --hard
-            - 実 API への通信 (Gemini/Notion/Sheets/Discord/YouTube/Twitch すべてモック)
-            - secrets / .env の変更
-            - data/raw/, data/processed/ の改変
-            - 本番ジョブを破壊する変更
+          # 厳守ルール
+          ⛔ 絶対禁止:
+          - main / master への直接コミット
+          - force push, git reset --hard
+          - 実 API への通信 (Gemini/Notion/Sheets/Discord/YouTube/Twitch すべてモック)
+          - secrets / .env の変更
+          - data/raw/, data/processed/ の改変
+          - 本番ジョブを破壊する変更
 
-            ✅ 必ず守る:
-            - 各テーマで別ブランチ (例: claude/auto-tests-${{ github.run_number }})
-            - 変更ごとに gh pr create で PR 作成
-            - 1 PR = 1 テーマ
-            - PR 本文に: 変更概要 / 動機 / リスク評価 (低中高) / レビュー確認ポイント
-            - 自信のない修正は draft PR で人間レビューへ
+          ✅ 必ず守る:
+          - 各テーマで別ブランチ
+          - 変更ごとに gh pr create で PR 作成
+          - 1 PR = 1 テーマ
+          - PR 本文に: 変更概要 / 動機 / リスク評価 (低中高) / レビュー確認ポイント
 
-            # 作業フロー
-            1. CLAUDE.md 熟読
-            2. プロジェクト構造把握
-            3. 既存テスト実行 → 結果記録
-            4. 改善ポイント 3-5 個ピックアップ
-            5. それぞれ別ブランチ + PR で実装
-            6. 作業サマリ出力 (作成した PR の URL リスト + 対応しなかった問題)
+          # ⚠️ 最重要 (必ず守る)
+          **このセッションは必ず最低1つの PR を作成して終わること。**
+          完璧な修繕でなくても、以下のいずれかを必ず実施して PR を出す:
+          - ruff/black による単純なフォーマット修正
+          - 1ファイル分のテスト追加
+          - 1パッケージの依存更新
+          - typo / docstring の改善
+          - 軽微な型ヒント追加
 
-            # ⚠️ 重要 (必ず守る)
-            **このセッションは必ず最低1つの PR を作成して終わること。**
-            完璧な修繕でなくても、以下のいずれかを必ず実施して PR を出す:
-            - ruff/black による単純なフォーマット修正
-            - 1ファイル分のテスト追加
-            - 1パッケージの依存更新
-            - typo / docstring の改善
-            - 軽微な型ヒント追加
+          「特に問題なし」で終わらせない。最低でも 1 PR を必ず生成すること。
 
-            「特に問題なし」で終わらせない。最低でも 1 PR を必ず生成すること。
-            完璧主義より「小さく確実に1つ」を優先。
+          # 最後に
+          作業終了時に作成した PR の URL を全て出力すること。
+          PROMPT
