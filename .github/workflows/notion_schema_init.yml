@@ -17,6 +17,8 @@ jobs:
       - name: Add β properties to Notion DBs
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 || '' }}
           NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
           NOTION_DATABASE_ID_ANIME: ${{ secrets.NOTION_DATABASE_ID_ANIME }}
           NOTION_DATABASE_ID_DISNEY: ${{ secrets.NOTION_DATABASE_ID_DISNEY }}

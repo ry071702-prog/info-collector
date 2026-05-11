@@ -20,15 +20,17 @@ from . import logger
 from .config import cache_dir, env
 
 log = logger.get(__name__)
-_configured = False
 
 
 class QuotaExhausted(RuntimeError):
     """Gemini の日次クォータが枯渇したことを示す。リトライ対象外。"""
 
 
-# 一度 429 を食らったモデルはそのプロセス内では再呼び出ししない。
-_QUOTA_EXHAUSTED: set[str] = set()
+# モデルごとに 429 を食らったキー index を記録し、生きているキーへ fail-over する。
+_API_KEYS: list[str] | None = None
+_ACTIVE_KEY_IDX = 0
+_CONFIGURED_KEY_IDX: int | None = None
+_DEAD_KEYS: dict[str, set[int]] = {}
 
 # 一過性エラー（リトライ対象）。ResourceExhausted (=daily quota) は除外。
 _TRANSIENT_EXC: tuple[type[Exception], ...] = (
@@ -41,11 +43,12 @@ _TRANSIENT_EXC: tuple[type[Exception], ...] = (
 
 def quota_exhausted(model: str) -> bool:
     """そのプロセスで該当モデルがクォータ枯渇判定されているか。"""
-    return model in _QUOTA_EXHAUSTED
+    keys = _api_keys()
+    return bool(keys) and len(_DEAD_KEYS.get(model, set())) >= len(keys)
 
 
 def _guard_quota(model: str) -> None:
-    if model in _QUOTA_EXHAUSTED:
+    if quota_exhausted(model):
         raise QuotaExhausted(f"Gemini daily quota exhausted for {model}")
 
 # Per-model RPM limits (free tier as of 2025).
@@ -65,20 +68,64 @@ RPD_LIMITS = {
     "gemini-1.5-pro": 50,
 }
 
-_REQUEST_HISTORY: dict[str, deque] = {}
+_REQUEST_HISTORY: dict[tuple[str, int], deque] = {}
 
 
-def _ensure_configured() -> None:
-    global _configured
-    if not _configured:
-        genai.configure(api_key=env("GEMINI_API_KEY", required=True))
-        _configured = True
+def _api_keys() -> list[str]:
+    global _API_KEYS
+    if _API_KEYS is None:
+        primary = env("GEMINI_API_KEY", required=True)
+        _API_KEYS = [
+            key
+            for key in (
+                primary,
+                env("GEMINI_API_KEY_2", ""),
+                env("GEMINI_API_KEY_3", ""),
+            )
+            if key
+        ]
+    return _API_KEYS
 
 
-def _throttle(model: str) -> None:
+def _next_api_key(model: str) -> tuple[int, str]:
+    global _ACTIVE_KEY_IDX
+    keys = _api_keys()
+    dead = _DEAD_KEYS.setdefault(model, set())
+    if len(dead) >= len(keys):
+        raise QuotaExhausted(f"Gemini daily quota exhausted for {model} on all API keys")
+
+    for offset in range(len(keys)):
+        idx = (_ACTIVE_KEY_IDX + offset) % len(keys)
+        if idx not in dead:
+            _ACTIVE_KEY_IDX = idx
+            return idx, keys[idx]
+    raise QuotaExhausted(f"Gemini daily quota exhausted for {model} on all API keys")
+
+
+def _configure_key(key_idx: int, api_key: str) -> None:
+    global _CONFIGURED_KEY_IDX
+    if _CONFIGURED_KEY_IDX != key_idx:
+        genai.configure(api_key=api_key)
+        _CONFIGURED_KEY_IDX = key_idx
+
+
+def _mark_key_exhausted(model: str, key_idx: int, exc: Exception) -> None:
+    global _ACTIVE_KEY_IDX
+    _DEAD_KEYS.setdefault(model, set()).add(key_idx)
+    keys = _api_keys()
+    log.error(
+        f"Gemini daily quota exhausted for {model} on key #{key_idx + 1}; "
+        f"{len(keys) - len(_DEAD_KEYS[model])} key(s) remain"
+    )
+    if len(_DEAD_KEYS[model]) >= len(keys):
+        raise QuotaExhausted(str(exc)) from exc
+    _ACTIVE_KEY_IDX = (key_idx + 1) % len(keys)
+
+
+def _throttle(model: str, key_idx: int) -> None:
     """Sleep if we're about to exceed RPM."""
     rpm = RPM_LIMITS.get(model, 10)
-    history = _REQUEST_HISTORY.setdefault(model, deque(maxlen=rpm))
+    history = _REQUEST_HISTORY.setdefault((model, key_idx), deque(maxlen=rpm))
     now = time.time()
     if len(history) >= rpm:
         oldest = history[0]
@@ -105,24 +152,25 @@ def call_json(
 ) -> dict[str, Any]:
     """Single Gemini call returning parsed JSON."""
     _guard_quota(model)
-    _ensure_configured()
-    _throttle(model)
-    m = genai.GenerativeModel(model, system_instruction=system)
-    try:
-        resp = m.generate_content(
-            user,
-            generation_config={
-                "max_output_tokens": max_tokens,
-                "temperature": temperature,
-                "response_mime_type": "application/json",
-            },
-        )
-    except gx.ResourceExhausted as e:
-        _QUOTA_EXHAUSTED.add(model)
-        log.error(f"Gemini daily quota exhausted for {model}; subsequent calls will short-circuit")
-        raise QuotaExhausted(str(e)) from e
+    while True:
+        key_idx, api_key = _next_api_key(model)
+        _configure_key(key_idx, api_key)
+        _throttle(model, key_idx)
+        m = genai.GenerativeModel(model, system_instruction=system)
+        try:
+            resp = m.generate_content(
+                user,
+                generation_config={
+                    "max_output_tokens": max_tokens,
+                    "temperature": temperature,
+                    "response_mime_type": "application/json",
+                },
+            )
+            break
+        except gx.ResourceExhausted as e:
+            _mark_key_exhausted(model, key_idx, e)
     text = (resp.text or "").strip()
-    _track_usage(model)
+    _track_usage(model, key_idx)
     return _parse_json(text)
 
 
@@ -142,22 +190,23 @@ def call_text(
 ) -> str:
     """Single Gemini call returning plain text."""
     _guard_quota(model)
-    _ensure_configured()
-    _throttle(model)
-    m = genai.GenerativeModel(model, system_instruction=system)
-    try:
-        resp = m.generate_content(
-            user,
-            generation_config={
-                "max_output_tokens": max_tokens,
-                "temperature": temperature,
-            },
-        )
-    except gx.ResourceExhausted as e:
-        _QUOTA_EXHAUSTED.add(model)
-        log.error(f"Gemini daily quota exhausted for {model}; subsequent calls will short-circuit")
-        raise QuotaExhausted(str(e)) from e
-    _track_usage(model)
+    while True:
+        key_idx, api_key = _next_api_key(model)
+        _configure_key(key_idx, api_key)
+        _throttle(model, key_idx)
+        m = genai.GenerativeModel(model, system_instruction=system)
+        try:
+            resp = m.generate_content(
+                user,
+                generation_config={
+                    "max_output_tokens": max_tokens,
+                    "temperature": temperature,
+                },
+            )
+            break
+        except gx.ResourceExhausted as e:
+            _mark_key_exhausted(model, key_idx, e)
+    _track_usage(model, key_idx)
     return resp.text or ""
 
 
@@ -174,9 +223,13 @@ def _parse_json(text: str) -> dict[str, Any]:
 
 
 # ---- Usage tracking (request count vs free quota) ----
-def _track_usage(model: str) -> None:
+def _track_usage(model: str, key_idx: int) -> None:
     path = cache_dir() / "api_usage.jsonl"
-    record = {"model": model, "timestamp": datetime.utcnow().isoformat()}
+    record = {
+        "model": model,
+        "key_index": key_idx + 1,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
 

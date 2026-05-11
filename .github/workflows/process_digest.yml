@@ -28,6 +28,7 @@ jobs:
         env:
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 || '' }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
           NOTION_DATABASE_ID_ANIME: ${{ secrets.NOTION_DATABASE_ID_ANIME }}
