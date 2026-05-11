@@ -15,15 +15,27 @@ interface Props {
 
 const { date } = Astro.props;
 const digest = loadDigestDocument(date);
+
+// slug 末尾 -AM / -PM から「朝刊 / 夕刊」を判定。旧形式 (suffix なし) は「日次まとめ」
+const suffix = date.match(/-(AM|PM)$/i)?.[1]?.toUpperCase() ?? null;
+const cycleLabel =
+  suffix === "AM"
+    ? "🌅 朝刊 (JST 07:00 締切・直近 12 時間)"
+    : suffix === "PM"
+      ? "🌇 夕刊 (JST 19:00 締切・直近 12 時間)"
+      : "📰 日次まとめ";
 ---
 
 <BaseLayout title={digest?.title ?? `Digest ${date}`}>
+  <div class="mb-6 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+    {cycleLabel}
+  </div>
   {
     digest ? (
       <article class="digest-content" set:html={digest.html} />
     ) : (
       <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        指定されたデイリーまとめは見つかりません。
+        指定されたまとめは見つかりません。
       </p>
     )
   }
