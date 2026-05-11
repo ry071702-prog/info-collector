@@ -1,0 +1,77 @@
+name: Nightly Maintenance (Claude)
+
+on:
+  schedule:
+    - cron: '0 18 * * *'  # 03:00 JST daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Claude Code maintenance
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--model claude-sonnet-4-6'
+          prompt: |
+            あなたは info-collector プロジェクトの自動メンテナンス担当エージェントです。
+
+            # 目的
+            プロジェクトの品質を維持・向上させるため、以下を実行する。
+
+            # 必読
+            プロジェクトルートの CLAUDE.md を必ず最初に熟読してから作業すること。
+            「🤖 自動メンテナンスエージェント向け」セクションに禁止/推奨事項が書かれている。
+
+            # 実行する作業
+            ## 1. テスト
+            - pytest 等の既存テストを実行
+            - カバレッジが低い/テストがないモジュールを特定
+            - 重要処理 (jobs/, processors/, outputs/ 等) に単体テスト追加
+
+            ## 2. 修繕 (積極的)
+            - ruff/black/isort によるフォーマット自動修正
+            - 型ヒント追加・型エラー修正
+            - 単純なバグ修正 (None チェック、エラーハンドリング不足)
+            - requirements.txt の依存パッケージ更新 (1パッケージ1 PR)
+            - 軽微なリファクタ
+
+            # 厳守ルール (CLAUDE.md にも記載)
+            ⛔ 絶対禁止:
+            - main への直接コミット (必ず別ブランチ + PR)
+            - force push, git reset --hard
+            - 実 API への通信 (Gemini/Notion/Sheets/Discord/YouTube/Twitch すべてモック)
+            - secrets / .env の変更
+            - data/raw/, data/processed/ の改変
+            - 本番ジョブを破壊する変更
+
+            ✅ 必ず守る:
+            - 各テーマで別ブランチ (例: claude/auto-tests-${{ github.run_number }})
+            - 変更ごとに gh pr create で PR 作成
+            - 1 PR = 1 テーマ
+            - PR 本文に: 変更概要 / 動機 / リスク評価 (低中高) / レビュー確認ポイント
+            - 自信のない修正は draft PR で人間レビューへ
+
+            # 作業フロー
+            1. CLAUDE.md 熟読
+            2. プロジェクト構造把握
+            3. 既存テスト実行 → 結果記録
+            4. 改善ポイント 3-5 個ピックアップ
+            5. それぞれ別ブランチ + PR で実装
+            6. 作業サマリ出力 (作成した PR の URL リスト + 対応しなかった問題)
