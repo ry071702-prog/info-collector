@@ -45,7 +45,7 @@ jobs:
         env:
           # Cloudflare Pages 配信時の絶対 URL とベースパス。
           # Direct Upload 構成では base=/ で良いので明示的に "/" を渡す。
-          PUBLIC_SITE_URL: "https://info-collector.pages.dev"
+          PUBLIC_SITE_URL: "https://info-collector-a5y.pages.dev"
           PUBLIC_BASE_PATH: "/"
         run: npm run build
 
