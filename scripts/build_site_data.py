@@ -7,7 +7,7 @@ import mimetypes
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import httpx
 from loguru import logger
@@ -176,6 +176,11 @@ def build_article(raw: dict[str, Any], client: httpx.Client) -> Optional[dict[st
     if not isinstance(flags, dict):
         flags = {}
 
+    host = urlparse(url).hostname or ""
+    favicon_url = (
+        f"https://www.google.com/s2/favicons?domain={host}&sz=128" if host else None
+    )
+
     return {
         "url": url,
         "author": str(raw.get("author") or ""),
@@ -193,6 +198,8 @@ def build_article(raw: dict[str, Any], client: httpx.Client) -> Optional[dict[st
             "source_reliability": str(flags.get("source_reliability") or ""),
         },
         "image_url": image_url,
+        "favicon_url": favicon_url,
+        "domain": host,
     }
 
 

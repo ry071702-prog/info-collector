@@ -38,8 +38,19 @@ const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
           loading="lazy"
         />
       ) : (
-        <div class="flex h-full w-full items-center justify-center" style={fallbackStyle}>
+        <div class="flex h-full w-full flex-col items-center justify-center gap-2" style={fallbackStyle}>
+          {article.favicon_url && (
+            <img
+              src={article.favicon_url}
+              alt=""
+              class="h-12 w-12 rounded bg-white/90 p-1.5 shadow"
+              loading="lazy"
+            />
+          )}
           <span class="text-sm font-semibold text-white/90">{genreLabels[article.genre]}</span>
+          {article.domain && (
+            <span class="text-xs text-white/70">{article.domain}</span>
+          )}
         </div>
       )
     }

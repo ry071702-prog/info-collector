@@ -23,6 +23,8 @@ export interface Article {
   entity_tags: string[];
   flags: ArticleFlags;
   image_url: string | null;
+  favicon_url: string | null;
+  domain: string;
 }
 
 export interface Digest {
