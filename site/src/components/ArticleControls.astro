@@ -1,0 +1,24 @@
+---
+interface Props {
+  showRange?: boolean;
+}
+
+const { showRange = false } = Astro.props;
+---
+
+<div class="mb-5 flex flex-wrap items-center gap-3" data-article-controls>
+  <div class="inline-flex overflow-hidden rounded-md border border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900">
+    <button type="button" class="article-control-button" data-sort-button="new" aria-pressed="true">新着順</button>
+    <button type="button" class="article-control-button" data-sort-button="priority" aria-pressed="false">優先度順</button>
+  </div>
+  {
+    showRange && (
+      <div class="inline-flex overflow-hidden rounded-md border border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900">
+        <button type="button" class="article-control-button" data-range-button="12" aria-pressed="false">12h</button>
+        <button type="button" class="article-control-button" data-range-button="24" aria-pressed="false">24h</button>
+        <button type="button" class="article-control-button" data-range-button="168" aria-pressed="false">7d</button>
+        <button type="button" class="article-control-button" data-range-button="720" aria-pressed="true">30d</button>
+      </div>
+    )
+  }
+</div>

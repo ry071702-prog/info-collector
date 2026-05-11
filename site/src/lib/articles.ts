@@ -30,10 +30,12 @@ export interface Article {
 export interface Digest {
   date: string;
   slug: string;
+  label: string;
 }
 
 interface SiteData {
   generated_at?: string;
+  window_12h_count?: number;
   articles: Article[];
   digests: Digest[];
 }
@@ -73,6 +75,7 @@ export function loadSiteData(): SiteData {
     const parsed = JSON.parse(readFileSync(path, "utf-8")) as SiteData;
     return {
       generated_at: parsed.generated_at,
+      window_12h_count: Number.isFinite(parsed.window_12h_count) ? parsed.window_12h_count : 0,
       articles: Array.isArray(parsed.articles) ? parsed.articles : [],
       digests: Array.isArray(parsed.digests) ? parsed.digests : [],
     };
@@ -97,7 +100,7 @@ export function sortArticlesByTimestamp(articles: Article[]): Article[] {
 }
 
 export function articlesByGenre(genre: Genre): Article[] {
-  return sortArticles(loadSiteData().articles.filter((article) => article.genre === genre));
+  return sortArticlesByTimestamp(loadSiteData().articles.filter((article) => article.genre === genre));
 }
 
 export function latestArticles(limit: number): Article[] {

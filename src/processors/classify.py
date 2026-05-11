@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 
-from .. import llm_client, logger, prompts, taxonomy
+from .. import dedup, llm_client, logger, prompts, taxonomy
 from ..config import settings
 from ..models import Flags, FilterResult, ProcessedItem, RawItem
 
@@ -140,6 +140,21 @@ def filter_and_genre(item: RawItem) -> FilterResult | None:
         return None
 
 
+def should_classify(item: RawItem) -> bool:
+    """Cheap pre-filter to protect Gemini quota before any LLM call."""
+    if item.fingerprint in _RECENT_RAW_FINGERPRINTS:
+        return False
+
+    source_priority = str((item.extra or {}).get("source_priority") or "").lower()
+    if item.account_type != "個人" or source_priority == "high":
+        return True
+
+    freshness = _freshness_score(item.timestamp)
+    live = _live_trend_score(item.extra.get("viewer_count") if item.extra else 0)
+    video = _video_trend_score(item.extra.get("view_count") if item.extra else 0, item.timestamp)
+    return _final_priority("C", freshness, 0, 0, 0, live, video) != "C"
+
+
 def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
     model = settings()["models"]["classify"]
     if genre == "anime":
@@ -218,7 +233,11 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
 def process(items: list[RawItem]) -> list[ProcessedItem]:
     """Pipeline: filter -> classify. Gemini クォータ枯渇時は残りバッチを早期終了。"""
     out: list[ProcessedItem] = []
+    skipped = 0
     for idx, item in enumerate(items):
+        if not should_classify(item):
+            skipped += 1
+            continue
         try:
             fr = filter_and_genre(item)
         except llm_client.QuotaExhausted as e:
@@ -252,8 +271,13 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
                 if alt and _imp_rank(alt.importance) > _imp_rank(proc.importance):
                     proc = alt
             out.append(proc)
+    if skipped:
+        log.info(f"Skipped {skipped} items before LLM classification")
     return out
 
 
 def _imp_rank(imp: str) -> int:
     return {"S": 4, "A": 3, "B": 2, "C": 1}.get(imp, 0)
+
+
+_RECENT_RAW_FINGERPRINTS = dedup.recent_raw_fingerprints(days=30)

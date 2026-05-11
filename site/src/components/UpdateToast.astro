@@ -1,0 +1,27 @@
+---
+interface Props {
+  generatedAt: string;
+  articleCount: number;
+}
+
+const { generatedAt, articleCount } = Astro.props;
+---
+
+<div
+  id="update-toast"
+  class="sticky top-0 z-50 hidden border-b border-blue-300 bg-blue-50 px-4 py-2 text-sm text-blue-950 shadow-sm dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
+  data-generated-at={generatedAt}
+  data-article-count={articleCount}
+>
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
+    <span data-update-toast-message>新しい記事があります</span>
+    <div class="flex items-center gap-2">
+      <button type="button" class="rounded bg-blue-600 px-3 py-1 text-xs font-bold text-white hover:bg-blue-700" data-update-toast-reload>
+        更新
+      </button>
+      <button type="button" class="px-2 py-1 text-base leading-none text-blue-700 hover:text-blue-950 dark:text-blue-200 dark:hover:text-white" data-update-toast-close aria-label="閉じる">
+        ×
+      </button>
+    </div>
+  </div>
+</div>

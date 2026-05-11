@@ -6,8 +6,9 @@ from pathlib import Path
 from ..config import digests_dir, DOCS_DIR
 
 
-def write_digest(date_str: str, content: str) -> Path:
-    path = digests_dir() / f"{date_str}.md"
+def write_digest(date_str: str, content: str, suffix: str | None = None) -> Path:
+    stem = f"{date_str}-{suffix}" if suffix else date_str
+    path = digests_dir() / f"{stem}.md"
     path.write_text(content, encoding="utf-8")
     return path
 

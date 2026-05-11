@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import mimetypes
+import re
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -18,8 +19,10 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 PROCESSED_DIR = ROOT_DIR / "data" / "processed"
 DIGESTS_DIR = ROOT_DIR / "docs" / "digests"
 SITE_DATA_DIR = ROOT_DIR / "site" / "src" / "data"
+SITE_PUBLIC_DIR = ROOT_DIR / "site" / "public"
 OG_CACHE_DIR = ROOT_DIR / "site" / "public" / "og-cache"
 OUTPUT_PATH = SITE_DATA_DIR / "articles.json"
+PUBLIC_OUTPUT_PATH = SITE_PUBLIC_DIR / "articles.json"
 
 ALLOWED_GENRES = {"games", "anime", "disney"}
 PRIORITY_ORDER = {"S": 0, "A": 1, "B": 2, "C": 3}
@@ -33,13 +36,15 @@ USER_AGENT = (
 )
 
 
-def parse_date_from_filename(path: Path) -> Optional[date]:
-    """Return YYYY-MM-DD date from a processed JSONL filename."""
-    try:
-        return datetime.strptime(path.stem, "%Y-%m-%d").date()
-    except ValueError:
-        logger.warning("Skipping processed file with unexpected name: {}", path)
-        return None
+def parse_date_from_processed_path(path: Path) -> Optional[date]:
+    """Return YYYY-MM-DD date from nested or legacy processed JSONL paths."""
+    for value in (path.parent.name, path.stem):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+    logger.warning("Skipping processed file with unexpected name: {}", path)
+    return None
 
 
 def processed_files(days: int = RECENT_DAYS) -> list[Path]:
@@ -51,8 +56,9 @@ def processed_files(days: int = RECENT_DAYS) -> list[Path]:
     today = datetime.now(UTC).date()
     start_date = today - timedelta(days=days - 1)
     files: list[Path] = []
-    for path in sorted(PROCESSED_DIR.glob("*.jsonl")):
-        file_date = parse_date_from_filename(path)
+    paths = list(PROCESSED_DIR.glob("*/items.jsonl")) + list(PROCESSED_DIR.glob("*.jsonl"))
+    for path in sorted(paths):
+        file_date = parse_date_from_processed_path(path)
         if file_date is not None and start_date <= file_date <= today:
             files.append(path)
     return files
@@ -76,6 +82,11 @@ def sort_key(article: dict[str, Any]) -> tuple[int, float]:
     priority = PRIORITY_ORDER.get(str(article.get("final_priority", "C")), 3)
     timestamp = parse_timestamp(str(article.get("timestamp", ""))).timestamp()
     return (priority, -timestamp)
+
+
+def timestamp_sort_key(article: dict[str, Any]) -> float:
+    """Sort by timestamp descending."""
+    return -parse_timestamp(str(article.get("timestamp", ""))).timestamp()
 
 
 def cache_filename(url: str) -> str:
@@ -225,7 +236,7 @@ def load_articles() -> list[dict[str, Any]]:
             except Exception as exc:  # noqa: BLE001 - skip only this file
                 logger.warning("Failed to read processed file {}: {}", path, exc)
 
-    articles.sort(key=sort_key)
+    articles.sort(key=timestamp_sort_key)
     return articles
 
 
@@ -237,26 +248,40 @@ def list_digests() -> list[dict[str, str]]:
     digests: list[dict[str, str]] = []
     for path in sorted(DIGESTS_DIR.glob("*.md"), reverse=True):
         slug = path.stem
-        digests.append({"date": slug, "slug": slug})
+        match = re.fullmatch(r"(\d{4}-\d{2}-\d{2})(?:-(AM|PM))?", slug)
+        if match is None:
+            logger.warning("Skipping digest with unexpected name: {}", path)
+            continue
+        date_part, phase = match.groups()
+        label = f"{date_part} {phase}" if phase else date_part
+        digests.append({"date": date_part, "slug": slug, "label": label})
     return digests
+
+
+def window_12h_count(articles: list[dict[str, Any]], now: datetime) -> int:
+    """Count articles whose timestamp is in the last 12 hours."""
+    start = now - timedelta(hours=12)
+    return sum(1 for article in articles if parse_timestamp(str(article.get("timestamp", ""))) >= start)
 
 
 def write_site_data() -> None:
     """Write site/src/data/articles.json."""
     SITE_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    SITE_PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
     OG_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+    generated_at = datetime.now(UTC)
     articles = load_articles()
     digests = list_digests()
     payload = {
-        "generated_at": datetime.now(UTC).isoformat(),
+        "generated_at": generated_at.isoformat(),
+        "window_12h_count": window_12h_count(articles, generated_at),
         "articles": articles,
         "digests": digests,
     }
-    OUTPUT_PATH.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    serialized = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    OUTPUT_PATH.write_text(serialized, encoding="utf-8")
+    PUBLIC_OUTPUT_PATH.write_text(serialized, encoding="utf-8")
     logger.info(
         "Wrote {} articles and {} digests to {}",
         len(articles),

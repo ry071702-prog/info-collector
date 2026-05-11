@@ -1,7 +1,7 @@
 name: Process & Daily Digest
 on:
   schedule:
-    - cron: '0 22 * * *'  # JST 07:00
+    - cron: '0 10,22 * * *'  # JST 19:00 / 07:00
   workflow_dispatch:
     inputs:
       dry_run:

@@ -1,11 +1,11 @@
 """Deduplication logic: dedup_key cache + cross-day awareness."""
 from __future__ import annotations
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from . import logger
-from .config import cache_dir
+from .config import DATA_DIR, cache_dir
 from .models import ProcessedItem
 
 log = logger.get(__name__)
@@ -43,3 +43,39 @@ def filter_new(items: list[ProcessedItem]) -> tuple[list[ProcessedItem], int]:
         keys[it.dedup_key] = now_iso
     save_keys(keys)
     return kept, len(items) - len(kept)
+
+
+def recent_raw_fingerprints(days: int = 30) -> set[str]:
+    """Load raw fingerprints already present in recent processed archives."""
+    base = DATA_DIR / "processed"
+    if not base.exists():
+        return set()
+
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    fingerprints: set[str] = set()
+    paths = list(base.glob("*/items.jsonl")) + list(base.glob("*.jsonl"))
+    for path in paths:
+        file_date = _processed_file_date(path)
+        if file_date is not None and file_date < cutoff.date():
+            continue
+        try:
+            with path.open(encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    item = ProcessedItem.model_validate_json(line)
+                    fingerprints.add(item.raw_fingerprint)
+        except Exception as e:  # noqa: BLE001
+            log.warning(f"Failed to read processed fingerprints from {path}: {e}")
+    return fingerprints
+
+
+def _processed_file_date(path: Path) -> date | None:
+    """Best-effort date extraction for both nested and legacy flat processed files."""
+    candidates = [path.parent.name, path.stem]
+    for value in candidates:
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").date()
+        except ValueError:
+            continue
+    return None

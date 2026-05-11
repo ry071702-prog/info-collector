@@ -59,8 +59,10 @@ def main(tier: str) -> None:
             log.error(f"[{tier}] collector {collector_name} crashed: {e}")
 
     # Write per-source jsonl
+    source_priority = {source.id: source.priority for source in sources}
     by_source: dict[str, list] = {}
     for it in all_items:
+        it.extra.setdefault("source_priority", source_priority.get(it.source_id, "medium"))
         by_source.setdefault(it.source_id, []).append(it)
     for sid, items in by_source.items():
         write_raw(date_str, sid, items)

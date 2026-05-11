@@ -20,12 +20,16 @@ const entities = article.entity_tags.slice(0, 3);
 const fallbackStyle = `background: linear-gradient(135deg, ${genreColors[article.genre]}, #0f172a);`;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
+const isUrgent = article.final_priority === "S" || article.final_priority === "A";
 ---
 
 <a
   href={article.url}
   target="_blank"
   rel="noreferrer"
+  data-article-card
+  data-timestamp={article.timestamp}
+  data-priority={article.final_priority}
   class="group flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
 >
   <div class="aspect-[16/9] overflow-hidden bg-slate-200 dark:bg-slate-800">
@@ -91,7 +95,15 @@ const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
     }
     <div class="mt-auto flex items-center justify-between gap-3 pt-1 text-xs text-slate-500 dark:text-slate-400">
       <span class="min-w-0 truncate">{article.author || "unknown"}</span>
-      <time datetime={article.timestamp} class="shrink-0">{relativeTime}</time>
+      <time
+        datetime={article.timestamp}
+        class:list={[
+          "shrink-0",
+          isUrgent && "font-bold text-red-600 dark:text-red-400",
+        ]}
+      >
+        {relativeTime}
+      </time>
     </div>
   </div>
 </a>

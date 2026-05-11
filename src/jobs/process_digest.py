@@ -7,45 +7,76 @@
 - 部分的な処理結果でも data/processed と Notion / Sheets には反映される
 """
 from __future__ import annotations
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from .. import dedup, logger
 from ..config import settings
+from ..models import RawItem
 from ..outputs import discord, markdown, notion, sheets
 from ..processors import classify, digest
-from ..storage import read_raw, read_processed, write_processed
+from ..storage import read_raw, write_processed
 
 log = logger.get(__name__)
+JST = timezone(timedelta(hours=9))
 
 # 連続してこの数だけ「0件分類」chunk が続いたら quota 切れとみなして停止
 QUOTA_EXHAUSTED_EMPTY_CHUNKS = 2
 
 
+def _phase(now_utc: datetime) -> tuple[str, str]:
+    """Return (JST date, AM/PM) for the digest filename."""
+    now_jst = now_utc.astimezone(JST)
+    phase = "AM" if 6 <= now_jst.hour < 18 else "PM"
+    return now_jst.strftime("%Y-%m-%d"), phase
+
+
+def _read_raw_window(start: datetime, end: datetime) -> list[RawItem]:
+    """Read raw items whose item timestamp is inside [start, end]."""
+    items = []
+    cur = start.astimezone(timezone.utc).date()
+    end_date = end.astimezone(timezone.utc).date()
+    while cur <= end_date:
+        for item in read_raw(cur.strftime("%Y-%m-%d")):
+            ts = item.timestamp
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+            else:
+                ts = ts.astimezone(timezone.utc)
+            if start <= ts <= end:
+                items.append(item)
+        cur += timedelta(days=1)
+    return items
+
+
 def main() -> None:
-    today_str = datetime.utcnow().strftime("%Y-%m-%d")
-    raw_items = list(read_raw(today_str))
-    if raw_items:
-        date_str = today_str
-    else:
-        yesterday_str = (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d")
-        raw_items = list(read_raw(yesterday_str))
-        date_str = yesterday_str
-    log.info(f"Processing date: {date_str}")
-    log.info(f"Read {len(raw_items)} raw items")
+    now_utc = datetime.now(timezone.utc)
+    window_start = now_utc - timedelta(hours=12)
+    digest_date, digest_phase = _phase(now_utc)
+    date_str = now_utc.strftime("%Y-%m-%d")
+    raw_items = _read_raw_window(window_start, now_utc)
+    log.info(f"Processing window: {window_start.isoformat()} - {now_utc.isoformat()}")
+    log.info(f"Digest slug: {digest_date}-{digest_phase}")
+    log.info(f"Read {len(raw_items)} raw items in 12h window")
     if not raw_items:
         log.warning("No raw items found; skipping")
         return
 
     # 既に処理済みの raw fingerprint をセット化してスキップ（再開時の重複処理回避）
-    already_processed = read_processed(date_str)
-    already_fps = {p.raw_fingerprint for p in already_processed}
-    pending = [it for it in raw_items if it.fingerprint not in already_fps]
+    already_fps = dedup.recent_raw_fingerprints(days=30)
+    seen: set[str] = set()
+    pending = []
+    for item in raw_items:
+        if item.fingerprint in already_fps or item.fingerprint in seen:
+            continue
+        seen.add(item.fingerprint)
+        pending.append(item)
     log.info(f"Already processed: {len(already_fps)}, pending: {len(pending)}")
 
     chunk_size = settings()["batch_sizes"].get("classify_batch", 20)
     totals = {"classified": 0, "notion_ok": 0, "notion_fail": 0, "sheets": 0, "duplicates": 0}
     consecutive_empty = 0
     stopped_early = False
+    processed_for_digest = []
 
     for i in range(0, len(pending), chunk_size):
         chunk = pending[i : i + chunk_size]
@@ -75,6 +106,7 @@ def main() -> None:
             continue
 
         write_processed(date_str, fresh)
+        processed_for_digest.extend(fresh)
         totals["classified"] += len(fresh)
         log.info(f"Chunk {chunk_idx}: {len(fresh)} fresh classified ({dropped} duplicates)")
 
@@ -99,12 +131,11 @@ def main() -> None:
         f"early_stopped={stopped_early}"
     )
 
-    # Markdown digest: その日の全 processed を集約。LLM 呼び出しあり（quota 切れ時はスキップ扱い）
-    all_today = read_processed(date_str)
-    if all_today and not stopped_early:
+    # Markdown digest: この12時間 window の processed を集約。LLM 呼び出しあり（quota 切れ時はスキップ扱い）
+    if processed_for_digest and not stopped_early:
         try:
-            content = digest.daily_digest(all_today, date_str)
-            path = markdown.write_digest(date_str, content)
+            content = digest.daily_digest(processed_for_digest, f"{digest_date} {digest_phase}")
+            path = markdown.write_digest(digest_date, content, digest_phase)
             log.info(f"Digest written to {path}")
         except Exception as e:  # noqa: BLE001
             log.error(f"Digest generation failed: {e}")
@@ -115,7 +146,7 @@ def main() -> None:
     status_emoji = "⚠️" if stopped_early else "✅"
     discord.post_message(
         "DISCORD_WEBHOOK_OPS",
-        f"{status_emoji} Daily digest ({date_str}): "
+        f"{status_emoji} 12h digest ({digest_date}-{digest_phase}): "
         f"{totals['classified']}件処理 / "
         f"Notion {totals['notion_ok']} / Sheets {totals['sheets']}"
         + (" (quota切れで途中停止)" if stopped_early else ""),

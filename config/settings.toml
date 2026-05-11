@@ -12,7 +12,7 @@ default_language = "ja"
 # Gemini free tier:
 # - flash: 15 RPM / 1500 RPD（量を捌く処理向け）
 # - pro:    2 RPM / 50  RPD（高品質・低頻度処理向け）
-filter = "gemini-2.0-flash"
+filter = "gemini-2.0-flash-lite"
 classify = "gemini-2.0-flash"
 dedup = "gemini-2.0-flash-lite"
 digest = "gemini-2.0-flash"

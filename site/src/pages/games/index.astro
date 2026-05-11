@@ -1,4 +1,5 @@
 ---
+import ArticleControls from "../../components/ArticleControls.astro";
 import NewsCard from "../../components/NewsCard.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { articlesByGenre } from "../../lib/articles";
@@ -11,9 +12,10 @@ const articles = articlesByGenre("games");
     <h1 class="text-3xl font-bold tracking-tight">ゲーム</h1>
     <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">直近30日のゲームニュース全件。</p>
   </section>
+  <ArticleControls showRange />
   {
     articles.length > 0 ? (
-      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list>
         {articles.map((article) => <NewsCard article={article} />)}
       </div>
     ) : (

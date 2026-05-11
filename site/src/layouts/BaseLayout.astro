@@ -1,5 +1,9 @@
 ---
 import CategoryNav from "../components/CategoryNav.astro";
+import UpdateToast from "../components/UpdateToast.astro";
+import { loadSiteData } from "../lib/articles";
+import articleControlsUrl from "../scripts/article-controls.js?url";
+import livePollUrl from "../scripts/live-poll.js?url";
 import "../styles/global.css";
 
 interface Props {
@@ -11,6 +15,21 @@ const { title, description = "X / YouTube / Twitch から収集したゲーム�
 const pageTitle = `${title} | info-collector`;
 const basePath = import.meta.env.BASE_URL;
 const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+const siteData = loadSiteData();
+const generatedAt = siteData.generated_at ? new Date(siteData.generated_at) : null;
+const generatedLabel =
+  generatedAt && !Number.isNaN(generatedAt.getTime())
+    ? new Intl.DateTimeFormat("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }).format(generatedAt).replaceAll("/", "-")
+    : "未生成";
+const window12hCount = siteData.window_12h_count ?? 0;
 ---
 
 <!doctype html>
@@ -22,6 +41,7 @@ const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
     <title>{pageTitle}</title>
   </head>
   <body>
+    <UpdateToast generatedAt={siteData.generated_at ?? ""} articleCount={siteData.articles.length} />
     <header class="border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
       <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8">
         <div>
@@ -31,6 +51,9 @@ const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
           <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
             ゲーム、アニメ、Disney の重要ニュースを30日分から集約
           </p>
+          <p class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+            最終更新: {generatedLabel} JST · 直近 12 時間で {window12hCount} 件追加
+          </p>
         </div>
         <CategoryNav currentPath={Astro.url.pathname} />
       </div>
@@ -38,5 +61,7 @@ const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <slot />
     </main>
+    <script type="module" src={articleControlsUrl}></script>
+    <script type="module" src={livePollUrl}></script>
   </body>
 </html>
