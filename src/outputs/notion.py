@@ -98,6 +98,7 @@ def _properties(item: ProcessedItem) -> dict:
         "StreamerInfluence": {"number": item.streamer_influence_score},
         "ClipVirality": {"number": item.clip_virality_score},
         "GameTrendFromStreamers": {"number": item.game_trend_from_streamers_score},
+        "LiveTrendScore": {"number": item.live_trend_score},
     }
 
 

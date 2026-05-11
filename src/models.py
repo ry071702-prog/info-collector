@@ -87,5 +87,6 @@ class ProcessedItem(BaseModel):
     streamer_influence_score: int = 0           # 0-100, 配信者界隈での話題量
     clip_virality_score: int = 0                # 0-100, 切り抜き拡散スコア
     game_trend_from_streamers_score: int = 0    # 0-100, 配信者起点のゲームトレンド
+    live_trend_score: int = 0                   # 0-100, Twitch 同接ベースの live トレンド
     freshness_score: int = 0                    # 0-100, タイムスタンプから自動計算
     final_priority: Importance = "C"            # importance + scores の合成結果

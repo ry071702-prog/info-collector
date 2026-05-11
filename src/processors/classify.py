@@ -10,6 +10,31 @@ from ..models import Flags, FilterResult, ProcessedItem, RawItem
 log = logger.get(__name__)
 
 
+def _live_trend_score(viewer_count: int | None) -> int:
+    """Twitch 同接ベースの live トレンドスコア 0-100。
+
+    バケット式（成長率ではなく絶対値ベース）:
+      <100        -> 0   （誰も見ていない / VOD 等）
+      100-1k      -> 30  （小規模コミュニティ）
+      1k-5k       -> 50  （まあまあ盛り上がり）
+      5k-20k      -> 70  （人気配信）
+      20k-100k    -> 90  （大型 / バズ）
+      100k+       -> 100 （歴史的ピーク級）
+    """
+    n = int(viewer_count or 0)
+    if n < 100:
+        return 0
+    if n < 1000:
+        return 30
+    if n < 5000:
+        return 50
+    if n < 20000:
+        return 70
+    if n < 100000:
+        return 90
+    return 100
+
+
 def _freshness_score(timestamp: datetime) -> int:
     """Compute freshness score 0-100 from item timestamp."""
     cfg = settings().get("scoring", {})
@@ -32,6 +57,7 @@ def _final_priority(
     streamer: int,
     virality: int,
     trend: int,
+    live: int = 0,
 ) -> str:
     """Compose S/A/B/C from importance + scores using configured weights."""
     cfg = settings().get("scoring", {})
@@ -42,6 +68,7 @@ def _final_priority(
         + streamer * cfg.get("weight_streamer", 0.15)
         + virality * cfg.get("weight_virality", 0.10)
         + trend * cfg.get("weight_trend", 0.05)
+        + live * cfg.get("weight_live", 0.10)
     )
     if composite >= cfg.get("final_S_threshold", 80):
         return "S"
@@ -112,7 +139,9 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
         virality = max(0, min(100, int(data.get("clip_virality_score") or 0)))
         trend = max(0, min(100, int(data.get("game_trend_from_streamers_score") or 0)))
         freshness = _freshness_score(item.timestamp)
-        final_pri = _final_priority(importance, freshness, streamer, virality, trend)
+        # live_trend_score: Twitch コレクターが extra.viewer_count を入れている前提（live のみ非0）
+        live = _live_trend_score(item.extra.get("viewer_count") if item.extra else 0)
+        final_pri = _final_priority(importance, freshness, streamer, virality, trend, live)
         return ProcessedItem(
             source_id=item.source_id,
             raw_fingerprint=item.fingerprint,
@@ -133,6 +162,7 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             streamer_influence_score=streamer,
             clip_virality_score=virality,
             game_trend_from_streamers_score=trend,
+            live_trend_score=live,
             freshness_score=freshness,
             final_priority=final_pri,
         )
