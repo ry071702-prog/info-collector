@@ -11,6 +11,30 @@ log = logger.get(__name__)
 
 _HEX32 = re.compile(r"([0-9a-fA-F]{32})")
 
+# Disney 専用: subcategory_id 先頭2文字 (DA-DO) → Notion 上の Category 表示名
+DISNEY_GROUP_LABELS: dict[str, str] = {
+    "DA": "公式発表・ニュース",
+    "DB": "映画・劇場公開",
+    "DC": "Disney+ 配信",
+    "DD": "テレビ番組・ドラマ",
+    "DE": "テーマパーク・リゾート",
+    "DF": "グッズ・コラボ・物販",
+    "DG": "キャラクター・IP展開",
+    "DH": "D23・ファンイベント",
+    "DI": "音楽・サウンドトラック",
+    "DJ": "ゲーム・アプリ・体験",
+    "DK": "キャスト・スタッフ",
+    "DL": "業界・ビジネス",
+    "DM": "ファン文化・考察",
+    "DN": "リーク・先行情報",
+    "DO": "トレーラー・予告映像",
+}
+
+
+def _disney_category_label(subcategory_id: str) -> str | None:
+    """DA1 のような技術 ID から 15 グループの日本語ラベルを返す。不明なら None。"""
+    return DISNEY_GROUP_LABELS.get(subcategory_id[:2].upper()) if subcategory_id else None
+
 
 def normalize_db_id(raw: str | None) -> str | None:
     """secret に URL がまるごと入っているケースを救済して UUID 形式に整形。"""
@@ -112,7 +136,7 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
 
     # Cache schema per DB so we only fetch once per run
     schema_cache: dict[str, set[str]] = {}
-    for db_id in (db_games, db_anime):
+    for db_id in (db_games, db_anime, db_disney):
         if db_id and db_id not in schema_cache:
             schema_cache[db_id] = _db_property_names(client, db_id)
 
@@ -128,6 +152,15 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
             continue
         allowed = schema_cache.get(db_id, set())
         props = _properties(it)
+        # Disney DB は Category 列を 15 グループ日本語ラベルに置換し、
+        # 元の DA1 等は SubcategoryRaw に退避（DB スキーマ側に列があれば書き込まれる）
+        if it.genre == "disney":
+            label = _disney_category_label(it.subcategory_id)
+            if label:
+                props["Category"] = {"select": {"name": label}}
+            props["SubcategoryRaw"] = {
+                "rich_text": [{"text": {"content": it.subcategory_id}}]
+            }
         if allowed:
             props = _filter_existing(props, allowed)
         try:
