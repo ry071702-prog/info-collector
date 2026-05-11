@@ -1,6 +1,8 @@
 """Two-stage classification: filter+genre then full extraction."""
 from __future__ import annotations
 import json
+import re
+from collections import Counter
 from datetime import datetime, timezone
 
 from .. import dedup, llm_client, logger, prompts, taxonomy
@@ -8,6 +10,11 @@ from ..config import settings
 from ..models import Flags, FilterResult, ProcessedItem, RawItem
 
 log = logger.get(__name__)
+
+_PINNED_GENRES = {"games", "anime", "disney"}
+_URL_ONLY_RE = re.compile(r"^(?:https?://\S+\s*)+$", re.IGNORECASE)
+_HASHTAG_RE = re.compile(r"#\w+", re.UNICODE)
+_WORD_RE = re.compile(r"[\w#]+", re.UNICODE)
 
 
 def _video_trend_score(view_count: int | None, timestamp: datetime) -> int:
@@ -115,7 +122,54 @@ def _final_priority(
     return "C"
 
 
+def _heuristic_prefilter(item: RawItem) -> FilterResult | None:
+    """明らかに情報価値がない raw だけを LLM 前に除外する。"""
+    text = (item.text or "").strip()
+    if not text:
+        return FilterResult(spam=True, genre="neither", confidence=1.0, reason="empty-text")
+    if _URL_ONLY_RE.fullmatch(text):
+        return FilterResult(spam=True, genre="neither", confidence=1.0, reason="url-only")
+    if len(text) < 30:
+        return FilterResult(spam=True, genre="neither", confidence=1.0, reason="too-short")
+
+    hashtags = _HASHTAG_RE.findall(text.lower())
+    if len(hashtags) >= 5 and len(set(hashtags)) == 1:
+        return FilterResult(spam=True, genre="neither", confidence=1.0, reason="repeated-hashtag")
+
+    words = _WORD_RE.findall(text.lower())
+    if len(words) >= 5:
+        word, count = Counter(words).most_common(1)[0]
+        if len(word) >= 2 and count / len(words) >= 0.6:
+            return FilterResult(spam=True, genre="neither", confidence=1.0, reason="repeated-word")
+
+    non_space = [ch for ch in text if not ch.isspace()]
+    if len(non_space) >= 30:
+        _, count = Counter(non_space).most_common(1)[0]
+        if count / len(non_space) >= 0.8:
+            return FilterResult(spam=True, genre="neither", confidence=1.0, reason="repeated-char")
+
+    return None
+
+
 def filter_and_genre(item: RawItem) -> FilterResult | None:
+    extra = item.extra or {}
+    source_type = str(extra.get("source_type") or item.account_type or "")
+    if source_type == "個人":
+        return FilterResult(spam=True, genre="neither", confidence=1.0, reason="personal-source-skip")
+
+    prefilter = _heuristic_prefilter(item)
+    if prefilter:
+        return prefilter
+
+    source_genre = str(extra.get("source_genre") or "")
+    if source_genre in _PINNED_GENRES:
+        return FilterResult(
+            spam=False,
+            genre=source_genre,  # type: ignore[arg-type]
+            confidence=1.0,
+            reason="watchlist-pinned",
+        )
+
     model = settings()["models"]["filter"]
     user = prompts.FILTER_USER.format(
         source=item.platform,
@@ -145,14 +199,8 @@ def should_classify(item: RawItem) -> bool:
     if item.fingerprint in _RECENT_RAW_FINGERPRINTS:
         return False
 
-    source_priority = str((item.extra or {}).get("source_priority") or "").lower()
-    if item.account_type != "個人" or source_priority == "high":
-        return True
-
-    freshness = _freshness_score(item.timestamp)
-    live = _live_trend_score(item.extra.get("viewer_count") if item.extra else 0)
-    video = _video_trend_score(item.extra.get("view_count") if item.extra else 0, item.timestamp)
-    return _final_priority("C", freshness, 0, 0, 0, live, video) != "C"
+    source_type = str((item.extra or {}).get("source_type") or item.account_type or "")
+    return source_type != "個人"
 
 
 def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:

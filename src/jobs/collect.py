@@ -60,9 +60,13 @@ def main(tier: str) -> None:
 
     # Write per-source jsonl
     source_priority = {source.id: source.priority for source in sources}
+    source_genre = {source.id: source.genre for source in sources}
+    source_type = {source.id: source.source_type for source in sources}
     by_source: dict[str, list] = {}
     for it in all_items:
         it.extra.setdefault("source_priority", source_priority.get(it.source_id, "medium"))
+        it.extra.setdefault("source_genre", source_genre.get(it.source_id, "neither"))
+        it.extra.setdefault("source_type", source_type.get(it.source_id, it.account_type))
         by_source.setdefault(it.source_id, []).append(it)
     for sid, items in by_source.items():
         write_raw(date_str, sid, items)
