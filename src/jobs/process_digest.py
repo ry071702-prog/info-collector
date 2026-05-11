@@ -5,12 +5,14 @@
 - 既に処理済みの fingerprint はスキップ（再開時に重複処理しない）
 - 連続して 0 件しか分類できない chunk が続いたら Gemini quota 切れと判断して early stop
 - 部分的な処理結果でも data/processed と Notion / Sheets には反映される
+- run 単位で classified=0 が 2 連続したら静かな破綻として ALERTS webhook へ警告
 """
 from __future__ import annotations
+import json
 from datetime import datetime, timedelta, timezone
 
 from .. import dedup, logger
-from ..config import settings
+from ..config import cache_dir, settings
 from ..models import RawItem
 from ..outputs import discord, markdown, notion, sheets
 from ..processors import classify, digest
@@ -21,6 +23,47 @@ JST = timezone(timedelta(hours=9))
 
 # 連続してこの数だけ「0件分類」chunk が続いたら quota 切れとみなして停止
 QUOTA_EXHAUSTED_EMPTY_CHUNKS = 2
+
+# run 単位の "0件処理" 連続検知。これを超えたら ALERTS webhook へ通知
+RUN_HISTORY_PATH = cache_dir() / "process_digest_runs.json"
+ZERO_CLASSIFY_ALERT_THRESHOLD = 2
+
+
+def _load_run_history() -> list[dict]:
+    """直近の run 結果履歴 (新しい順)。記録は最大 10 件保持。"""
+    if not RUN_HISTORY_PATH.exists():
+        return []
+    try:
+        data = json.loads(RUN_HISTORY_PATH.read_text(encoding="utf-8"))
+        return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def _save_run_record(classified: int, raw_window_count: int, stopped_early: bool) -> int:
+    """今回の run 結果を記録し、連続 0 件 run 数を返す。"""
+    history = _load_run_history()
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "classified": classified,
+        "raw_window_count": raw_window_count,
+        "stopped_early": stopped_early,
+    }
+    history.insert(0, record)
+    history = history[:10]
+    RUN_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RUN_HISTORY_PATH.write_text(json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    consecutive_zero = 0
+    for r in history:
+        # raw が 0 件の run は「処理対象なし」で除外 (静かな破綻ではない)
+        if r.get("raw_window_count", 0) == 0:
+            continue
+        if r.get("classified", 0) == 0:
+            consecutive_zero += 1
+        else:
+            break
+    return consecutive_zero
 
 
 def _phase(now_utc: datetime) -> tuple[str, str]:
@@ -151,6 +194,20 @@ def main() -> None:
         f"Notion {totals['notion_ok']} / Sheets {totals['sheets']}"
         + (" (quota切れで途中停止)" if stopped_early else ""),
     )
+
+    # run 履歴を記録し、連続 0 件 run が閾値以上なら ALERTS webhook へ警告
+    consecutive_zero = _save_run_record(
+        classified=totals["classified"],
+        raw_window_count=len(raw_items),
+        stopped_early=stopped_early,
+    )
+    if consecutive_zero >= ZERO_CLASSIFY_ALERT_THRESHOLD:
+        discord.post_message(
+            "DISCORD_WEBHOOK_ALERTS",
+            f"🚨 process_digest が **{consecutive_zero} 回連続** で 0 件処理。"
+            f"最新 run: {digest_date}-{digest_phase} / raw {len(raw_items)}件中 0件分類。"
+            f"\nGemini quota / filter ロジック / watchlist の点検を推奨。",
+        )
 
 
 if __name__ == "__main__":
