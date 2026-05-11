@@ -60,16 +60,15 @@ jobs:
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
-        env:
-          # Cloudflare API は長文/多バイトの commit message を invalid UTF-8 として
-          # rejectすることがあるため、明示的に短い ASCII メッセージを渡す。
-          DEPLOY_MSG: "deploy ${{ github.sha }}"
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Cloudflare API は長文/多バイトの commit message を invalid UTF-8 として
+          # reject することがあるため、明示的に短い ASCII (1単語) を渡す。
+          # commit-hash で十分追跡できるので message は静的でよい。
           command: >-
             pages deploy site/dist
             --project-name=info-collector
             --branch=main
             --commit-hash=${{ github.sha }}
-            --commit-message=${{ env.DEPLOY_MSG }}
+            --commit-message=ci
