@@ -41,3 +41,28 @@ DSY029,D23 YouTube,UC83IJ4TTV8pCCPkE42ptmGw,https://www.youtube.com/channel/UC83
 DSY030,The Walt Disney Company RSS,corporate-rss,https://thewaltdisneycompany.com/feed/,RSS,disney,公式,"DA,DL",high,TRUE,daily,en,Walt Disney Company コーポレートRSS (100件/feed, IR/組織/決算等)
 DSY031,Disney Parks Blog RSS,parks-blog-rss,https://disneyparks.disney.go.com/blog/feed/,RSS,disney,公式,"DE",high,TRUE,daily,en,Disney Parks Blog 公式RSS
 DSY032,D23 RSS,d23-rss,https://www.d23.com/feed/,RSS,disney,公式,"DA,DH",medium,TRUE,daily,en,D23 公式RSS
+W301,Nintendo of America YouTube,UCGIY_O-8vW4rfX98KlMkvRg,https://www.youtube.com/channel/UCGIY_O-8vW4rfX98KlMkvRg,YouTube,games,公式,"A,L,JJ",high,TRUE,daily,en,Nintendo of America 公式 (15件/feed)
+W312,Nintendo 公式日本 YouTube,UCkH3CcMfqww9RsZvPRPkAJA,https://www.youtube.com/channel/UCkH3CcMfqww9RsZvPRPkAJA,YouTube,games,公式,"A,L,JJ",high,TRUE,daily,ja,任天堂公式チャンネル 日本 (15件/feed)
+W302,PlayStation YouTube,UC-2Y8dQb0S6DtpxNgAKoJKA,https://www.youtube.com/channel/UC-2Y8dQb0S6DtpxNgAKoJKA,YouTube,games,公式,"A,L,JJ",high,TRUE,daily,en,PlayStation 公式 YouTube
+W303,Xbox YouTube,UCjBp_7RuDBUYbd1LegWEJ8g,https://www.youtube.com/channel/UCjBp_7RuDBUYbd1LegWEJ8g,YouTube,games,公式,"A,L,JJ",high,TRUE,daily,en,Xbox 公式 YouTube
+W304,Square Enix YouTube,UC6SmH9mR82nj28_NNg_rZvA,https://www.youtube.com/channel/UC6SmH9mR82nj28_NNg_rZvA,YouTube,games,公式,"A,L,GG",high,TRUE,daily,en,Square Enix 公式 YouTube
+W305,Atlus YouTube,UCDKOsemhPLrK4JnsZqkxHLA,https://www.youtube.com/channel/UCDKOsemhPLrK4JnsZqkxHLA,YouTube,games,公式,"A,L",medium,TRUE,daily,en,Atlus 公式 YouTube
+W306,Ubisoft YouTube,UC0KU8F9jJqSLS11LRXvFWmg,https://www.youtube.com/channel/UC0KU8F9jJqSLS11LRXvFWmg,YouTube,games,公式,"A,L,B",high,TRUE,daily,en,Ubisoft 公式 YouTube
+W307,IGN YouTube,UCKy1dAqELo0zrOtPkf0eTMw,https://www.youtube.com/channel/UCKy1dAqELo0zrOtPkf0eTMw,YouTube,games,メディア,"E,L,F",high,TRUE,daily,en,IGN ゲームメディア
+W308,GameSpot YouTube,UCbu2SsF-Or3Rsn3NxqODImw,https://www.youtube.com/channel/UCbu2SsF-Or3Rsn3NxqODImw,YouTube,games,メディア,"E,L,F",high,TRUE,daily,en,GameSpot ゲームメディア
+W309,4Gamer YouTube,UCmJlYZPlN2owjCmOIqJc79A,https://www.youtube.com/channel/UCmJlYZPlN2owjCmOIqJc79A,YouTube,games,メディア,"E,L,F",medium,TRUE,daily,ja,4Gamer 公式 YouTube
+W310,Bethesda Game Studios YouTube,UCL1OWQesYwsW0iioeKx-SnA,https://www.youtube.com/channel/UCL1OWQesYwsW0iioeKx-SnA,YouTube,games,公式,"A,L",medium,TRUE,daily,en,Bethesda Game Studios 公式
+W311,Steam (Valve) YouTube,UChmZ6QbxgHlmX3ISIHxIpQQ,https://www.youtube.com/channel/UChmZ6QbxgHlmX3ISIHxIpQQ,YouTube,games,公式,"A,L",medium,TRUE,daily,en,Steam / Valve 公式
+W401,電ファミニコゲーマー RSS,denfaminicogamer-rss,https://news.denfaminicogamer.jp/feed,RSS,games,メディア,"E,F,L",high,TRUE,daily,ja,電ファミニコゲーマー（50件/feed）
+W402,AUTOMATON RSS,automaton-rss,https://automaton-media.com/feed/,RSS,games,メディア,"E,F,L",high,TRUE,daily,ja,AUTOMATON（30件/feed）
+W403,IGN RSS,ign-rss,https://feeds.ign.com/ign/all,RSS,games,メディア,"E,F,L",medium,TRUE,daily,en,IGN 公式 RSS
+W701,TOHO animation YouTube,UC14Yc2Qv92DMuyNRlHvpo2Q,https://www.youtube.com/channel/UC14Yc2Qv92DMuyNRlHvpo2Q,YouTube,anime,公式,"M,EE,U",high,TRUE,daily,ja,東宝アニメーション 公式
+W702,KADOKAWAanime YouTube,UCY5fcqgSrQItPAX_Z5Frmwg,https://www.youtube.com/channel/UCY5fcqgSrQItPAX_Z5Frmwg,YouTube,anime,公式,"M,EE,U",high,TRUE,daily,ja,KADOKAWAanime 公式
+W703,WIT STUDIO YouTube,UCJDm9unHHbpgApjyf_aX2mQ,https://www.youtube.com/channel/UCJDm9unHHbpgApjyf_aX2mQ,YouTube,anime,公式,"M,EE,P",medium,TRUE,daily,ja,WIT STUDIO 公式 (@witstudio)
+W704,東映アニメーション YouTube,UCTTv0NxWnJsNzAY3Ivj61zg,https://www.youtube.com/channel/UCTTv0NxWnJsNzAY3Ivj61zg,YouTube,anime,公式,"M,N,EE",high,TRUE,daily,ja,東映アニメーション 公式
+W705,ufotable YouTube,UCRc3mprfrE8qaugB1VfQXiA,https://www.youtube.com/channel/UCRc3mprfrE8qaugB1VfQXiA,YouTube,anime,公式,"M,EE,P",medium,TRUE,daily,ja,ufotable 公式
+W706,Aniplex YouTube,UC14QT5j2nQI8lKBCGtrrBQA,https://www.youtube.com/channel/UC14QT5j2nQI8lKBCGtrrBQA,YouTube,anime,公式,"M,EE,U",high,TRUE,daily,ja,Aniplex 公式
+W707,MAPPA Official YouTube,UCgQwnbMmPDQOcj0jMR-ZeWg,https://www.youtube.com/channel/UCgQwnbMmPDQOcj0jMR-ZeWg,YouTube,anime,公式,"M,EE,P",medium,TRUE,daily,ja,MAPPA Official (@MAPPAofficial)
+W708,集英社 YouTube,UCgnSZkHnuex77VnanM9OFCQ,https://www.youtube.com/channel/UCgnSZkHnuex77VnanM9OFCQ,YouTube,anime,公式,"Q,R,M",medium,TRUE,daily,ja,集英社 公式
+W709,Manga Plus by Shueisha YouTube,UCWY_j7P657fyb69VFnXXQ0g,https://www.youtube.com/channel/UCWY_j7P657fyb69VFnXXQ0g,YouTube,anime,公式,"Q,PP,EE",medium,TRUE,daily,en,Manga Plus by Shueisha 公式 (週刊ジャンプ公式YouTubeが存在しないため Shueisha 公式 MangaPlus で代替)
+W710,Crunchyroll YouTube,UC6pGDc4bFGD1_36IKv3FnYg,https://www.youtube.com/channel/UC6pGDc4bFGD1_36IKv3FnYg,YouTube,anime,メディア,"M,OO,EE",high,TRUE,daily,en,Crunchyroll 海外配信
