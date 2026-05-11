@@ -45,7 +45,7 @@ jobs:
         run: |
           claude --print \
             --model claude-haiku-4-5 \
-            --max-turns 30 \
+            --max-turns 50 \
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(pytest:*),Bash(ruff:*),Bash(black:*),Bash(isort:*),Bash(pip:*),Bash(python3:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(date:*),Bash(echo:*),Bash(rm:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*)" \
             <<'PROMPT'
           あなたは info-collector プロジェクトの自動メンテナンス担当エージェントです。
