@@ -66,3 +66,7 @@ W707,MAPPA Official YouTube,UCgQwnbMmPDQOcj0jMR-ZeWg,https://www.youtube.com/cha
 W708,集英社 YouTube,UCgnSZkHnuex77VnanM9OFCQ,https://www.youtube.com/channel/UCgnSZkHnuex77VnanM9OFCQ,YouTube,anime,公式,"Q,R,M",medium,TRUE,daily,ja,集英社 公式
 W709,Manga Plus by Shueisha YouTube,UCWY_j7P657fyb69VFnXXQ0g,https://www.youtube.com/channel/UCWY_j7P657fyb69VFnXXQ0g,YouTube,anime,公式,"Q,PP,EE",medium,TRUE,daily,en,Manga Plus by Shueisha 公式 (週刊ジャンプ公式YouTubeが存在しないため Shueisha 公式 MangaPlus で代替)
 W710,Crunchyroll YouTube,UC6pGDc4bFGD1_36IKv3FnYg,https://www.youtube.com/channel/UC6pGDc4bFGD1_36IKv3FnYg,YouTube,anime,メディア,"M,OO,EE",high,TRUE,daily,en,Crunchyroll 海外配信
+TR001,YT急上昇 JP Gaming,JP,https://example.invalid/?category=20,YouTubeTrending,games,メディア,"FF,D",high,TRUE,daily,ja,日本の Gaming カテゴリ急上昇 (cat=20)
+TR002,YT急上昇 JP Film/Animation,JP,https://example.invalid/?category=1,YouTubeTrending,anime,メディア,"M,EE",medium,TRUE,daily,ja,日本の Film/Animation 急上昇 (cat=1)
+SR001,YT検索 Marvel 新作,Marvel 新作,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,ja,Marvel 関連動画検索
+SR002,YT検索 Disney+ 新作,Disney+ 新作,,YouTubeSearch,disney,メディア,"DC,DA,DO",medium,TRUE,daily,ja,Disney+ 新作動画検索
