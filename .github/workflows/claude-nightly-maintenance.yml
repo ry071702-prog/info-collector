@@ -29,7 +29,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: '--model claude-haiku-4-5 --max-turns 15'
+          claude_args: '--model claude-haiku-4-5 --max-turns 30'
           prompt: |
             あなたは info-collector プロジェクトの自動メンテナンス担当エージェントです。
 
@@ -76,3 +76,15 @@ jobs:
             4. 改善ポイント 3-5 個ピックアップ
             5. それぞれ別ブランチ + PR で実装
             6. 作業サマリ出力 (作成した PR の URL リスト + 対応しなかった問題)
+
+            # ⚠️ 重要 (必ず守る)
+            **このセッションは必ず最低1つの PR を作成して終わること。**
+            完璧な修繕でなくても、以下のいずれかを必ず実施して PR を出す:
+            - ruff/black による単純なフォーマット修正
+            - 1ファイル分のテスト追加
+            - 1パッケージの依存更新
+            - typo / docstring の改善
+            - 軽微な型ヒント追加
+
+            「特に問題なし」で終わらせない。最低でも 1 PR を必ず生成すること。
+            完璧主義より「小さく確実に1つ」を優先。
