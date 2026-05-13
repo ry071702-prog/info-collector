@@ -162,12 +162,13 @@ def filter_and_genre(item: RawItem) -> FilterResult | None:
         return prefilter
 
     source_genre = str(extra.get("source_genre") or "")
-    if source_genre in _PINNED_GENRES:
+    # 公式ソースのみ pin（信号対雑音比が高い）。メディア系は genre 横断するので Gemini フィルタで判定。
+    if source_genre in _PINNED_GENRES and source_type == "公式":
         return FilterResult(
             spam=False,
             genre=source_genre,  # type: ignore[arg-type]
             confidence=1.0,
-            reason="watchlist-pinned",
+            reason="watchlist-pinned-official",
         )
 
     model = settings()["models"]["filter"]
