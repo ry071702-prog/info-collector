@@ -51,9 +51,13 @@ def _guard_quota(model: str) -> None:
     if quota_exhausted(model):
         raise QuotaExhausted(f"Gemini daily quota exhausted for {model}")
 
-# Per-model RPM limits (free tier as of 2025).
-# Adjust if Google updates limits or you upgrade to paid tier.
+# Per-model RPM limits.
+# 2.5 系 (paid tier) は実質ほぼ無制限だが、過剰呼び出し防止のため抑えめに設定。
 RPM_LIMITS = {
+    "gemini-2.5-flash": 1000,
+    "gemini-2.5-flash-lite": 4000,
+    "gemini-2.5-pro": 150,
+    # legacy (互換用、新規発行 key では使えない)
     "gemini-2.0-flash": 15,
     "gemini-2.0-flash-lite": 30,
     "gemini-1.5-flash": 15,
@@ -61,6 +65,9 @@ RPM_LIMITS = {
     "gemini-1.5-pro": 2,
 }
 RPD_LIMITS = {
+    "gemini-2.5-flash": 1000000,
+    "gemini-2.5-flash-lite": 1000000,
+    "gemini-2.5-pro": 10000,
     "gemini-2.0-flash": 1500,
     "gemini-2.0-flash-lite": 1500,
     "gemini-1.5-flash": 1500,
