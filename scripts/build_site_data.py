@@ -26,6 +26,50 @@ PUBLIC_OUTPUT_PATH = SITE_PUBLIC_DIR / "articles.json"
 
 ALLOWED_GENRES = {"games", "anime", "disney"}
 PRIORITY_ORDER = {"S": 0, "A": 1, "B": 2, "C": 3}
+
+# 旧 pin バグの遺残対策: games 表示中で明らかにゲーム関連ワードを含まず
+# かつ非ゲーム領域のキーワードを含むものを表示から除外するヒューリスティック。
+# data/processed は archive として保持しつつ、site 表示のみで救う。
+_NON_GAMES_PATTERNS = re.compile(
+    r"(?:"
+    r"暗号資産|仮想通貨|ETF|IPO|決算|株式|株主|金融機関|金融商品|"
+    r"OpenAI|ChatGPT|Anthropic|生成AI|"
+    r"大学|専門学校|教育機関|学習管理システム|"
+    r"飲料|食品メーカー|値上げ|低価格戦略|"
+    r"ハッカー集団|セキュリティ事案|個人情報流出|"
+    r"選挙|国会|議員|政治家|"
+    r"気象|天気予報|地震|台風|"
+    r"iPhone|iOS|Android|macOS|"
+    r"Threads|Instagram|TikTok"
+    r")",
+    re.IGNORECASE,
+)
+_GAMES_PATTERNS = re.compile(
+    r"(?:"
+    r"ゲーム|プレイ|配信|esports|eスポーツ|Steam|Switch|PS5|Xbox|PlayStation|"
+    r"VTuber|ストリーマー|大会|発売|アップデート|DLC|アップデ|"
+    r"VALORANT|Apex|League of Legends|LoL|FF|ドラクエ|ポケモン|マイクラ|Minecraft|"
+    r"ガチャ|ソシャゲ|実況|攻略|RPG|FPS|MOBA|タイトル|キャラクター"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def _is_off_topic(genre: str, summary: str, title_tags) -> bool:
+    """旧 pin バグで games に流れ込んだ非ゲーム記事を除外。
+
+    games genre のみに適用。
+    非ゲームキーワードを含み、かつゲーム関連語を一切含まない場合に True。
+    """
+    if genre != "games":
+        return False
+    text_parts = [summary or ""]
+    if isinstance(title_tags, list):
+        text_parts.extend(str(t) for t in title_tags)
+    text = " ".join(text_parts)
+    if _NON_GAMES_PATTERNS.search(text) and not _GAMES_PATTERNS.search(text):
+        return True
+    return False
 RECENT_DAYS = 30
 REQUEST_TIMEOUT_SECONDS = 8.0
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
@@ -173,6 +217,10 @@ def build_article(raw: dict[str, Any], client: httpx.Client) -> Optional[dict[st
     genre = raw.get("genre")
     url = str(raw.get("url") or "")
     if genre not in ALLOWED_GENRES or not url:
+        return None
+
+    if _is_off_topic(genre, str(raw.get("summary") or ""), raw.get("title_tags")):
+        logger.debug("Drop off-topic from games: {}", str(raw.get("summary") or "")[:60])
         return None
 
     filename = cache_filename(url)

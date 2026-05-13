@@ -1,0 +1,42 @@
+name: Refilter Processed (one-shot)
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Target date YYYY-MM-DD (default: today UTC)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  refilter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Refilter
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 }}
+          GEMINI_API_KEY_3: ${{ secrets.GEMINI_API_KEY_3 }}
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+        run: |
+          if [ -n "${{ inputs.date }}" ]; then
+            python -m src.admin.refilter_processed "${{ inputs.date }}"
+          else
+            python -m src.admin.refilter_processed
+          fi
+      - name: Commit
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add data/processed
+          git diff --quiet --staged || git commit -m "refilter processed $(date -u +%FT%TZ)"
+          git pull --rebase --autostash
+          git push
