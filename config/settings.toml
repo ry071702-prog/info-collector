@@ -11,8 +11,10 @@ default_language = "ja"
 [models]
 # Gemini 2.5 系 (paid tier 前提)。
 # 2.0 系は 2026 年に新規ユーザー向け廃止のため利用不可。
+# 2.5-flash は thinking mode のため JSON 出力途中切れリスクあり →
+# JSON 出力系は thinking なしの flash-lite を採用。
 filter = "gemini-2.5-flash-lite"
-classify = "gemini-2.5-flash"
+classify = "gemini-2.5-flash-lite"
 dedup = "gemini-2.5-flash-lite"
 digest = "gemini-2.5-flash"
 weekly_report = "gemini-2.5-pro"

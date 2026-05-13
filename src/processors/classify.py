@@ -229,7 +229,7 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             model=model,
             system=system,
             user=user,
-            max_tokens=800,
+            max_tokens=2048,
         )
         flags = Flags(**data["flags"])
         importance = data["importance"]
