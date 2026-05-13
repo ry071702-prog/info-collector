@@ -11,3 +11,4 @@ tomli>=2.0.1
 tenacity>=9.0.0
 loguru>=0.7.2
 selectolax>=0.3.21
+pytest>=8.0.0
