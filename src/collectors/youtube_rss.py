@@ -11,6 +11,13 @@ from ..models import RawItem, WatchSource
 
 log = logger.get(__name__)
 
+# Google は default httpx UA (python-httpx/X.X) を一部チャンネル feed で
+# 404 として返すため、ブラウザ風 UA を明示。
+_USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
 
 def _rss_url(handle: str) -> str:
     """handle is either UC... channel ID or full URL."""
@@ -22,7 +29,7 @@ def _rss_url(handle: str) -> str:
 def _collect_channel(source: WatchSource, since: datetime) -> list[RawItem]:
     url = _rss_url(source.handle)
     try:
-        resp = httpx.get(url, timeout=20.0)
+        resp = httpx.get(url, timeout=20.0, headers={"User-Agent": _USER_AGENT})
         resp.raise_for_status()
     except httpx.HTTPStatusError as e:
         log.warning(f"YouTube RSS HTTP error for {source.handle}: {e.response.status_code}")

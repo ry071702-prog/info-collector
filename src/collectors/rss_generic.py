@@ -11,10 +11,21 @@ from ..models import RawItem, WatchSource
 
 log = logger.get(__name__)
 
+# default UA だと一部サイトで 403/404 を喰らうためブラウザ風 UA を明示
+_USER_AGENT = (
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
+
 
 def _collect_feed(source: WatchSource, since: datetime) -> list[RawItem]:
     try:
-        resp = httpx.get(source.url, timeout=20.0, follow_redirects=True)
+        resp = httpx.get(
+            source.url,
+            timeout=20.0,
+            follow_redirects=True,
+            headers={"User-Agent": _USER_AGENT},
+        )
         resp.raise_for_status()
     except (httpx.HTTPStatusError, httpx.RequestError) as e:
         log.warning(f"RSS error for {source.name}: {e}")
