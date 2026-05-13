@@ -70,3 +70,4 @@ TR001,YT急上昇 JP Gaming,JP,https://example.invalid/?category=20,YouTubeTrend
 TR002,YT急上昇 JP Film/Animation,JP,https://example.invalid/?category=1,YouTubeTrending,anime,メディア,"M,EE",medium,TRUE,daily,ja,日本の Film/Animation 急上昇 (cat=1)
 SR001,YT検索 Marvel 新作,Marvel 新作,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,ja,Marvel 関連動画検索
 SR002,YT検索 Disney+ 新作,Disney+ 新作,,YouTubeSearch,disney,メディア,"DC,DA,DO",medium,TRUE,daily,ja,Disney+ 新作動画検索
+DSY033,Star Wars 公式日本 YouTube,UCGzKKabQ36Chhas5nermAGA,https://www.youtube.com/channel/UCGzKKabQ36Chhas5nermAGA,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,ja,スター・ウォーズ公式 日本 (DSY007/DSY022 と連動、Mandalorian 等の映画情報)
