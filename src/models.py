@@ -51,7 +51,15 @@ class Flags(BaseModel):
     language: Literal["ja", "en", "multi"] = "ja"
     content_type: Literal["text", "image", "video", "live"] = "text"
     source_reliability: Literal["公式確定", "公式予告中", "信頼リーカー", "噂", "二次"] = "公式確定"
-    cross_genre: Literal["ゲーム単独", "アニメ単独", "両方"] = "ゲーム単独"
+    cross_genre: Literal[
+        "ゲーム単独",
+        "アニメ単独",
+        "Disney単独",
+        "両方",
+        "ゲーム+Disney",
+        "アニメ+Disney",
+        "その他",
+    ] = "ゲーム単独"
 
 
 class FilterResult(BaseModel):
