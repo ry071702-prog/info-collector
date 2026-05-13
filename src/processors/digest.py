@@ -1,6 +1,7 @@
 """Daily digest and weekly report generation via Claude."""
 from __future__ import annotations
 import json
+from collections import Counter
 from datetime import datetime, timedelta
 
 from .. import llm_client, logger, prompts
@@ -8,6 +9,33 @@ from ..config import settings
 from ..models import ProcessedItem
 
 log = logger.get(__name__)
+
+
+def cross_source_trends(items: list[ProcessedItem], min_count: int = 3, top_n: int = 10) -> list[tuple[str, int, list[ProcessedItem]]]:
+    """同じ entity_tag が複数 item に出ているものを上位 N 件返す。
+
+    Returns: [(entity, count, related_items), ...] count >= min_count 降順。
+    risk_level=high の item は集計から除外。
+    """
+    counts: Counter[str] = Counter()
+    by_entity: dict[str, list[ProcessedItem]] = {}
+    for it in items:
+        if it.risk_level == "high":
+            continue
+        for tag in it.entity_tags:
+            tag_n = tag.strip()
+            if not tag_n or len(tag_n) < 2:
+                continue
+            counts[tag_n] += 1
+            by_entity.setdefault(tag_n, []).append(it)
+    out = []
+    for entity, n in counts.most_common(top_n * 3):
+        if n < min_count:
+            break
+        out.append((entity, n, by_entity[entity][:5]))
+        if len(out) >= top_n:
+            break
+    return out
 
 
 def _items_to_json(items: list[ProcessedItem]) -> str:

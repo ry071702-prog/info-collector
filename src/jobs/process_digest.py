@@ -185,6 +185,17 @@ def main() -> None:
     elif stopped_early:
         log.info("Skipping digest generation due to early stop (quota likely exhausted)")
 
+    # Cross-source trend detection: 同じ entity_tag が 3 件以上の item で出ていれば「今日のトレンド」として通知
+    if processed_for_digest:
+        trends = digest.cross_source_trends(processed_for_digest, min_count=3, top_n=10)
+        if trends:
+            lines = [f"🔥 **今日の横断トレンド** ({digest_date}-{digest_phase})"]
+            for entity, count, related in trends:
+                sample = related[0]
+                lines.append(f"- **{entity}** ({count}件) — {sample.summary[:60]}")
+            discord.post_message("DISCORD_WEBHOOK_OPS", "\n".join(lines))
+            log.info(f"Cross-source trends: {len(trends)} entities posted")
+
     # Heartbeat
     status_emoji = "⚠️" if stopped_early else "✅"
     discord.post_message(

@@ -75,6 +75,10 @@ order = "date"        # date | relevance | viewCount | rating
 # videos.list (chart=mostPopular) 1 回 = 1 quota unit
 max_results = 30      # 1 リクエストあたり取得件数（最大 50）
 
+[collectors.x_search]
+# twscrape の search() でクエリごとに取得する件数。X_ACCOUNTS 必須。
+results_per_query = 30
+
 # ============================================================
 # データ保持期間（maintenance_monthly が古い分を削除）
 # ============================================================

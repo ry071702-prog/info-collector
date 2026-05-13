@@ -13,6 +13,7 @@ from .. import logger, watchlist
 from ..collectors import (
     rss_generic,
     twitch_api,
+    x_search,
     x_twscrape,
     youtube_rss,
     youtube_search,
@@ -50,6 +51,7 @@ def main(tier: str) -> None:
         ("twitch", twitch_api),
         ("rss", rss_generic),
         ("x", x_twscrape),
+        ("x_search", x_search),
     ]:
         try:
             items = collector.collect(sources, since)
