@@ -270,6 +270,11 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             video_trend_score=video,
             freshness_score=freshness,
             final_priority=final_pri,
+            streamer_name=str(data.get("streamer_name") or "")[:80],
+            streamer_group=str(data.get("streamer_group") or "")[:80],
+            is_clip=bool(data.get("is_clip", False)),
+            related_game_title=str(data.get("related_game_title") or "")[:120],
+            related_anime_title=str(data.get("related_anime_title") or "")[:120],
         )
     except llm_client.QuotaExhausted:
         raise

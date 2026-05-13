@@ -91,3 +91,9 @@ class ProcessedItem(BaseModel):
     video_trend_score: int = 0                  # 0-100, YouTube 動画の views/hour レート
     freshness_score: int = 0                    # 0-100, タイムスタンプから自動計算
     final_priority: Importance = "C"            # importance + scores の合成結果
+    # 配信者・切り抜き文脈の追加メタ（Gemini が判定可能なときに埋める）
+    streamer_name: str = ""                     # 該当配信者名（例: SHAKA, 兎田ぺこら）
+    streamer_group: str = ""                    # 所属（hololive, にじさんじ, Crazy Raccoon 等）
+    is_clip: bool = False                       # 切り抜き動画フラグ
+    related_game_title: str = ""                # 言及されているゲームタイトル
+    related_anime_title: str = ""               # 言及されているアニメ作品名

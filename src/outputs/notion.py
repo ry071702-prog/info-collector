@@ -100,6 +100,11 @@ def _properties(item: ProcessedItem) -> dict:
         "GameTrendFromStreamers": {"number": item.game_trend_from_streamers_score},
         "LiveTrendScore": {"number": item.live_trend_score},
         "VideoTrendScore": {"number": item.video_trend_score},
+        "StreamerName": {"rich_text": [{"text": {"content": item.streamer_name[:200]}}]} if item.streamer_name else {"rich_text": []},
+        "StreamerGroup": {"select": {"name": item.streamer_group}} if item.streamer_group else {"select": None},
+        "IsClip": {"checkbox": item.is_clip},
+        "RelatedGameTitle": {"rich_text": [{"text": {"content": item.related_game_title[:200]}}]} if item.related_game_title else {"rich_text": []},
+        "RelatedAnimeTitle": {"rich_text": [{"text": {"content": item.related_anime_title[:200]}}]} if item.related_anime_title else {"rich_text": []},
     }
 
 

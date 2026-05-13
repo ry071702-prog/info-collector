@@ -42,6 +42,11 @@ BETA_PROPS: dict[str, dict] = {
     "GameTrendFromStreamers": {"number": {"format": "number"}},
     "LiveTrendScore": {"number": {"format": "number"}},
     "VideoTrendScore": {"number": {"format": "number"}},
+    "StreamerName": {"rich_text": {}},
+    "StreamerGroup": {"select": {}},
+    "IsClip": {"checkbox": {}},
+    "RelatedGameTitle": {"rich_text": {}},
+    "RelatedAnimeTitle": {"rich_text": {}},
 }
 
 

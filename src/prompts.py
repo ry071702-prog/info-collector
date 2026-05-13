@@ -131,8 +131,22 @@ URL: {url}
   "risk_level": "low",
   "streamer_influence_score": 0,
   "clip_virality_score": 0,
-  "game_trend_from_streamers_score": 0
-}}"""
+  "game_trend_from_streamers_score": 0,
+  "streamer_name": "",
+  "streamer_group": "",
+  "is_clip": false,
+  "related_game_title": "",
+  "related_anime_title": ""
+}}
+
+【配信者文脈フィールド（該当する場合のみ埋める）】
+- streamer_name: 該当する配信者本人名（例: "SHAKA", "兎田ぺこら"）。複数なら主役 1 人
+- streamer_group: 所属事務所/グループ（例: "hololive", "にじさんじ", "Crazy Raccoon", "ぶいすぽ"）
+- is_clip: 切り抜き動画なら true（タイトルに「切り抜き」「【切り抜き】」等、または典型的な切り抜き構造）
+- related_game_title: 言及されているゲームタイトル（最も主役のもの 1 件）
+- related_anime_title: 言及されているアニメ/漫画タイトル（最も主役のもの 1 件）
+
+判定不能なフィールドは空文字 "" / false で構いません。"""
 
 # ============================================================
 # Daily digest generation
