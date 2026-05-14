@@ -71,3 +71,15 @@ TR002,YT急上昇 JP Film/Animation,JP,https://example.invalid/?category=1,YouTu
 SR001,YT検索 Marvel 新作,Marvel 新作,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,ja,Marvel 関連動画検索
 SR002,YT検索 Disney+ 新作,Disney+ 新作,,YouTubeSearch,disney,メディア,"DC,DA,DO",medium,TRUE,daily,ja,Disney+ 新作動画検索
 DSY033,Star Wars 公式日本 YouTube,UCGzKKabQ36Chhas5nermAGA,https://www.youtube.com/channel/UCGzKKabQ36Chhas5nermAGA,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,ja,スター・ウォーズ公式 日本 (DSY007/DSY022 と連動、Mandalorian 等の映画情報)
+DSY034,20th Century Studios YouTube,UC2-BeLxzUBSs0uSrmzWhJuQ,https://www.youtube.com/channel/UC2-BeLxzUBSs0uSrmzWhJuQ,YouTube,disney,公式,"DB,DO",high,TRUE,daily,en,20th Century Studios 公式 (Disney傘下、15件/feed)
+DSY035,Disney Channel YouTube,UCktaw9L-f65LzUUdjmCFkbQ,https://www.youtube.com/channel/UCktaw9L-f65LzUUdjmCFkbQ,YouTube,disney,公式,"DD,DG",medium,TRUE,daily,en,Disney Channel 公式
+DSY036,Disney Music YouTube,UCyJBuaK-Qqe4N5QNE1xn86A,https://www.youtube.com/channel/UCyJBuaK-Qqe4N5QNE1xn86A,YouTube,disney,公式,"DI",medium,TRUE,daily,en,Disney Music 公式
+DSY037,DisneyMusicVEVO YouTube,UCgwv23FVv3lqh567yagXfNg,https://www.youtube.com/channel/UCgwv23FVv3lqh567yagXfNg,YouTube,disney,公式,"DI,DO",medium,TRUE,daily,en,Disney Music VEVO 公式 MV
+DSY038,Hulu YouTube,UCE5mQnNl8Q4H2qcv4ikaXeA,https://www.youtube.com/channel/UCE5mQnNl8Q4H2qcv4ikaXeA,YouTube,disney,公式,"DC,DD",medium,TRUE,daily,en,Hulu 公式 (Disney系配信プラットフォーム)
+DSY039,National Geographic YouTube,UCpVm7bg6pXKo1Pr6k5kxG9A,https://www.youtube.com/channel/UCpVm7bg6pXKo1Pr6k5kxG9A,YouTube,disney,公式,"DD",medium,TRUE,daily,en,National Geographic 公式 (Disney傘下)
+DSY040,FX Networks YouTube,UC2dIDJBf9W88PxGm-uHZPaQ,https://www.youtube.com/channel/UC2dIDJBf9W88PxGm-uHZPaQ,YouTube,disney,公式,"DD",medium,TRUE,daily,en,FX Networks 公式 (Disney傘下)
+DSY041,Disneyland Paris YouTube,UC1t74cS15eURW0YCpsRaDuw,https://www.youtube.com/channel/UC1t74cS15eURW0YCpsRaDuw,YouTube,disney,公式,"DE",medium,TRUE,daily,en,Disneyland Paris 公式
+DSY042,Walt Disney Imagineering YouTube,UC4DavIB24rEr5waVY5AgZLg,https://www.youtube.com/channel/UC4DavIB24rEr5waVY5AgZLg,YouTube,disney,公式,"DE,DG",low,TRUE,daily,en,Walt Disney Imagineering 公式 (パーク技術)
+DSY043,Marvel Comics YouTube,UCkVeakgcYOh4TOSUl1uno4w,https://www.youtube.com/channel/UCkVeakgcYOh4TOSUl1uno4w,YouTube,disney,公式,"DG,DA",medium,TRUE,daily,en,Marvel Comics 公式
+DSY044,Disney On Ice YouTube,UCfCnkH0vIMVcPUmbgeBdryg,https://www.youtube.com/channel/UCfCnkH0vIMVcPUmbgeBdryg,YouTube,disney,公式,"DH,DF",low,TRUE,daily,en,Disney On Ice 公式 ライブショー
+DSY045,Searchlight Pictures YouTube,UCor9rW6PgxSQ9vUPWQdnaYQ,https://www.youtube.com/channel/UCor9rW6PgxSQ9vUPWQdnaYQ,YouTube,disney,公式,"DB",medium,TRUE,daily,en,Searchlight Pictures 公式 (Disney傘下インディーズ系)
