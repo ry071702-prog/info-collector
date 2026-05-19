@@ -66,43 +66,51 @@ def main(date_str: str | None = None) -> int:
     kept: list[ProcessedItem] = []
     rechecked = 0
     dropped = 0
+    FLUSH_EVERY = 50  # 50 件処理ごとに items.jsonl を書き出し（途中キャンセル耐性）
+
+    def _flush(reason: str) -> None:
+        with items_path.open("w", encoding="utf-8") as fh:
+            for x in kept:
+                fh.write(x.model_dump_json() + "\n")
+        log.info(f"FLUSH ({reason}): wrote {len(kept)} items so far")
 
     for it in items:
         source_type = source_type_by_id.get(it.source_id, "")
         if source_type != "メディア":
             kept.append(it)
-            continue
+        else:
+            rechecked += 1
+            try:
+                data = llm_client.call_json(
+                    model=model,
+                    system=prompts.FILTER_SYSTEM,
+                    user=_build_filter_user(it),
+                    max_tokens=256,
+                )
+                fr = FilterResult(**data)
+            except Exception as e:  # noqa: BLE001
+                log.warning(f"filter call failed for {it.url}: {e}; keeping item")
+                kept.append(it)
+                if rechecked % FLUSH_EVERY == 0:
+                    _flush(f"checkpoint @ rechecked={rechecked}")
+                continue
 
-        rechecked += 1
-        try:
-            data = llm_client.call_json(
-                model=model,
-                system=prompts.FILTER_SYSTEM,
-                user=_build_filter_user(it),
-                max_tokens=256,
-            )
-            fr = FilterResult(**data)
-        except Exception as e:  # noqa: BLE001
-            log.warning(f"filter call failed for {it.url}: {e}; keeping item")
-            kept.append(it)
-            continue
+            if fr.spam:
+                log.info(f"DROP spam: [{it.source_id}] {it.summary[:60]}")
+                dropped += 1
+            elif fr.genre == "neither":
+                log.info(f"DROP neither: [{it.source_id}] {it.summary[:60]}")
+                dropped += 1
+            elif fr.genre == it.genre:
+                # 既存 genre と一致するなら維持
+                kept.append(it)
+            else:
+                # genre 訂正で済む場合: ジャンルだけ書き換え
+                log.info(f"FIX genre: [{it.source_id}] {it.genre} -> {fr.genre}: {it.summary[:60]}")
+                kept.append(it.model_copy(update={"genre": fr.genre}))
 
-        if fr.spam:
-            log.info(f"DROP spam: [{it.source_id}] {it.summary[:60]}")
-            dropped += 1
-            continue
-        if fr.genre == "neither":
-            log.info(f"DROP neither: [{it.source_id}] {it.summary[:60]}")
-            dropped += 1
-            continue
-        # 既存 genre と一致するなら維持
-        if fr.genre == it.genre:
-            kept.append(it)
-            continue
-        # genre 訂正で済む場合: ジャンルだけ書き換え（出力 DB 振り分け修正）
-        log.info(f"FIX genre: [{it.source_id}] {it.genre} -> {fr.genre}: {it.summary[:60]}")
-        it = it.model_copy(update={"genre": fr.genre})
-        kept.append(it)
+            if rechecked % FLUSH_EVERY == 0:
+                _flush(f"checkpoint @ rechecked={rechecked}")
 
     log.info(f"summary: total={len(items)} rechecked={rechecked} dropped={dropped} kept={len(kept)}")
 
