@@ -68,13 +68,23 @@ def main(date_str: str | None = None) -> int:
     dropped = 0
     FLUSH_EVERY = 50  # 50 件処理ごとに items.jsonl を書き出し（途中キャンセル耐性）
 
-    def _flush(reason: str) -> None:
-        with items_path.open("w", encoding="utf-8") as fh:
-            for x in kept:
-                fh.write(x.model_dump_json() + "\n")
-        log.info(f"FLUSH ({reason}): wrote {len(kept)} items so far")
+    # checkpoint で「処理済 kept + 未処理 remainder」を書き戻すため、
+    # 元 items のインデックスを把握する必要がある。current_idx を outer scope で持つ。
+    current_idx = [0]
 
-    for it in items:
+    def _flush(reason: str) -> None:
+        # 未処理分を items から拾って kept にぶら下げる（順序は元と同じになる）
+        remainder = items[current_idx[0] + 1 :]
+        snapshot = kept + remainder
+        with items_path.open("w", encoding="utf-8") as fh:
+            for x in snapshot:
+                fh.write(x.model_dump_json() + "\n")
+        log.info(
+            f"FLUSH ({reason}): wrote kept={len(kept)} + remainder={len(remainder)} = {len(snapshot)}"
+        )
+
+    for idx, it in enumerate(items):
+        current_idx[0] = idx
         source_type = source_type_by_id.get(it.source_id, "")
         if source_type != "メディア":
             kept.append(it)

@@ -79,7 +79,11 @@ def _properties(item: ProcessedItem) -> dict:
     - ClipVirality (number): 0-100
     - GameTrendFromStreamers (number): 0-100
     """
-    tags = list({*item.title_tags, *item.entity_tags})[:50]
+    # Tags は multi_select だと unique values が DB schema を肥大化させ
+    # 489KB 上限に到達するため、rich_text に切り替え (新カラム名 TagsText)。
+    # 旧 Tags multi_select は schema 上残るが新規書き込みでは触らない。
+    tags = list({*item.title_tags, *item.entity_tags})[:20]
+    tags_text = ", ".join(t for t in tags if t)[:1900]
     return {
         "Title": {"title": [{"text": {"content": item.summary[:200]}}]},
         "Importance": {"select": {"name": item.importance}},
@@ -88,7 +92,7 @@ def _properties(item: ProcessedItem) -> dict:
         "URL": {"url": item.url or None},
         "Author": {"rich_text": [{"text": {"content": item.author}}]},
         "Timestamp": {"date": {"start": item.timestamp.isoformat()}},
-        "Tags": {"multi_select": [{"name": t[:100]} for t in tags if t]},
+        "TagsText": {"rich_text": [{"text": {"content": tags_text}}]} if tags_text else {"rich_text": []},
         "Spoiler": {"select": {"name": item.flags.spoiler}},
         "Source": {"select": {"name": item.flags.source_role}},
         "DedupKey": {"rich_text": [{"text": {"content": item.dedup_key[:200]}}]},

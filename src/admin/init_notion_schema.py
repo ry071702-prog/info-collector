@@ -47,6 +47,7 @@ BETA_PROPS: dict[str, dict] = {
     "IsClip": {"checkbox": {}},
     "RelatedGameTitle": {"rich_text": {}},
     "RelatedAnimeTitle": {"rich_text": {}},
+    "TagsText": {"rich_text": {}},
 }
 
 

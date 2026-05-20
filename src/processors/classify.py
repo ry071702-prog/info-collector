@@ -13,6 +13,37 @@ log = logger.get(__name__)
 
 _PINNED_GENRES = {"games", "anime", "disney"}
 _URL_ONLY_RE = re.compile(r"^(?:https?://\S+\s*)+$", re.IGNORECASE)
+
+# Gemini が稀に Literal 外の値を返すので、安全な既定値に丸めるホワイトリスト
+_VALID_SPOILER = {"なし", "軽微", "重大"}
+_VALID_CROSS_GENRE = {
+    "ゲーム単独", "アニメ単独", "Disney単独", "両方", "ゲーム+Disney", "アニメ+Disney", "その他",
+}
+_VALID_SPEED = {"速報", "通常", "アーカイブ"}
+_VALID_CONTENT_TYPE = {"text", "image", "video", "live"}
+_VALID_SOURCE_RELIABILITY = {"公式確定", "公式予告中", "信頼リーカー", "噂", "二次"}
+_VALID_LANGUAGE = {"ja", "en", "multi"}
+_VALID_SOURCE_ROLE = {"公式", "メディア", "個人", "リーカー", "大会", "VTuber"}
+
+
+def _coerce_flags(raw: dict | None) -> dict:
+    """Gemini 出力の Flags を安全な既定値に丸める（Literal バリデーション失敗を防ぐ）。"""
+    out = dict(raw or {})
+    if out.get("spoiler") not in _VALID_SPOILER:
+        out["spoiler"] = "なし"
+    if out.get("cross_genre") not in _VALID_CROSS_GENRE:
+        out["cross_genre"] = "その他"
+    if out.get("speed") not in _VALID_SPEED:
+        out["speed"] = "通常"
+    if out.get("content_type") not in _VALID_CONTENT_TYPE:
+        out["content_type"] = "text"
+    if out.get("source_reliability") not in _VALID_SOURCE_RELIABILITY:
+        out["source_reliability"] = "公式確定"
+    if out.get("language") not in _VALID_LANGUAGE:
+        out["language"] = "ja"
+    if out.get("source_role") not in _VALID_SOURCE_ROLE:
+        out["source_role"] = "メディア"
+    return out
 _HASHTAG_RE = re.compile(r"#\w+", re.UNICODE)
 _WORD_RE = re.compile(r"[\w#]+", re.UNICODE)
 
@@ -232,7 +263,7 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             user=user,
             max_tokens=2048,
         )
-        flags = Flags(**data["flags"])
+        flags = Flags(**_coerce_flags(data.get("flags")))
         importance = data["importance"]
         risk_level = data.get("risk_level", "low") if data.get("risk_level") in ("low", "middle", "high") else "low"
         streamer = max(0, min(100, int(data.get("streamer_influence_score") or 0)))

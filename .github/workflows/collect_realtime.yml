@@ -39,5 +39,9 @@ jobs:
           git config user.name "github-actions"
           git add data/raw data/cache data/logs || true
           git diff --quiet --staged || git commit -m "raw data $(date -u +%FT%TZ) [realtime]"
-          git pull --rebase --autostash
-          git push
+          for i in 1 2 3; do
+            git pull --rebase --autostash -X theirs && git push && break
+            echo "push attempt $i failed; retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
