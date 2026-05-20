@@ -1,0 +1,24 @@
+{
+  "name": "情報収集 - Info Collector",
+  "short_name": "Info",
+  "description": "ゲーム、アニメ、Disney の重要ニュースを集約する info-collector サイト。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

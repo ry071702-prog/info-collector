@@ -6,28 +6,51 @@ interface Props {
 const { showRange = false } = Astro.props;
 ---
 
-<div class="mb-5 flex flex-wrap items-center gap-3" data-article-controls>
+<div class="mb-5 flex flex-col gap-3" data-article-controls data-show-range={String(showRange)}>
   <div class="flex flex-wrap items-center gap-3">
-    <div class="inline-flex overflow-hidden rounded-md border border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900">
-      <button type="button" class="article-control-button" data-sort-button="new" aria-pressed="true">新着順</button>
-      <button type="button" class="article-control-button" data-sort-button="priority" aria-pressed="false">優先度順</button>
-    </div>
-    {
-      showRange && (
-        <div class="inline-flex overflow-hidden rounded-md border border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-900">
-          <button type="button" class="article-control-button" data-range-button="12" aria-pressed="false">12h</button>
-          <button type="button" class="article-control-button" data-range-button="24" aria-pressed="false">24h</button>
-          <button type="button" class="article-control-button" data-range-button="168" aria-pressed="false">7d</button>
-          <button type="button" class="article-control-button" data-range-button="720" aria-pressed="true">30d</button>
-        </div>
-      )
-    }
+    <label class="flex items-center gap-2">
+      <span class="text-sm font-medium text-slate-600 dark:text-slate-300">並び順</span>
+      <select class="article-control-field h-10 pr-8" data-sort-select>
+        <option value="new">新着順</option>
+        <option value="importance">重要度順</option>
+      </select>
+    </label>
+    <label class="flex items-center gap-2">
+      <span class="text-sm font-medium text-slate-600 dark:text-slate-300">期間</span>
+      <select class="article-control-field h-10 pr-8" data-period-select>
+        <option value="all">全期間</option>
+        <option value="24h">過去24h</option>
+        <option value="7d">7d</option>
+        <option value="30d">30d</option>
+      </select>
+    </label>
+    <details class="relative" data-tag-filter>
+      <summary class="article-control-field flex h-10 cursor-pointer list-none items-center gap-2">
+        タグ
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400" data-tag-count>0</span>
+      </summary>
+      <div class="article-filter-panel max-h-80 overflow-y-auto" data-tag-options></div>
+    </details>
+    <details class="relative" data-source-filter>
+      <summary class="article-control-field flex h-10 cursor-pointer list-none items-center gap-2">
+        Source
+        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400" data-source-count>0</span>
+      </summary>
+      <div class="article-filter-panel" data-source-options></div>
+    </details>
+    <button
+      type="button"
+      class="h-10 rounded-md border border-slate-200 px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+      data-clear-filters
+    >
+      フィルタクリア
+    </button>
   </div>
-  <label class="flex min-w-0 flex-1 items-center gap-2 sm:max-w-md">
+  <label class="flex min-w-0 items-center gap-2 sm:max-w-xl">
     <span class="sr-only">記事検索</span>
     <input
       type="search"
-      class="min-w-48 flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-slate-600 dark:focus:ring-slate-800"
+      class="article-control-field min-w-48 flex-1 placeholder:text-slate-400 dark:placeholder:text-slate-500"
       placeholder="タイトル・要約・タグで検索..."
       autocomplete="off"
       data-search-input

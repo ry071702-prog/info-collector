@@ -3,30 +3,37 @@ import ArticleControls from "../../components/ArticleControls.astro";
 import NewsCard from "../../components/NewsCard.astro";
 import NewsCardSkeleton from "../../components/NewsCardSkeleton.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { articlesByGenre } from "../../lib/articles";
+import { allArticles } from "../../lib/articles";
 
-const articles = articlesByGenre("disney");
+const articles = allArticles();
 ---
 
-<BaseLayout title="Disney">
+<BaseLayout title="お気に入り">
   <section class="mb-6">
-    <h1 class="text-3xl font-bold tracking-tight">Disney</h1>
-    <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">直近30日の Disney ニュース全件。</p>
+    <h1 class="text-3xl font-bold tracking-tight">お気に入り</h1>
+    <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">このブラウザで⭐したニュース。</p>
   </section>
   <ArticleControls showRange />
+  <p
+    class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400"
+    data-favorites-empty
+    hidden
+  >
+    まだ⭐していません
+  </p>
   {
     articles.length > 0 ? (
       <>
         <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-skeletons>
           <NewsCardSkeleton count={8} />
         </div>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list data-favorites-list>
           {articles.map((article) => <NewsCard article={article} />)}
         </div>
       </>
     ) : (
       <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        表示できる Disney ニュースはまだありません。
+        まだ⭐していません
       </p>
     )
   }

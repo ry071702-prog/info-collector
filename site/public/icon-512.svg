@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Info Collector">
+  <rect width="512" height="512" rx="96" fill="#020617"/>
+  <path d="M128 144h256v38H128zM128 238h256v38H128zM128 332h166v38H128z" fill="#38bdf8"/>
+  <circle cx="371" cy="350" r="35" fill="#f8fafc"/>
+  <path d="M368 266v58" stroke="#f8fafc" stroke-width="32" stroke-linecap="round"/>
+</svg>

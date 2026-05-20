@@ -15,6 +15,8 @@ const { title, description = "X / YouTube / Twitch から収集したゲーム�
 const pageTitle = `${title} | info-collector`;
 const basePath = import.meta.env.BASE_URL;
 const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+const manifestPath = `${homePath}manifest.json`;
+const icon192Path = `${homePath}icon-192.svg`;
 const siteData = loadSiteData();
 const generatedAt = siteData.generated_at ? new Date(siteData.generated_at) : null;
 const generatedLabel =
@@ -38,22 +40,72 @@ const window12hCount = siteData.window_12h_count ?? 0;
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="application-name" content="info-collector" />
+    <meta name="apple-mobile-web-app-title" content="Info" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#020617" />
+    <link rel="manifest" href={manifestPath} />
+    <link rel="icon" href={icon192Path} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={icon192Path} />
     <title>{pageTitle}</title>
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem("theme");
+        const theme = stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.classList.add("js");
+        document.documentElement.classList.toggle("dark", theme === "dark" || (theme === "system" && prefersDark));
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
   </head>
   <body>
     <UpdateToast generatedAt={siteData.generated_at ?? ""} articleCount={siteData.articles.length} />
     <header class="border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90">
       <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8">
-        <div>
-          <a href={homePath} class="text-2xl font-bold tracking-tight">
-            info-collector
-          </a>
-          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            ゲーム、アニメ、Disney の重要ニュースを30日分から集約
-          </p>
-          <p class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-            最終更新: {generatedLabel} JST · 直近 12 時間で {window12hCount} 件追加
-          </p>
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <a href={homePath} class="text-2xl font-bold tracking-tight">
+              info-collector
+            </a>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+              ゲーム、アニメ、Disney の重要ニュースを30日分から集約
+            </p>
+            <p class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+              最終更新: {generatedLabel} JST · 直近 12 時間で {window12hCount} 件追加
+            </p>
+          </div>
+          <div class="flex items-center gap-2 sm:justify-end">
+            <button
+              type="button"
+              class="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:focus:ring-slate-700"
+              data-reset-reads
+            >
+              既読履歴をリセット
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:focus:ring-slate-700"
+              data-theme-toggle
+              aria-label="テーマを切り替え"
+            >
+              <svg data-theme-icon="light" class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+              </svg>
+              <svg data-theme-icon="dark" class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"></path>
+              </svg>
+            </button>
+            <label class="sr-only" for="theme-select">テーマ</label>
+            <select id="theme-select" class="article-control-field h-10 pr-8" data-theme-select>
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
         </div>
         <CategoryNav currentPath={Astro.url.pathname} />
       </div>
@@ -63,5 +115,182 @@ const window12hCount = siteData.window_12h_count ?? 0;
     </main>
     <script type="module" src={articleControlsUrl}></script>
     <script type="module" src={livePollUrl}></script>
+    <div
+      data-shortcut-help
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/70 px-4 py-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="shortcut-help-title"
+    >
+      <div class="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 shadow-xl dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-4 flex items-start justify-between gap-4">
+          <h2 id="shortcut-help-title" class="text-lg font-bold text-slate-950 dark:text-white">キーボードショートカット</h2>
+          <button
+            type="button"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:focus:ring-slate-700"
+            data-shortcut-help-close
+            aria-label="ショートカットヘルプを閉じる"
+          >
+            ×
+          </button>
+        </div>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
+          <dt class="font-mono font-bold text-slate-950 dark:text-white">j / ↓</dt>
+          <dd class="text-slate-600 dark:text-slate-300">次の記事カードへ移動</dd>
+          <dt class="font-mono font-bold text-slate-950 dark:text-white">k / ↑</dt>
+          <dd class="text-slate-600 dark:text-slate-300">前の記事カードへ移動</dd>
+          <dt class="font-mono font-bold text-slate-950 dark:text-white">Enter</dt>
+          <dd class="text-slate-600 dark:text-slate-300">選択中の記事を新しいタブで開く</dd>
+          <dt class="font-mono font-bold text-slate-950 dark:text-white">/</dt>
+          <dd class="text-slate-600 dark:text-slate-300">検索ボックスへ移動</dd>
+          <dt class="font-mono font-bold text-slate-950 dark:text-white">?</dt>
+          <dd class="text-slate-600 dark:text-slate-300">このヘルプを表示</dd>
+          <dt class="font-mono font-bold text-slate-950 dark:text-white">Esc</dt>
+          <dd class="text-slate-600 dark:text-slate-300">ヘルプを閉じる</dd>
+        </dl>
+      </div>
+    </div>
+    <script is:inline define:vars={{ basePath }}>
+      (() => {
+        if (!("serviceWorker" in navigator)) return;
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register(`${basePath}sw.js`, { scope: basePath }).catch((error) => {
+            console.warn("Service Worker registration failed:", error);
+          });
+        });
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        let focusedIndex = -1;
+        let previousFocus = null;
+        const activeClass = ["ring-2", "ring-blue-500", "ring-offset-2", "ring-offset-slate-50", "dark:ring-offset-slate-950"];
+
+        const isEditableTarget = (target) => {
+          const element = target instanceof Element ? target : null;
+          return Boolean(element?.closest("input, textarea, select, [contenteditable='true']"));
+        };
+        const visibleCards = () =>
+          Array.from(document.querySelectorAll("[data-article-card]")).filter((card) => {
+            if (!(card instanceof HTMLElement)) return false;
+            if (card.hidden || card.getAttribute("aria-hidden") === "true") return false;
+            if (card.offsetParent === null) return false;
+            return getComputedStyle(card).display !== "none";
+          });
+        const clearArticleFocus = () => {
+          document.querySelectorAll("[data-article-card]").forEach((card) => card.classList.remove(...activeClass));
+        };
+        const focusCard = (index) => {
+          const cards = visibleCards();
+          if (cards.length === 0) return;
+          focusedIndex = Math.max(0, Math.min(index, cards.length - 1));
+          const card = cards[focusedIndex];
+          clearArticleFocus();
+          card.classList.add(...activeClass);
+          card.focus({ preventScroll: true });
+          card.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        };
+        const moveFocus = (direction) => {
+          const cards = visibleCards();
+          if (cards.length === 0) return;
+          const active = document.activeElement?.closest?.("[data-article-card]");
+          const currentIndex = active ? cards.indexOf(active) : focusedIndex;
+          const nextIndex = currentIndex < 0 ? (direction > 0 ? 0 : cards.length - 1) : currentIndex + direction;
+          focusCard((nextIndex + cards.length) % cards.length);
+        };
+        const openFocusedArticle = () => {
+          const cards = visibleCards();
+          const active = document.activeElement?.closest?.("[data-article-card]");
+          const card = active ?? cards[focusedIndex];
+          const link = card?.querySelector("[data-article-link]");
+          if (link instanceof HTMLAnchorElement && link.href) {
+            window.open(link.href, "_blank", "noopener,noreferrer");
+          }
+        };
+        const help = document.querySelector("[data-shortcut-help]");
+        const closeButton = document.querySelector("[data-shortcut-help-close]");
+        const openHelp = () => {
+          if (!(help instanceof HTMLElement)) return;
+          previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+          help.classList.remove("hidden");
+          help.classList.add("flex");
+          closeButton?.focus();
+        };
+        const closeHelp = () => {
+          if (!(help instanceof HTMLElement)) return;
+          help.classList.add("hidden");
+          help.classList.remove("flex");
+          previousFocus?.focus?.();
+        };
+
+        closeButton?.addEventListener("click", closeHelp);
+        help?.addEventListener("click", (event) => {
+          if (event.target === help) closeHelp();
+        });
+        document.addEventListener("focusin", (event) => {
+          const card = event.target instanceof Element ? event.target.closest("[data-article-card]") : null;
+          if (!card) return;
+          const cards = visibleCards();
+          focusedIndex = cards.indexOf(card);
+          clearArticleFocus();
+          card.classList.add(...activeClass);
+        });
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && help instanceof HTMLElement && !help.classList.contains("hidden")) {
+            event.preventDefault();
+            closeHelp();
+            return;
+          }
+          if (help instanceof HTMLElement && !help.classList.contains("hidden")) return;
+          if (isEditableTarget(event.target)) return;
+
+          if (event.key === "j" || event.key === "ArrowDown") {
+            event.preventDefault();
+            moveFocus(1);
+          } else if (event.key === "k" || event.key === "ArrowUp") {
+            event.preventDefault();
+            moveFocus(-1);
+          } else if (event.key === "Enter") {
+            openFocusedArticle();
+          } else if (event.key === "/") {
+            const searchInput = document.querySelector("[data-search-input]");
+            if (searchInput instanceof HTMLInputElement) {
+              event.preventDefault();
+              searchInput.focus();
+              searchInput.select();
+            }
+          } else if (event.key === "?") {
+            event.preventDefault();
+            openHelp();
+          }
+        });
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        const select = document.querySelector("[data-theme-select]");
+        const toggle = document.querySelector("[data-theme-toggle]");
+        const media = window.matchMedia("(prefers-color-scheme: dark)");
+        const readTheme = () => {
+          const value = localStorage.getItem("theme");
+          return value === "light" || value === "dark" || value === "system" ? value : "system";
+        };
+        const applyTheme = (theme) => {
+          const isDark = theme === "dark" || (theme === "system" && media.matches);
+          document.documentElement.classList.toggle("dark", isDark);
+          document.documentElement.dataset.theme = theme;
+          localStorage.setItem("theme", theme);
+          if (select) select.value = theme;
+        };
+        const nextTheme = (theme) => (theme === "dark" ? "light" : "dark");
+
+        applyTheme(readTheme());
+        select?.addEventListener("change", () => applyTheme(select.value));
+        toggle?.addEventListener("click", () => applyTheme(nextTheme(readTheme())));
+        media.addEventListener("change", () => {
+          if (readTheme() === "system") applyTheme("system");
+        });
+      })();
+    </script>
   </body>
 </html>
