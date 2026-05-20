@@ -10,6 +10,23 @@ from ..models import ProcessedItem
 log = logger.get(__name__)
 
 _HEX32 = re.compile(r"([0-9a-fA-F]{32})")
+_MISSING_PROPERTY_RE = re.compile(
+    r'"?([A-Za-z][\w]*)"? is not a property that exists',
+    re.IGNORECASE,
+)
+_CORE_SAFE_PROPS: set[str] = {
+    "Title",
+    "Importance",
+    "Category",
+    "Genre",
+    "URL",
+    "Author",
+    "Timestamp",
+    "Tags",
+    "Spoiler",
+    "Source",
+    "DedupKey",
+}
 
 # Disney 専用: subcategory_id 先頭2文字 (DA-DO) → Notion 上の Category 表示名
 DISNEY_GROUP_LABELS: dict[str, str] = {
@@ -120,10 +137,66 @@ def _filter_existing(props: dict, allowed: set[str]) -> dict:
 def _db_property_names(client, db_id: str) -> set[str]:
     try:
         schema = client.databases.retrieve(database_id=db_id)
-        return set(schema.get("properties", {}).keys())
+        properties = set(schema.get("properties", {}).keys())
+        log.info(f"Notion DB schema retrieved: {len(properties)} properties")
+        return properties
     except Exception as e:  # noqa: BLE001
+        log.warning(f"Notion DB schema retrieve FAILED for {db_id}; using fallback property set")
         log.warning(f"Could not retrieve Notion DB schema for {db_id}: {e}")
         return set()
+
+
+def _is_api_response_error(error: Exception) -> bool:
+    try:
+        from notion_client.errors import APIResponseError
+
+        return isinstance(error, APIResponseError)
+    except Exception:  # noqa: BLE001
+        return error.__class__.__name__ == "APIResponseError"
+
+
+def _missing_property_names(error: Exception) -> set[str]:
+    if not _is_api_response_error(error):
+        return set()
+    message = str(error)
+    if "is not a property that exists" not in message:
+        return set()
+    return set(_MISSING_PROPERTY_RE.findall(message))
+
+
+def _create_page_with_retry(client, db_id: str, props: dict, dedup_key: str) -> tuple[bool, set[str]]:
+    dropped: set[str] = set()
+    try:
+        client.pages.create(parent={"database_id": db_id}, properties=props)
+        return True, dropped
+    except Exception as e:  # noqa: BLE001
+        missing = _missing_property_names(e)
+        if not missing:
+            log.warning(f"Notion write failed for {dedup_key}: {e}")
+            return False, dropped
+
+        retry_props = dict(props)
+        for key in missing:
+            if key in retry_props:
+                retry_props.pop(key, None)
+                dropped.add(key)
+        if not dropped:
+            log.warning(f"Notion write failed for {dedup_key}: {e}")
+            return False, dropped
+
+        log.warning(
+            f"Notion write failed for {dedup_key}; dropping missing properties "
+            f"{sorted(dropped)} and retrying once: {e}"
+        )
+        try:
+            client.pages.create(parent={"database_id": db_id}, properties=retry_props)
+            return True, dropped
+        except Exception as retry_error:  # noqa: BLE001
+            log.error(
+                f"Notion write retry failed for {dedup_key}: {retry_error}; "
+                f"original_props={props}"
+            )
+            return False, dropped
 
 
 def write(items: list[ProcessedItem]) -> tuple[int, int]:
@@ -149,7 +222,7 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
     schema_cache: dict[str, set[str]] = {}
     for db_id in (db_games, db_anime, db_disney):
         if db_id and db_id not in schema_cache:
-            schema_cache[db_id] = _db_property_names(client, db_id)
+            schema_cache[db_id] = _db_property_names(client, db_id) or _CORE_SAFE_PROPS.copy()
 
     success, failed = 0, 0
     for it in items:
@@ -161,7 +234,7 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
             db_id = db_games
         if not db_id:
             continue
-        allowed = schema_cache.get(db_id, set())
+        allowed = schema_cache.get(db_id) or _CORE_SAFE_PROPS.copy()
         props = _properties(it)
         # Disney DB は Category 列を 15 グループ日本語ラベルに置換し、
         # 元の DA1 等は SubcategoryRaw に退避（DB スキーマ側に列があれば書き込まれる）
@@ -172,12 +245,13 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
             props["SubcategoryRaw"] = {
                 "rich_text": [{"text": {"content": it.subcategory_id}}]
             }
-        if allowed:
-            props = _filter_existing(props, allowed)
-        try:
-            client.pages.create(parent={"database_id": db_id}, properties=props)
+        props = _filter_existing(props, allowed)
+        ok, dropped = _create_page_with_retry(client, db_id, props, it.dedup_key)
+        for key in dropped:
+            schema_cache[db_id].discard(key)
+        if ok:
+            schema_cache[db_id].update(props.keys() - dropped)
             success += 1
-        except Exception as e:  # noqa: BLE001
-            log.warning(f"Notion write failed for {it.dedup_key}: {e}")
+        else:
             failed += 1
     return success, failed
