@@ -1,11 +1,10 @@
-"""Watchlist loader: reads from Google Sheets with CSV fallback."""
+"""Watchlist loader: reads local CSV and mirrors it to Google Sheets."""
 from __future__ import annotations
 import csv
-import json
 from pathlib import Path
 
 from . import logger
-from .config import CONFIG_DIR, env, env_json
+from .config import CONFIG_DIR, env, env_bool, env_json
 from .models import WatchSource
 
 log = logger.get(__name__)
@@ -13,16 +12,15 @@ LOCAL_CACHE = CONFIG_DIR / "watchlist.csv"
 
 
 def load() -> list[WatchSource]:
-    """Try Google Sheets first, fall back to local CSV."""
-    sources: list[WatchSource] | None = None
-    try:
-        sources = _load_from_sheets()
-        log.info(f"Loaded {len(sources)} sources from Google Sheets")
-        _write_local_cache(sources)
-    except Exception as e:  # noqa: BLE001
-        log.warning(f"Sheets read failed ({e}); falling back to local CSV")
-        sources = _load_from_csv(LOCAL_CACHE)
-        log.info(f"Loaded {len(sources)} sources from local CSV")
+    """Load local CSV as canonical source and best-effort sync to Sheets."""
+    sources = _load_from_csv(LOCAL_CACHE)
+    log.info(f"Loaded {len(sources)} sources from local CSV")
+
+    if env_bool("SYNC_SHEETS_FROM_CSV", True):
+        _sync_csv_to_sheets(sources)
+    else:
+        log.info("Sheets sync skipped: SYNC_SHEETS_FROM_CSV=false")
+
     return [s for s in sources if s.enabled]
 
 
@@ -43,6 +41,41 @@ def _load_from_sheets() -> list[WatchSource]:
     ws = gc.open_by_key(sheet_id).worksheet("watchlist")
     records = ws.get_all_records()
     return [_parse_row(r) for r in records]
+
+
+def _sync_csv_to_sheets(sources: list[WatchSource]) -> None:
+    """Overwrite the watchlist worksheet from local CSV rows."""
+    try:
+        creds_dict = env_json("GOOGLE_SHEETS_CREDENTIALS")
+        sheet_id = env("GOOGLE_SHEETS_ID")
+        if not creds_dict or not sheet_id:
+            log.info("Sheets sync skipped: GOOGLE_SHEETS_CREDENTIALS or GOOGLE_SHEETS_ID is not set")
+            return
+
+        import gspread
+        from google.oauth2.service_account import Credentials
+
+        creds = Credentials.from_service_account_info(
+            creds_dict,
+            scopes=[
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive",
+            ],
+        )
+        gc = gspread.authorize(creds)
+        ws = gc.open_by_key(sheet_id).worksheet("watchlist")
+
+        fieldnames = list(WatchSource.model_fields.keys())
+        values = [fieldnames]
+        for source in sources:
+            row = _source_to_csv_row(source)
+            values.append([row.get(field, "") for field in fieldnames])
+
+        ws.clear()
+        ws.update("A1", values)
+        log.info(f"Synced {len(sources)} sources from local CSV to Google Sheets")
+    except Exception as e:  # noqa: BLE001
+        log.warning(f"Sheets sync failed ({e}); continuing with local CSV")
 
 
 def _load_from_csv(path: Path) -> list[WatchSource]:
@@ -87,10 +120,14 @@ def _write_local_cache(sources: list[WatchSource]) -> None:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
         for s in sources:
-            row = s.model_dump()
-            row["subcategory_hints"] = ",".join(row["subcategory_hints"])
-            row["enabled"] = "TRUE" if row["enabled"] else "FALSE"
-            writer.writerow(row)
+            writer.writerow(_source_to_csv_row(s))
+
+
+def _source_to_csv_row(source: WatchSource) -> dict[str, str]:
+    row = source.model_dump()
+    row["subcategory_hints"] = ",".join(row["subcategory_hints"])
+    row["enabled"] = "TRUE" if row["enabled"] else "FALSE"
+    return {key: str(value) for key, value in row.items()}
 
 
 def by_frequency(sources: list[WatchSource], freq: str) -> list[WatchSource]:
