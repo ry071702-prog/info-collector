@@ -16,15 +16,15 @@ const cycleIcon = suffix === "AM" ? "🌅" : suffix === "PM" ? "🌇" : "📰";
 
 <a
   href={`${base}/digest/${digest.slug}/`}
-  class="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+  class="block rounded-sm border border-stone-300 bg-[var(--paper)] p-4 shadow-sm hover:border-stone-500 hover:shadow-md dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-500"
 >
-  <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+  <p class="text-xs font-semibold text-stone-500 dark:text-stone-400">
     <span class="mr-1">{cycleIcon}</span>{digest.label}
   </p>
-  <h3 class="mt-2 text-base font-bold text-slate-950 dark:text-white">{document?.title ?? `Digest ${digest.label}`}</h3>
+  <h3 class="font-serif-jp mt-2 text-lg font-black leading-snug text-stone-950 dark:text-white">{document?.title ?? `Digest ${digest.label}`}</h3>
   {
     document?.excerpt && (
-      <p class="mt-2 line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{document.excerpt}</p>
+      <p class="mt-2 line-clamp-2 text-sm leading-6 text-stone-600 dark:text-stone-300">{document.excerpt}</p>
     )
   }
 </a>

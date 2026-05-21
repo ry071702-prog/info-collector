@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 
 export type Genre = "games" | "anime" | "disney";
@@ -131,7 +131,30 @@ export function sourceLabel(article: Pick<Article, "source_id" | "author" | "dom
 }
 
 export function loadDigests(): Digest[] {
-  return loadSiteData().digests;
+  const digests = loadSiteData().digests;
+  if (digests.length > 0) {
+    return digests;
+  }
+
+  const digestDirectory = resolve(process.cwd(), "..", "docs", "digests");
+  if (!existsSync(digestDirectory)) {
+    return [];
+  }
+
+  return readdirSync(digestDirectory)
+    .filter((filename) => /^\d{4}-\d{2}-\d{2}(?:-(?:AM|PM))?\.md$/i.test(filename))
+    .sort((a, b) => b.localeCompare(a))
+    .map((filename) => {
+      const slug = filename.replace(/\.md$/i, "");
+      const match = slug.match(/^(\d{4}-\d{2}-\d{2})(?:-(AM|PM))?$/i);
+      const date = match?.[1] ?? slug;
+      const phase = match?.[2]?.toUpperCase();
+      return {
+        date,
+        slug,
+        label: phase ? `${date} ${phase}` : date,
+      };
+    });
 }
 
 export interface DigestDocument {
@@ -139,6 +162,8 @@ export interface DigestDocument {
   title: string;
   html: string;
   excerpt: string;
+  markdown: string;
+  plainLines: string[];
 }
 
 function escapeHtml(value: string): string {
@@ -179,12 +204,12 @@ function markdownToHtml(markdown: string): string {
         inList = false;
       }
       html.push(`<h3>${inlineMarkdown(line.slice(4).trim())}</h3>`);
-    } else if (line.startsWith("- ")) {
+    } else if (/^[-*]\s+/.test(line)) {
       if (!inList) {
         html.push("<ul>");
         inList = true;
       }
-      html.push(`<li>${inlineMarkdown(line.slice(2).trim())}</li>`);
+      html.push(`<li>${inlineMarkdown(line.replace(/^[-*]\s+/, "").trim())}</li>`);
     } else if (line.trim() === "") {
       if (inList) {
         html.push("</ul>");
@@ -221,5 +246,7 @@ export function loadDigestDocument(slug: string): DigestDocument | null {
     title: plainLines[0] ?? `Digest ${slug}`,
     html: markdownToHtml(markdown),
     excerpt: plainLines.slice(1, 3).join(" ").slice(0, 140),
+    markdown,
+    plainLines,
   };
 }
