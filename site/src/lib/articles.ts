@@ -12,6 +12,8 @@ export interface ArticleFlags {
 
 export interface Article {
   url: string;
+  source_id?: string;
+  source_platform?: string;
   author: string;
   timestamp: string;
   genre: Genre;
@@ -99,8 +101,16 @@ export function sortArticlesByTimestamp(articles: Article[]): Article[] {
   return [...articles].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 }
 
+export function byImportance(articles: Article[]): Article[] {
+  return sortArticles(articles);
+}
+
 export function articlesByGenre(genre: Genre): Article[] {
   return sortArticlesByTimestamp(loadSiteData().articles.filter((article) => article.genre === genre));
+}
+
+export function allArticles(): Article[] {
+  return sortArticlesByTimestamp(loadSiteData().articles);
 }
 
 export function latestArticles(limit: number): Article[] {
@@ -109,6 +119,15 @@ export function latestArticles(limit: number): Article[] {
 
 export function latestByGenre(genre: Genre, limit: number): Article[] {
   return sortArticlesByTimestamp(loadSiteData().articles.filter((article) => article.genre === genre)).slice(0, limit);
+}
+
+export function sourceKey(article: Pick<Article, "source_id" | "author" | "domain" | "source_platform">): string {
+  const value = article.source_id || article.author || article.domain || article.source_platform || "unknown";
+  return value.trim().toLowerCase().replace(/[,\s]+/g, "-");
+}
+
+export function sourceLabel(article: Pick<Article, "source_id" | "author" | "domain" | "source_platform">): string {
+  return article.author || article.source_id || article.domain || article.source_platform || "unknown";
 }
 
 export function loadDigests(): Digest[] {

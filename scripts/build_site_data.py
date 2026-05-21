@@ -1,6 +1,7 @@
 """Build static news-site data from processed JSONL files."""
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 import mimetypes
@@ -23,6 +24,7 @@ SITE_PUBLIC_DIR = ROOT_DIR / "site" / "public"
 OG_CACHE_DIR = ROOT_DIR / "site" / "public" / "og-cache"
 OUTPUT_PATH = SITE_DATA_DIR / "articles.json"
 PUBLIC_OUTPUT_PATH = SITE_PUBLIC_DIR / "articles.json"
+WATCHLIST_PATH = ROOT_DIR / "config" / "watchlist.csv"
 
 ALLOWED_GENRES = {"games", "anime", "disney"}
 PRIORITY_ORDER = {"S": 0, "A": 1, "B": 2, "C": 3}
@@ -78,6 +80,23 @@ USER_AGENT = (
     "Mozilla/5.0 (compatible; info-collector-site/1.0; "
     "+https://github.com/)"
 )
+
+
+def load_source_platforms() -> dict[str, str]:
+    """Load source_id -> platform mapping from the local watchlist cache."""
+    if not WATCHLIST_PATH.exists():
+        return {}
+
+    try:
+        with WATCHLIST_PATH.open("r", encoding="utf-8", newline="") as file:
+            return {
+                str(row.get("id") or "").strip(): str(row.get("platform") or "").strip()
+                for row in csv.DictReader(file)
+                if str(row.get("id") or "").strip()
+            }
+    except Exception as exc:  # noqa: BLE001 - site generation should keep going
+        logger.warning("Failed to load watchlist platforms: {}", exc)
+        return {}
 
 
 def parse_date_from_processed_path(path: Path) -> Optional[date]:
@@ -212,7 +231,11 @@ def fetch_og_image(client: httpx.Client, article_url: str, cache_path: Path) -> 
         return False
 
 
-def build_article(raw: dict[str, Any], client: httpx.Client) -> Optional[dict[str, Any]]:
+def build_article(
+    raw: dict[str, Any],
+    client: httpx.Client,
+    source_platforms: dict[str, str],
+) -> Optional[dict[str, Any]]:
     """Normalize one ProcessedItem-like dict for the static site."""
     genre = raw.get("genre")
     url = str(raw.get("url") or "")
@@ -236,12 +259,15 @@ def build_article(raw: dict[str, Any], client: httpx.Client) -> Optional[dict[st
         flags = {}
 
     host = urlparse(url).hostname or ""
+    source_id = str(raw.get("source_id") or "")
     favicon_url = (
         f"https://www.google.com/s2/favicons?domain={host}&sz=128" if host else None
     )
 
     return {
         "url": url,
+        "source_id": source_id,
+        "source_platform": source_platforms.get(source_id, str(raw.get("platform") or "")),
         "author": str(raw.get("author") or ""),
         "timestamp": str(raw.get("timestamp") or ""),
         "genre": genre,
@@ -265,6 +291,7 @@ def build_article(raw: dict[str, Any], client: httpx.Client) -> Optional[dict[st
 def load_articles() -> list[dict[str, Any]]:
     """Load and normalize articles from recent processed JSONL files."""
     articles: list[dict[str, Any]] = []
+    source_platforms = load_source_platforms()
     headers = {"User-Agent": USER_AGENT}
     timeout = httpx.Timeout(REQUEST_TIMEOUT_SECONDS)
 
@@ -276,7 +303,7 @@ def load_articles() -> list[dict[str, Any]]:
                         continue
                     try:
                         raw = json.loads(line)
-                        article = build_article(raw, client)
+                        article = build_article(raw, client, source_platforms)
                         if article is not None:
                             articles.append(article)
                     except Exception as exc:  # noqa: BLE001 - skip only this row
