@@ -46,24 +46,24 @@ const articleId = article.url;
   data-source={source.key}
   data-source-label={source.label}
   tabindex="-1"
-  class="group relative flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition-opacity hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+  class="group relative flex h-full flex-col overflow-hidden rounded-sm border border-stone-300 bg-[var(--paper)] shadow-sm transition-opacity hover:border-stone-500 hover:shadow-md dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-500"
 >
   <span
-    class="pointer-events-none absolute left-2 top-2 z-10 hidden rounded bg-slate-950/85 px-2 py-1 text-xs font-bold text-white shadow-sm dark:bg-white/90 dark:text-slate-950"
+    class="pointer-events-none absolute left-2 top-2 z-10 hidden rounded-sm bg-stone-950/85 px-2 py-1 text-xs font-bold text-white shadow-sm dark:bg-white/90 dark:text-stone-950"
     data-read-label
   >
     既読
   </span>
   <button
     type="button"
-    class="absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/80 bg-white/90 text-lg leading-none text-slate-500 shadow-sm hover:bg-white hover:text-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-300 dark:border-slate-700/80 dark:bg-slate-950/90 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-yellow-300"
+    class="absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-100/80 bg-[var(--paper)]/95 text-lg leading-none text-stone-500 shadow-sm hover:bg-white hover:text-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700/80 dark:bg-stone-950/90 dark:text-stone-400 dark:hover:bg-stone-900 dark:hover:text-stone-100"
     data-favorite-toggle
     aria-label="お気に入りに追加"
     aria-pressed="false"
   >
     ☆
   </button>
-  <div class="aspect-[16/9] overflow-hidden bg-slate-200 dark:bg-slate-800">
+  <div class="aspect-[4/3] overflow-hidden bg-stone-200 dark:bg-stone-800">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="block h-full">
       {
         imageSrc ? (
@@ -92,28 +92,28 @@ const articleId = article.url;
       }
     </a>
   </div>
-  <div class="flex flex-1 flex-col gap-3 p-4">
+  <div class="flex flex-1 flex-col gap-3 border-t border-stone-300 p-4 dark:border-stone-700">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="contents">
       <div class="flex flex-wrap items-center gap-2">
         <PriorityBadge priority={article.final_priority} />
-        <span class="rounded bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span class="rounded-sm bg-stone-200 px-2 py-1 text-xs font-medium text-stone-700 dark:bg-stone-800 dark:text-stone-300">
           {genreLabels[article.genre]}
         </span>
         {
           article.flags.speed === "速報" && (
-            <span class="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white">速報</span>
+            <span class="rounded-sm bg-[#1e3a5f] px-2 py-1 text-xs font-bold text-white">速報</span>
           )
         }
         {
           article.flags.spoiler !== "なし" && (
-            <span class="rounded bg-fuchsia-700 px-2 py-1 text-xs font-bold text-white">ネタバレ注意</span>
+            <span class="rounded-sm bg-stone-900 px-2 py-1 text-xs font-bold text-white dark:bg-stone-100 dark:text-stone-950">ネタバレ注意</span>
           )}
         }
       </div>
-      <h3 class="text-base font-bold leading-snug text-slate-950 group-hover:text-slate-700 dark:text-white dark:group-hover:text-slate-200">
+      <h3 class="font-serif-jp text-lg font-black leading-snug text-stone-950 group-hover:text-[#1e3a5f] dark:text-white dark:group-hover:text-stone-200">
         {article.category_name}
       </h3>
-      <p class="line-clamp-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+      <p class="line-clamp-2 text-sm leading-6 text-stone-600 dark:text-stone-300">
         {article.summary || "概要はまだありません。"}
       </p>
     </a>
@@ -123,7 +123,7 @@ const articleId = article.url;
           {entities.map((tag) => (
             <button
               type="button"
-              class="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600 hover:bg-slate-200 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+              class="rounded-sm bg-stone-200 px-2 py-1 text-xs text-stone-600 hover:bg-stone-300 hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-white"
               data-search-tag={tag}
             >
               {tag}
@@ -133,13 +133,13 @@ const articleId = article.url;
       )
     }
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="mt-auto block">
-      <div class="flex items-center justify-between gap-3 pt-1 text-xs text-slate-500 dark:text-slate-400">
+      <div class="flex items-center justify-between gap-3 border-t border-stone-200 pt-3 text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
         <span class="min-w-0 truncate">{article.author || "unknown"}</span>
         <time
           datetime={article.timestamp}
           class:list={[
             "shrink-0",
-            isUrgent && "font-bold text-red-600 dark:text-red-400",
+            isUrgent && "font-bold text-[#1e3a5f] dark:text-stone-200",
           ]}
         >
           {relativeTime}
