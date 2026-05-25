@@ -57,20 +57,7 @@
     @apply flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-stone-700 hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-stone-800;
   }
 
-  html.js:not(.articles-ready) [data-article-list],
-  html.js:not(.articles-ready) [data-article-static-list] {
-    display: none;
-  }
-
   [data-article-skeletons] {
-    display: none;
-  }
-
-  html.js:not(.articles-ready) [data-article-skeletons] {
-    display: grid;
-  }
-
-  html.js.articles-ready [data-article-skeletons] {
     display: none;
   }
 
