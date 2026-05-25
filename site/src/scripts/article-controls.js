@@ -195,6 +195,7 @@ function applyStorageState() {
 }
 
 function applyArticleControls() {
+  document.documentElement.classList.add("articles-ready");
   const cutoff = cutoffTime();
   let visibleCount = 0;
 

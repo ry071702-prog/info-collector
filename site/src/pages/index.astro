@@ -31,12 +31,14 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
             </a>
           </div>
           {articles.length > 0 ? (
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-skeletons>
-              <NewsCardSkeleton count={4} />
-            </div>
-            <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-static-list>
-              {articles.map((article) => <NewsCard article={article} />)}
-            </div>
+            <>
+              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-skeletons>
+                <NewsCardSkeleton count={4} />
+              </div>
+              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-static-list>
+                {articles.map((article) => <NewsCard article={article} />)}
+              </div>
+            </>
           ) : (
             <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
               このカテゴリのニュースはまだありません。
