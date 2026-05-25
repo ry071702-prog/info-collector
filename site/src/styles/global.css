@@ -58,7 +58,7 @@
   }
 
   [data-article-skeletons] {
-    display: none;
+    display: none !important;
   }
 
   .digest-content {
