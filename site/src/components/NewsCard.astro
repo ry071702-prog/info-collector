@@ -54,15 +54,27 @@ const articleId = article.url;
   >
     既読
   </span>
-  <button
-    type="button"
-    class="absolute right-2 top-2 z-20 inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-100/80 bg-[var(--paper)]/95 text-lg leading-none text-stone-500 shadow-sm hover:bg-white hover:text-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700/80 dark:bg-stone-950/90 dark:text-stone-400 dark:hover:bg-stone-900 dark:hover:text-stone-100"
-    data-favorite-toggle
-    aria-label="お気に入りに追加"
-    aria-pressed="false"
-  >
-    ☆
-  </button>
+  <div class="absolute right-2 top-2 z-20 flex items-center gap-1.5">
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-100/80 bg-[var(--paper)]/95 text-lg leading-none text-stone-500 shadow-sm hover:bg-white hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700/80 dark:bg-stone-950/90 dark:text-stone-400 dark:hover:bg-stone-900 dark:hover:text-rose-400"
+      data-hide-toggle
+      aria-label="この記事を不要として隠す"
+      aria-pressed="false"
+      title="不要としてマーク"
+    >
+      🚫
+    </button>
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-100/80 bg-[var(--paper)]/95 text-lg leading-none text-stone-500 shadow-sm hover:bg-white hover:text-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700/80 dark:bg-stone-950/90 dark:text-stone-400 dark:hover:bg-stone-900 dark:hover:text-stone-100"
+      data-favorite-toggle
+      aria-label="お気に入りに追加"
+      aria-pressed="false"
+    >
+      ☆
+    </button>
+  </div>
   <div class="aspect-[4/3] overflow-hidden bg-stone-200 dark:bg-stone-800">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="block h-full">
       {

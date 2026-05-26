@@ -1,4 +1,14 @@
-import { favoriteIds, isFavorite, isRead, markRead, resetReads, toggleFavorite } from "../lib/clientStorage.ts";
+import {
+  favoriteIds,
+  hide,
+  isFavorite,
+  isHidden,
+  isRead,
+  markRead,
+  resetReads,
+  toggleFavorite,
+  unhide,
+} from "../lib/clientStorage.ts";
 
 const priorityRank = { S: 0, A: 1, B: 2, C: 3 };
 const periodHours = { "24h": 24, "7d": 168, "30d": 720 };
@@ -47,7 +57,11 @@ function cutoffTime() {
 }
 
 function matchesFilters(card, cutoff) {
-  if (card.closest("[data-favorites-list]") && !isFavorite(card.dataset.articleId ?? "")) {
+  const articleId = card.dataset.articleId ?? "";
+  if (isHidden(articleId)) {
+    return false;
+  }
+  if (card.closest("[data-favorites-list]") && !isFavorite(articleId)) {
     return false;
   }
   if (cutoff !== null && articleTime(card) < cutoff) {
@@ -183,6 +197,13 @@ function updateCardStorageState(card) {
     favoriteButton.classList.toggle("text-slate-500", !favorite);
     favoriteButton.classList.toggle("dark:text-yellow-300", favorite);
     favoriteButton.classList.toggle("dark:text-slate-400", !favorite);
+  }
+
+  const hideButton = card.querySelector("[data-hide-toggle]");
+  if (hideButton) {
+    const hidden = isHidden(articleId);
+    hideButton.setAttribute("aria-pressed", String(hidden));
+    hideButton.setAttribute("aria-label", hidden ? "不要マークを解除" : "この記事を不要として隠す");
   }
 }
 
@@ -390,6 +411,49 @@ function observeInfiniteSentinels() {
   });
 }
 
+let hideUndoTimer = null;
+
+function ensureHideToast() {
+  let toast = document.querySelector("[data-hide-toast]");
+  if (toast) {
+    return toast;
+  }
+  toast = document.createElement("div");
+  toast.dataset.hideToast = "";
+  toast.hidden = true;
+  toast.className =
+    "fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-md bg-stone-900 px-4 py-2 text-sm text-white shadow-lg dark:bg-stone-100 dark:text-stone-900";
+
+  const message = document.createElement("span");
+  message.dataset.hideToastMessage = "";
+  message.textContent = "不要としてマークしました";
+
+  const undoButton = document.createElement("button");
+  undoButton.type = "button";
+  undoButton.dataset.hideToastUndo = "";
+  undoButton.className =
+    "rounded bg-white/10 px-2 py-1 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/20 dark:bg-stone-900/10 dark:text-stone-900 dark:hover:bg-stone-900/20";
+  undoButton.textContent = "取り消し";
+
+  toast.append(message, undoButton);
+  document.body.appendChild(toast);
+  return toast;
+}
+
+function showHideToast(articleId) {
+  if (!articleId) return;
+  const toast = ensureHideToast();
+  toast.dataset.articleId = articleId;
+  toast.hidden = false;
+  if (hideUndoTimer !== null) {
+    window.clearTimeout(hideUndoTimer);
+  }
+  hideUndoTimer = window.setTimeout(() => {
+    toast.hidden = true;
+    hideUndoTimer = null;
+  }, 5000);
+}
+
 function debounce(callback, delay) {
   let timeoutId;
   return (...args) => {
@@ -422,6 +486,41 @@ document.addEventListener("DOMContentLoaded", () => {
       if (card) updateCardStorageState(card);
       applyArticleControls();
     });
+  });
+
+  document.querySelectorAll("[data-hide-toggle]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = button.closest("[data-article-card]");
+      const articleId = card?.dataset.articleId ?? "";
+      if (!articleId) return;
+      hide(articleId);
+      if (card) updateCardStorageState(card);
+      applyArticleControls();
+      showHideToast(articleId);
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const undoButton = target.closest("[data-hide-toast-undo]");
+    if (!undoButton) return;
+    event.preventDefault();
+    const toast = undoButton.closest("[data-hide-toast]");
+    const articleId = toast?.dataset.articleId ?? "";
+    if (articleId) {
+      unhide(articleId);
+      const card = document.querySelector(`[data-article-card][data-article-id="${CSS.escape(articleId)}"]`);
+      if (card) updateCardStorageState(card);
+      applyArticleControls();
+    }
+    if (toast) toast.hidden = true;
+    if (hideUndoTimer !== null) {
+      window.clearTimeout(hideUndoTimer);
+      hideUndoTimer = null;
+    }
   });
 
   document.querySelectorAll("[data-reset-reads]").forEach((button) => {
