@@ -63,3 +63,14 @@ def tmp_data_dirs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, 
     monkeypatch.setattr(src.config, "processed_dir", mock_processed_dir)
 
     return {"raw": raw, "processed": processed}
+
+
+@pytest.fixture
+def tmp_circuit_breaker(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Provide a temporary circuit breaker state file."""
+    breaker_file = tmp_cache_dir / "circuit_breakers.json"
+
+    import src.circuit_breaker
+    monkeypatch.setattr(src.circuit_breaker, "STATE_FILE", breaker_file)
+
+    return breaker_file
