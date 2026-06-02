@@ -1,6 +1,7 @@
 import {
   favoriteIds,
   hide,
+  hiddenIds,
   isFavorite,
   isHidden,
   isRead,
@@ -9,6 +10,8 @@ import {
   toggleFavorite,
   unhide,
 } from "../lib/clientStorage.ts";
+
+const EXCLUDE_REPO = "ry071702-prog/info-collector";
 
 const priorityRank = { S: 0, A: 1, B: 2, C: 3 };
 const periodHours = { "24h": 24, "7d": 168, "30d": 720 };
@@ -215,8 +218,17 @@ function applyStorageState() {
   });
 }
 
+function updateExcludeCount() {
+  const count = hiddenIds().length;
+  document.querySelectorAll("[data-exclude-count]").forEach((badge) => {
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  });
+}
+
 function applyArticleControls() {
   document.documentElement.classList.add("articles-ready");
+  updateExcludeCount();
   const cutoff = cutoffTime();
   let visibleCount = 0;
 
@@ -527,6 +539,35 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", () => {
       resetReads();
       applyStorageState();
+    });
+  });
+
+  updateExcludeCount();
+  document.querySelectorAll("[data-exclude-submit]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const urls = hiddenIds();
+      if (urls.length === 0) {
+        window.alert("不要マークがついた記事はまだありません。");
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const title = `exclude-request: ${today} (${urls.length} 件)`;
+      const body = [
+        "## 削除対象 URL",
+        "",
+        ...urls.map((url) => `- ${url}`),
+        "",
+        "---",
+        "_このIssueは「不要リスト送信」ボタンから自動生成されました。Sheets / Notion から該当記事を削除する処理がこの後 GitHub Actions で走ります。_",
+      ].join("\n");
+      const params = new URLSearchParams({
+        title,
+        body,
+        labels: "exclude-request",
+      });
+      const url = `https://github.com/${EXCLUDE_REPO}/issues/new?${params.toString()}`;
+      window.open(url, "_blank", "noopener,noreferrer");
     });
   });
 

@@ -199,6 +199,54 @@ def _create_page_with_retry(client, db_id: str, props: dict, dedup_key: str) -> 
             return False, dropped
 
 
+def archive_by_urls(urls: list[str]) -> int:
+    """Notion DBs を URL で検索し、ヒットしたページを archived=true にする。"""
+    if is_dry_run():
+        log.info(f"[DRY_RUN] would archive {len(urls)} Notion pages")
+        return 0
+    if not urls:
+        return 0
+
+    db_ids = [
+        normalize_db_id(env("NOTION_DATABASE_ID_GAMES")),
+        normalize_db_id(env("NOTION_DATABASE_ID_ANIME")),
+        normalize_db_id(env("NOTION_DATABASE_ID_DISNEY")),
+    ]
+    db_ids = [d for d in db_ids if d]
+    if not db_ids:
+        log.warning("Notion DB IDs not set; skipping archive")
+        return 0
+
+    try:
+        client = _client()
+    except Exception as e:  # noqa: BLE001
+        log.error(f"Notion auth failed: {e}")
+        return 0
+
+    archived = 0
+    for url in urls:
+        for db_id in db_ids:
+            try:
+                resp = client.databases.query(
+                    database_id=db_id,
+                    filter={"property": "URL", "url": {"equals": url}},
+                    page_size=10,
+                )
+            except Exception as e:  # noqa: BLE001
+                log.error(f"Notion query failed (db={db_id}, url={url}): {e}")
+                continue
+            for page in resp.get("results", []):
+                page_id = page.get("id")
+                if not page_id:
+                    continue
+                try:
+                    client.pages.update(page_id=page_id, archived=True)
+                    archived += 1
+                except Exception as e:  # noqa: BLE001
+                    log.error(f"Notion archive failed (page={page_id}): {e}")
+    return archived
+
+
 def write(items: list[ProcessedItem]) -> tuple[int, int]:
     """Returns (success, failed)."""
     if is_dry_run():
