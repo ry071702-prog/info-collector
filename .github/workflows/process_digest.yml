@@ -8,6 +8,11 @@ on:
         description: '外部書き込みをスキップ（Notion/Sheets/Discord）。Gemini呼び出しは実行する'
         type: boolean
         default: false
+      as_of:
+        description: '基準時刻 (ISO8601 UTC、例: 2026-05-27T00:00:00Z)。空なら現在時刻。過去日復旧用'
+        type: string
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -27,6 +32,7 @@ jobs:
       - name: Process
         env:
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          PROCESS_AS_OF: ${{ inputs.as_of || '' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 || '' }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}

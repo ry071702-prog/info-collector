@@ -92,7 +92,22 @@ def _read_raw_window(start: datetime, end: datetime) -> list[RawItem]:
 
 
 def main() -> None:
-    now_utc = datetime.now(timezone.utc)
+    import os
+
+    as_of_raw = os.environ.get("PROCESS_AS_OF", "").strip()
+    if as_of_raw:
+        try:
+            now_utc = datetime.fromisoformat(as_of_raw.replace("Z", "+00:00"))
+            if now_utc.tzinfo is None:
+                now_utc = now_utc.replace(tzinfo=timezone.utc)
+            else:
+                now_utc = now_utc.astimezone(timezone.utc)
+            log.info(f"PROCESS_AS_OF override: {now_utc.isoformat()}")
+        except ValueError:
+            log.warning(f"PROCESS_AS_OF parse failed ({as_of_raw}); using now")
+            now_utc = datetime.now(timezone.utc)
+    else:
+        now_utc = datetime.now(timezone.utc)
     window_start = now_utc - timedelta(hours=12)
     digest_date, digest_phase = _phase(now_utc)
     date_str = now_utc.strftime("%Y-%m-%d")
