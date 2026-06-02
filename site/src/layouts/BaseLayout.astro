@@ -3,8 +3,6 @@ import CategoryNav from "../components/CategoryNav.astro";
 import UpdateToast from "../components/UpdateToast.astro";
 import { formatJapaneseDate } from "../lib/japaneseDate";
 import { loadSiteData } from "../lib/articles";
-import articleControlsUrl from "../scripts/article-controls.js?url";
-import livePollUrl from "../scripts/live-poll.js?url";
 import "../styles/global.css";
 
 interface Props {
@@ -128,8 +126,10 @@ const mastheadDate = formatJapaneseDate(new Date());
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <slot />
     </main>
-    <script type="module" src={articleControlsUrl}></script>
-    <script type="module" src={livePollUrl}></script>
+    <script>
+      import "../scripts/article-controls.js";
+      import "../scripts/live-poll.js";
+    </script>
     <div
       data-shortcut-help
       class="fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/70 px-4 py-6"
