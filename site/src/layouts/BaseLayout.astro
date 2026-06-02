@@ -93,6 +93,14 @@ const mastheadDate = formatJapaneseDate(new Date());
               </button>
               <button
                 type="button"
+                class="h-10 rounded-sm border border-stone-400 bg-[var(--paper)] px-3 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white dark:focus:ring-stone-700"
+                data-exclude-submit
+                title="不要マーク済みの記事を Sheets/Notion からも削除依頼として送信"
+              >
+                不要リスト送信 <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 text-xs font-bold text-white" data-exclude-count hidden>0</span>
+              </button>
+              <button
+                type="button"
                 class="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-stone-400 bg-[var(--paper)] text-stone-700 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 dark:focus:ring-stone-700"
                 data-theme-toggle
                 aria-label="テーマを切り替え"

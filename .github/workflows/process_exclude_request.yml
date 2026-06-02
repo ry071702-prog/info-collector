@@ -1,0 +1,83 @@
+name: Process Exclude Request
+
+on:
+  issues:
+    types: [opened, labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue 番号 (手動実行時)'
+        type: number
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: process-exclude-request
+
+jobs:
+  process:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'exclude-request'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Resolve issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ISSUE_NUMBER="${{ inputs.issue_number }}"
+          else
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+          fi
+          echo "number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+          BODY=$(gh issue view "$ISSUE_NUMBER" --json body -q .body)
+          {
+            echo "body<<__EOF__"
+            echo "$BODY"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+      - name: Run delete/archive
+        id: run
+        env:
+          ISSUE_BODY: ${{ steps.issue.outputs.body }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
+          NOTION_DATABASE_ID_ANIME: ${{ secrets.NOTION_DATABASE_ID_ANIME }}
+          NOTION_DATABASE_ID_DISNEY: ${{ secrets.NOTION_DATABASE_ID_DISNEY }}
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+        run: |
+          set -o pipefail
+          python -m src.jobs.process_exclude_request 2>&1 | tee /tmp/exclude.log
+          {
+            echo "summary<<__EOF__"
+            cat /tmp/exclude.log
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+      - name: Comment and close issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_NUMBER="${{ steps.issue.outputs.number }}"
+          COMMENT=$(cat <<'EOF'
+          ## 処理完了
+
+          ```
+          ${{ steps.run.outputs.summary }}
+          ```
+
+          _このコメントは GitHub Actions が自動投稿しました。_
+          EOF
+          )
+          gh issue comment "$ISSUE_NUMBER" --body "$COMMENT"
+          gh issue close "$ISSUE_NUMBER" --reason completed

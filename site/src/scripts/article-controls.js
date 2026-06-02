@@ -1,4 +1,17 @@
-import { favoriteIds, isFavorite, isRead, markRead, resetReads, toggleFavorite } from "../lib/clientStorage.ts";
+import {
+  favoriteIds,
+  hide,
+  hiddenIds,
+  isFavorite,
+  isHidden,
+  isRead,
+  markRead,
+  resetReads,
+  toggleFavorite,
+  unhide,
+} from "../lib/clientStorage.ts";
+
+const EXCLUDE_REPO = "ry071702-prog/info-collector";
 
 const priorityRank = { S: 0, A: 1, B: 2, C: 3 };
 const periodHours = { "24h": 24, "7d": 168, "30d": 720 };
@@ -47,7 +60,11 @@ function cutoffTime() {
 }
 
 function matchesFilters(card, cutoff) {
-  if (card.closest("[data-favorites-list]") && !isFavorite(card.dataset.articleId ?? "")) {
+  const articleId = card.dataset.articleId ?? "";
+  if (isHidden(articleId)) {
+    return false;
+  }
+  if (card.closest("[data-favorites-list]") && !isFavorite(articleId)) {
     return false;
   }
   if (cutoff !== null && articleTime(card) < cutoff) {
@@ -184,6 +201,13 @@ function updateCardStorageState(card) {
     favoriteButton.classList.toggle("dark:text-yellow-300", favorite);
     favoriteButton.classList.toggle("dark:text-slate-400", !favorite);
   }
+
+  const hideButton = card.querySelector("[data-hide-toggle]");
+  if (hideButton) {
+    const hidden = isHidden(articleId);
+    hideButton.setAttribute("aria-pressed", String(hidden));
+    hideButton.setAttribute("aria-label", hidden ? "不要マークを解除" : "この記事を不要として隠す");
+  }
 }
 
 function applyStorageState() {
@@ -194,8 +218,17 @@ function applyStorageState() {
   });
 }
 
+function updateExcludeCount() {
+  const count = hiddenIds().length;
+  document.querySelectorAll("[data-exclude-count]").forEach((badge) => {
+    badge.textContent = String(count);
+    badge.hidden = count === 0;
+  });
+}
+
 function applyArticleControls() {
   document.documentElement.classList.add("articles-ready");
+  updateExcludeCount();
   const cutoff = cutoffTime();
   let visibleCount = 0;
 
@@ -390,6 +423,49 @@ function observeInfiniteSentinels() {
   });
 }
 
+let hideUndoTimer = null;
+
+function ensureHideToast() {
+  let toast = document.querySelector("[data-hide-toast]");
+  if (toast) {
+    return toast;
+  }
+  toast = document.createElement("div");
+  toast.dataset.hideToast = "";
+  toast.hidden = true;
+  toast.className =
+    "fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-md bg-stone-900 px-4 py-2 text-sm text-white shadow-lg dark:bg-stone-100 dark:text-stone-900";
+
+  const message = document.createElement("span");
+  message.dataset.hideToastMessage = "";
+  message.textContent = "不要としてマークしました";
+
+  const undoButton = document.createElement("button");
+  undoButton.type = "button";
+  undoButton.dataset.hideToastUndo = "";
+  undoButton.className =
+    "rounded bg-white/10 px-2 py-1 text-xs font-bold uppercase tracking-wider text-white hover:bg-white/20 dark:bg-stone-900/10 dark:text-stone-900 dark:hover:bg-stone-900/20";
+  undoButton.textContent = "取り消し";
+
+  toast.append(message, undoButton);
+  document.body.appendChild(toast);
+  return toast;
+}
+
+function showHideToast(articleId) {
+  if (!articleId) return;
+  const toast = ensureHideToast();
+  toast.dataset.articleId = articleId;
+  toast.hidden = false;
+  if (hideUndoTimer !== null) {
+    window.clearTimeout(hideUndoTimer);
+  }
+  hideUndoTimer = window.setTimeout(() => {
+    toast.hidden = true;
+    hideUndoTimer = null;
+  }, 5000);
+}
+
 function debounce(callback, delay) {
   let timeoutId;
   return (...args) => {
@@ -424,10 +500,74 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.querySelectorAll("[data-hide-toggle]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = button.closest("[data-article-card]");
+      const articleId = card?.dataset.articleId ?? "";
+      if (!articleId) return;
+      hide(articleId);
+      if (card) updateCardStorageState(card);
+      applyArticleControls();
+      showHideToast(articleId);
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const undoButton = target.closest("[data-hide-toast-undo]");
+    if (!undoButton) return;
+    event.preventDefault();
+    const toast = undoButton.closest("[data-hide-toast]");
+    const articleId = toast?.dataset.articleId ?? "";
+    if (articleId) {
+      unhide(articleId);
+      const card = document.querySelector(`[data-article-card][data-article-id="${CSS.escape(articleId)}"]`);
+      if (card) updateCardStorageState(card);
+      applyArticleControls();
+    }
+    if (toast) toast.hidden = true;
+    if (hideUndoTimer !== null) {
+      window.clearTimeout(hideUndoTimer);
+      hideUndoTimer = null;
+    }
+  });
+
   document.querySelectorAll("[data-reset-reads]").forEach((button) => {
     button.addEventListener("click", () => {
       resetReads();
       applyStorageState();
+    });
+  });
+
+  updateExcludeCount();
+  document.querySelectorAll("[data-exclude-submit]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const urls = hiddenIds();
+      if (urls.length === 0) {
+        window.alert("不要マークがついた記事はまだありません。");
+        return;
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      const title = `exclude-request: ${today} (${urls.length} 件)`;
+      const body = [
+        "## 削除対象 URL",
+        "",
+        ...urls.map((url) => `- ${url}`),
+        "",
+        "---",
+        "_このIssueは「不要リスト送信」ボタンから自動生成されました。Sheets / Notion から該当記事を削除する処理がこの後 GitHub Actions で走ります。_",
+      ].join("\n");
+      const params = new URLSearchParams({
+        title,
+        body,
+        labels: "exclude-request",
+      });
+      const url = `https://github.com/${EXCLUDE_REPO}/issues/new?${params.toString()}`;
+      window.open(url, "_blank", "noopener,noreferrer");
     });
   });
 

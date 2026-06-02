@@ -60,6 +60,43 @@ def _row(it: ProcessedItem) -> list:
     ]
 
 
+URL_COLUMN_INDEX = COLUMNS.index("url")
+
+
+def delete_by_urls(urls: list[str]) -> int:
+    if is_dry_run():
+        log.info(f"[DRY_RUN] would delete {len(urls)} rows from Sheets")
+        return 0
+    if not urls:
+        return 0
+    try:
+        book = _open_book()
+    except Exception as e:  # noqa: BLE001
+        log.error(f"Sheets open failed: {e}")
+        return 0
+
+    target = set(urls)
+    deleted = 0
+    for sheet_name in ("ゲーム&esports", "アニメ&漫画"):
+        try:
+            ws = book.worksheet(sheet_name)
+        except Exception:  # noqa: BLE001
+            continue
+        try:
+            url_col = ws.col_values(URL_COLUMN_INDEX + 1)
+        except Exception as e:  # noqa: BLE001
+            log.error(f"Sheets read failed ({sheet_name}): {e}")
+            continue
+        rows_to_delete = [i + 1 for i, value in enumerate(url_col) if value in target]
+        for row_index in sorted(rows_to_delete, reverse=True):
+            try:
+                ws.delete_rows(row_index)
+                deleted += 1
+            except Exception as e:  # noqa: BLE001
+                log.error(f"Sheets delete_rows failed at {sheet_name}:{row_index}: {e}")
+    return deleted
+
+
 def append(items: list[ProcessedItem]) -> int:
     if is_dry_run():
         log.info(f"[DRY_RUN] would append {len(items)} rows to Sheets")

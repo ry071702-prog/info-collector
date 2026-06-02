@@ -1,7 +1,8 @@
 const READ_KEY = "readArticles";
 const FAVORITES_KEY = "favorites";
+const HIDDEN_KEY = "hiddenArticles";
 
-type StorageKey = typeof READ_KEY | typeof FAVORITES_KEY;
+type StorageKey = typeof READ_KEY | typeof FAVORITES_KEY | typeof HIDDEN_KEY;
 
 function canUseStorage(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -85,7 +86,46 @@ export function favoriteIds(): string[] {
   return [...readSet(FAVORITES_KEY)];
 }
 
+export function hide(articleId: string): void {
+  if (!articleId) {
+    return;
+  }
+  const hidden = readSet(HIDDEN_KEY);
+  hidden.add(articleId);
+  writeSet(HIDDEN_KEY, hidden);
+}
+
+export function unhide(articleId: string): void {
+  const hidden = readSet(HIDDEN_KEY);
+  hidden.delete(articleId);
+  writeSet(HIDDEN_KEY, hidden);
+}
+
+export function toggleHidden(articleId: string): boolean {
+  if (!articleId) {
+    return false;
+  }
+  const hidden = readSet(HIDDEN_KEY);
+  const nextValue = !hidden.has(articleId);
+  if (nextValue) {
+    hidden.add(articleId);
+  } else {
+    hidden.delete(articleId);
+  }
+  writeSet(HIDDEN_KEY, hidden);
+  return nextValue;
+}
+
+export function isHidden(articleId: string): boolean {
+  return readSet(HIDDEN_KEY).has(articleId);
+}
+
+export function hiddenIds(): string[] {
+  return [...readSet(HIDDEN_KEY)];
+}
+
 export const storageKeys = {
   readArticles: READ_KEY,
   favorites: FAVORITES_KEY,
+  hidden: HIDDEN_KEY,
 } as const;
