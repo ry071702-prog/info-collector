@@ -1,0 +1,76 @@
+name: External Dispatcher (cron-job.org fallback)
+
+# このワークフローは外部 cron (cron-job.org) から repository_dispatch で呼び出される。
+# GitHub Actions の schedule が止まったときの保険として、現在の UTC 時刻に応じて
+# 必要な定期 workflow を gh workflow run で発火する。
+#
+# cron-job.org 側の設定:
+#   URL    : https://api.github.com/repos/ry071702-prog/info-collector/dispatches
+#   Method : POST
+#   Headers: Authorization: Bearer <PAT>, Accept: application/vnd.github+json
+#   Body   : {"event_type": "external-tick"}
+#   Cron   : */30 * * * *  (30 分間隔)
+#
+# 既存の schedule cron が生きている場合は concurrency により重複起動が cancel される。
+
+on:
+  repository_dispatch:
+    types: [external-tick]
+  workflow_dispatch:  # 手動テスト用
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch by time
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          M=$(date -u +%M)
+          H=$(date -u +%H)
+          D=$(date -u +%u)   # 1=Mon ... 7=Sun
+          M_INT=$((10#$M))
+          H_INT=$((10#$H))
+
+          echo "Now (UTC): H=$H_INT M=$M_INT D=$D"
+
+          dispatched=()
+
+          # */30 cron — 30 分ごと (Realtime / Notify Priority)
+          if [ "$M_INT" -lt 5 ] || { [ "$M_INT" -ge 30 ] && [ "$M_INT" -lt 35 ]; }; then
+            gh workflow run collect_realtime.yml --repo "$REPO" && dispatched+=("collect_realtime")
+            gh workflow run notify_priority.yml --repo "$REPO" && dispatched+=("notify_priority")
+          fi
+
+          # 0 */3 cron — 3 時間ごと :00 (Regular)
+          if [ "$M_INT" -lt 5 ] && [ $((H_INT % 3)) -eq 0 ]; then
+            gh workflow run collect_regular.yml --repo "$REPO" && dispatched+=("collect_regular")
+          fi
+
+          # 0 22 cron — 毎日 22:00 UTC (Daily)
+          if [ "$M_INT" -lt 5 ] && [ "$H_INT" -eq 22 ]; then
+            gh workflow run collect_daily.yml --repo "$REPO" && dispatched+=("collect_daily")
+          fi
+
+          # 0 10,22 cron — 1日2回 (Process & Daily Digest)
+          if [ "$M_INT" -lt 5 ] && { [ "$H_INT" -eq 10 ] || [ "$H_INT" -eq 22 ]; }; then
+            gh workflow run process_digest.yml --repo "$REPO" && dispatched+=("process_digest")
+          fi
+
+          # 0 23 * * 0 cron — 日曜 23:00 UTC (Weekly Report)
+          if [ "$M_INT" -lt 5 ] && [ "$H_INT" -eq 23 ] && [ "$D" -eq 7 ]; then
+            gh workflow run report_weekly.yml --repo "$REPO" && dispatched+=("report_weekly")
+          fi
+
+          if [ "${#dispatched[@]}" -eq 0 ]; then
+            echo "No workflow due at this tick."
+          else
+            echo "Dispatched: ${dispatched[*]}"
+          fi
