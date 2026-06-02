@@ -1,0 +1,204 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  allArticles,
+  genreLabels,
+  type Article,
+  type Genre,
+} from "../../lib/articles";
+import { formatJapaneseDate } from "../../lib/japaneseDate";
+
+export async function getStaticPaths() {
+  // 直近30日に該当する記事が1件でもある日付ぶん静的生成
+  const articles = allArticles();
+  const dates = new Set<string>();
+  for (const a of articles) {
+    const d = a.timestamp.slice(0, 10);
+    if (d) dates.add(d);
+  }
+  const sorted = [...dates].sort().reverse().slice(0, 30);
+  return sorted.map((date) => ({ params: { date } }));
+}
+
+interface Props {
+  // Astro が getStaticPaths から params を渡す
+}
+
+const { date } = Astro.params as { date: string };
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// 1日分の記事を絞り込む (JST 基準で 1 日)
+function isOnDate(article: Article, targetDate: string): boolean {
+  // article.timestamp は UTC ISO 文字列。JST 換算で targetDate と一致する日を取る
+  const ts = new Date(article.timestamp);
+  if (Number.isNaN(ts.getTime())) return false;
+  const jst = new Date(ts.getTime() + 9 * 60 * 60 * 1000);
+  return jst.toISOString().slice(0, 10) === targetDate;
+}
+
+const articlesAll = allArticles().filter((a) => isOnDate(a, date));
+const priorityRank: Record<string, number> = { S: 0, A: 1, B: 2, C: 3 };
+const sorted = [...articlesAll].sort((a, b) => {
+  const p = (priorityRank[a.final_priority] ?? 9) - (priorityRank[b.final_priority] ?? 9);
+  if (p !== 0) return p;
+  return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+});
+
+// トップ記事 (S/A 上位 1 件)
+const headline = sorted[0];
+
+// 次点 3 件
+const leads = sorted.slice(1, 4);
+
+// ジャンル別 (重要度上位 4 件ずつ)
+const byGenre = (g: Genre): Article[] => {
+  const used = new Set([headline?.url, ...leads.map((a) => a.url)]);
+  return sorted.filter((a) => a.genre === g && !used.has(a.url)).slice(0, 5);
+};
+
+const gameItems = byGenre("games");
+const animeItems = byGenre("anime");
+const disneyItems = byGenre("disney");
+
+const formattedDate = formatJapaneseDate(`${date}T12:00:00+09:00`);
+
+// 日付の前後リンク用に他の生成済み日付を取得
+const allDates = (() => {
+  const set = new Set<string>();
+  for (const a of allArticles()) set.add(a.timestamp.slice(0, 10));
+  return [...set].sort();
+})();
+const idx = allDates.indexOf(date);
+const prevDate = idx > 0 ? allDates[idx - 1] : null;
+const nextDate = idx >= 0 && idx < allDates.length - 1 ? allDates[idx + 1] : null;
+
+function summaryOf(a: Article): string {
+  return a.summary || a.category_name || "";
+}
+
+function authorOf(a: Article): string {
+  return a.author || a.domain || "unknown";
+}
+---
+
+<BaseLayout title={`新聞 ${date}`}>
+  <div class="newspaper mx-auto max-w-7xl px-2 py-4 sm:px-4">
+    <header class="newspaper-masthead border-y-4 border-double border-stone-900 py-4 dark:border-stone-200">
+      <div class="text-center">
+        <p class="font-serif-jp text-xs tracking-widest text-stone-600 dark:text-stone-400">DAILY NEWSPAPER · GAMES / ANIME / DISNEY</p>
+        <h1 class="font-serif-jp text-5xl font-black tracking-normal text-stone-950 sm:text-6xl dark:text-white">
+          日刊 情報収集
+        </h1>
+        <p class="mt-2 font-serif-jp text-sm text-stone-700 dark:text-stone-300">{formattedDate}</p>
+        <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">
+          記事 {articlesAll.length} 件 · 各見出しから元記事へ遷移できます
+        </p>
+      </div>
+    </header>
+
+    <nav class="my-3 flex items-center justify-between text-xs text-stone-600 dark:text-stone-400 print:hidden">
+      <div>
+        {prevDate && (
+          <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/${prevDate}/`}>← {prevDate}</a>
+        )}
+      </div>
+      <button type="button" class="rounded border border-stone-400 px-3 py-1 hover:bg-stone-100 dark:border-stone-600 dark:hover:bg-stone-800" onclick="window.print()">印刷 / PDF 保存</button>
+      <div>
+        {nextDate && (
+          <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/${nextDate}/`}>{nextDate} →</a>
+        )}
+      </div>
+    </nav>
+
+    {articlesAll.length === 0 ? (
+      <p class="mt-12 text-center text-stone-500 dark:text-stone-400">この日のデータはまだありません。</p>
+    ) : (
+      <>
+        {headline && (
+          <section class="newspaper-headline mt-4 border-b border-stone-400 pb-6 dark:border-stone-700">
+            <p class="font-serif-jp text-xs tracking-widest text-stone-600 dark:text-stone-400">本日のトップ — {genreLabels[headline.genre]}</p>
+            <a href={headline.url} target="_blank" rel="noreferrer" class="block group">
+              <h2 class="font-serif-jp mt-1 text-3xl font-black leading-tight text-stone-950 group-hover:underline sm:text-4xl dark:text-white">
+                {headline.category_name}
+              </h2>
+            </a>
+            <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
+              {authorOf(headline)} · 重要度 {headline.final_priority}
+            </p>
+            <p class="newspaper-lead mt-3 font-serif-jp text-base leading-7 text-stone-800 dark:text-stone-200">
+              {summaryOf(headline)}
+            </p>
+          </section>
+        )}
+
+        {leads.length > 0 && (
+          <section class="newspaper-leads mt-6 grid gap-6 sm:grid-cols-3 border-b border-stone-400 pb-6 dark:border-stone-700">
+            {leads.map((a) => (
+              <article>
+                <p class="font-serif-jp text-[10px] tracking-widest text-stone-600 dark:text-stone-400">{genreLabels[a.genre]}</p>
+                <a href={a.url} target="_blank" rel="noreferrer" class="group block">
+                  <h3 class="font-serif-jp mt-1 text-xl font-black leading-snug text-stone-950 group-hover:underline dark:text-white">
+                    {a.category_name}
+                  </h3>
+                </a>
+                <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400">{authorOf(a)} · 重要度 {a.final_priority}</p>
+                <p class="mt-2 font-serif-jp text-sm leading-6 text-stone-800 dark:text-stone-200">{summaryOf(a)}</p>
+              </article>
+            ))}
+          </section>
+        )}
+
+        <section class="newspaper-columns mt-6 grid gap-6 lg:grid-cols-3">
+          {[
+            { label: "ゲーム面", items: gameItems },
+            { label: "アニメ面", items: animeItems },
+            { label: "Disney 面", items: disneyItems },
+          ].map(({ label, items }) => (
+            <div class="border-t-2 border-stone-900 pt-3 dark:border-stone-200">
+              <h2 class="font-serif-jp text-lg font-black tracking-wide text-stone-950 dark:text-white">{label}</h2>
+              {items.length === 0 ? (
+                <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">この面の記事はありません。</p>
+              ) : (
+                <ul class="mt-3 divide-y divide-stone-300 dark:divide-stone-700">
+                  {items.map((a) => (
+                    <li class="py-3">
+                      <a href={a.url} target="_blank" rel="noreferrer" class="group">
+                        <h3 class="font-serif-jp text-base font-bold leading-snug text-stone-950 group-hover:underline dark:text-white">
+                          {a.category_name}
+                        </h3>
+                      </a>
+                      <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400">{authorOf(a)} · 重要度 {a.final_priority}</p>
+                      <p class="mt-1 font-serif-jp text-sm leading-6 text-stone-700 dark:text-stone-300 line-clamp-3">{summaryOf(a)}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+
+        <footer class="mt-8 border-t-2 border-stone-900 pt-3 text-center text-xs text-stone-500 dark:border-stone-200 dark:text-stone-400">
+          このページは AI で自動生成された日刊紙です · ソースは X / YouTube / Twitch / RSS
+        </footer>
+      </>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  @media print {
+    :global(header.border-b-2),
+    :global(.print\:hidden) {
+      display: none !important;
+    }
+    .newspaper {
+      max-width: none;
+      padding: 0;
+    }
+    .newspaper-headline,
+    .newspaper-leads,
+    .newspaper-columns {
+      page-break-inside: avoid;
+    }
+  }
+</style>
