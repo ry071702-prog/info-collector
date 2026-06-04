@@ -95,7 +95,7 @@ Python パイプライン本体です。`admin/`, `collectors/`, `jobs/`, `outpu
 ### `config/`
 
 - `settings.toml`: モデル、バッチサイズ、リトライ、collector、保持期間、スコアリング。
-- `watchlist.csv`: Google Sheets が読めない場合のフォールバック兼ローカルキャッシュ。
+- `watchlist.csv`: watchlist の唯一の canonical(正本)。collector はここだけを読む。
 
 ### `data/`
 
@@ -366,10 +366,10 @@ collector は `src/collectors/*.py` に置き、概ね `collect(sources, since) 
 
 - 使用箇所: `src/watchlist.py`, `src/outputs/sheets.py`, `src/admin/health.py`
 - env: `GOOGLE_SHEETS_CREDENTIALS`, `GOOGLE_SHEETS_ID`
-- watchlist は Sheets の `watchlist` worksheet を優先。
-- Sheets 読み込み失敗時は `config/watchlist.csv` にフォールバック。
-- Sheets 読み込み成功時は `config/watchlist.csv` をローカルキャッシュとして上書きします。
-- 出力 worksheet は `ゲーム&esports` と `アニメ&漫画`。
+- watchlist の正本は `config/watchlist.csv`(`watchlist.load()` は CSV だけを読む)。Sheets からは読まない。
+- Sheets への同期は既定で無効。`SYNC_SHEETS_FROM_CSV=true` を明示した場合のみ `_sync_csv_to_sheets` が動く。
+  - この同期は `ws.clear()` で Sheets を CSV 内容に全置換する破壊的処理。過去に Sheets 側のみに存在したソースを消した実績があるため(2026-05-21)、原則有効化しない。
+- 出力 worksheet は `ゲーム&esports` と `アニメ&漫画`(watchlist とは別用途)。
 
 ### Notion
 
@@ -417,7 +417,7 @@ frequency の絞り込み:
 - `6h`: `realtime`, `hourly`, `6h`
 - `daily`: 全 source
 
-現時点の CSV は X の source が中心で、games / anime / disney を含みます。
+現時点の CSV は X / YouTube / RSS / YouTubeSearch / YouTubeTrending を含み、games / anime / disney をカバーします。
 
 ---
 
@@ -489,8 +489,9 @@ collector の外部読み取り、Gemini 呼び出し、ローカルファイル
 
 ### Google Sheets watchlist
 
-`watchlist.load()` は Sheets を優先します。
-Sheets 読み込み成功時に `config/watchlist.csv` を書き戻すため、ローカル CSV の変更が上書きされることがあります。
+`watchlist.load()` は `config/watchlist.csv` を唯一の canonical として読みます(Sheets からは読みません)。
+Sheets への同期は既定で無効です。`SYNC_SHEETS_FROM_CSV=true` を設定したときだけ `_sync_csv_to_sheets` が `ws.clear()` で Sheets を CSV 内容に全置換します。この破壊的同期は過去に Sheets 側のみのソースを消した実績があるため、原則有効化しないでください。
+ソースの追加・編集は `config/watchlist.csv` を直接編集します。
 
 ### Notion 書き込み
 
@@ -516,7 +517,7 @@ DB に存在しないプロパティは schema が取得できた場合のみ落
 - `.env` / GitHub Actions secrets の変更
 - `data/raw/`, `data/processed/` 配下の実データ削除・上書き
 - `.github/workflows/` の本番ジョブを破壊する変更 (collect_*, process_digest, publish_site, notify_priority など)
-- `config/watchlist.csv` の機械的書き換え (Sheets と整合させる必要があるため)
+- `config/watchlist.csv` の機械的書き換え (収集対象を決める運用データ。人間が内容を判断して編集する。Sheets 同期は既定無効なので CSV が唯一の正本)
 - main への直接 commit、force push、`git reset --hard`
 
 ### ✅ 推奨
