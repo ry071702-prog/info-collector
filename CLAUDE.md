@@ -312,6 +312,7 @@ collector は `src/collectors/*.py` に置き、概ね `collect(sources, since) 
 - `maintenance_monthly.yml`: 毎月 1 日 00:00 UTC に `python -m src.jobs.maintenance_monthly`。
 - `health.yml`: 手動で `python -m src.admin.health`。
 - `notion_schema_init.yml`: 手動で `python -m src.admin.init_notion_schema`。
+- `notion_schema_prune.yml`: 手動で `python -m src.admin.prune_notion_schema`(旧 `Tags` multi_select を削除)。
 - `publish_site.yml`: `Process & Daily Digest` 成功後、または手動で Astro サイトを GitHub Pages にデプロイ。
 
 主な commit 対象:
@@ -373,11 +374,13 @@ collector は `src/collectors/*.py` に置き、概ね `collect(sources, since) 
 
 ### Notion
 
-- 使用箇所: `src/outputs/notion.py`, `src/admin/init_notion_schema.py`
+- 使用箇所: `src/outputs/notion.py`, `src/admin/init_notion_schema.py`, `src/admin/prune_notion_schema.py`
 - env: `NOTION_TOKEN`, `NOTION_DATABASE_ID_GAMES`, `NOTION_DATABASE_ID_ANIME`, `NOTION_DATABASE_ID_DISNEY`
 - `disney` は Disney DB、`anime` は Anime DB、それ以外は Games DB。
 - DB ID は URL 全体でも `normalize_db_id` で UUID 形式に正規化。
 - schema が取れた場合、DB に存在しないプロパティはスキップします。
+- **Notion-Version を `2022-06-28` に固定**(`notion.NOTION_API_VERSION`)。新しい API バージョン (data source モデル) では `databases.retrieve` が `properties` を返さず、schema 取得が 0 件になって property フィルタや schema 更新が壊れる。notion-client を上げる際はこの固定を維持すること。
+- プロパティ削除 (例: 旧 `Tags`) は notion-client の `databases.update({k: None})` だと None キーが欠落して効かない。`prune_notion_schema` は raw httpx で `{"properties": {"Tags": null}}` を直送している。
 
 ### Discord
 
@@ -423,7 +426,9 @@ frequency の絞り込み:
 
 ## Notion DB スキーマ
 
-`src/outputs/notion.py` が書く基本プロパティは `Title`, `Importance`, `Category`, `Genre`, `URL`, `Author`, `Timestamp`, `Tags`, `Spoiler`, `Source`, `DedupKey` です。β スコアリング用の任意プロパティは `RiskLevel`, `FinalPriority`, `FreshnessScore`, `StreamerInfluence`, `ClipVirality`, `GameTrendFromStreamers` で、`python -m src.admin.init_notion_schema` により追加できます。
+`src/outputs/notion.py` が書く基本プロパティは `Title`, `Importance`, `Category`, `Genre`, `URL`, `Author`, `Timestamp`, `TagsText`, `Spoiler`, `Source`, `DedupKey` です。β スコアリング用の任意プロパティは `RiskLevel`, `FinalPriority`, `FreshnessScore`, `StreamerInfluence`, `ClipVirality`, `GameTrendFromStreamers` で、`python -m src.admin.init_notion_schema` により追加できます。
+
+> ⚠ タグは旧 `Tags` (multi_select) から `TagsText` (rich_text) へ移行済み。multi_select は書き込みのたびに unique option を溜め込み、Notion の schema サイズ上限 (~489KB) に到達して全書き込みが失敗するため。旧 `Tags` を残した DB は `python -m src.admin.prune_notion_schema`(または `Prune Notion Schema` workflow)で削除する。新規に `Tags` (multi_select) を増やさないこと。
 
 ---
 
