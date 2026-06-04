@@ -19,9 +19,11 @@ Required env: NOTION_TOKEN + at least one of NOTION_DATABASE_ID_{GAMES,ANIME,DIS
 from __future__ import annotations
 import sys
 
+import httpx
+
 from .. import logger
 from ..config import env
-from ..outputs.notion import _client, normalize_db_id
+from ..outputs.notion import NOTION_API_VERSION, _client, normalize_db_id
 
 log = logger.get(__name__)
 
@@ -29,27 +31,40 @@ LEGACY_PROP = "Tags"
 REPLACEMENT_PROP = "TagsText"
 
 
+def _patch_db(db_id: str, properties: dict) -> tuple[int, str]:
+    """databases.update を raw httpx で実行。
+
+    notion-client 経由だと properties の値が None のキーが送信時に欠落し、
+    プロパティ削除 (Tags=null) が効かない。json.dumps は None→null を保持するため
+    httpx で直接 PATCH して確実に null を送る。
+    """
+    token = env("NOTION_TOKEN", required=True)
+    resp = httpx.patch(
+        f"https://api.notion.com/v1/databases/{db_id}",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Notion-Version": NOTION_API_VERSION,
+            "Content-Type": "application/json",
+        },
+        json={"properties": properties},  # None は null として送られる
+        timeout=30.0,
+    )
+    return resp.status_code, resp.text[:300]
+
+
 def prune(client, db_id: str, label: str) -> None:
-    # retrieve は新 API バージョンだと properties を返さない (0 件) ことがあるため、
-    # 検知に依存せず Tags を無条件で削除し、TagsText を冪等に確保する。
     schema = client.databases.retrieve(database_id=db_id)
     props = schema.get("properties", {})
-    # 原因確定用: retrieve の応答形を診断ログに残す。
     log.info(
-        f"[{label}] retrieve keys={sorted(schema.keys())} "
-        f"properties={len(props)} has_data_sources={'data_sources' in schema}"
+        f"[{label}] before: properties={len(props)} tags_present={LEGACY_PROP in props}"
     )
 
-    # Tags=None で削除 / TagsText を rich_text で確保 (どちらも名前ベースで冪等)。
-    updates: dict[str, dict | None] = {LEGACY_PROP: None, REPLACEMENT_PROP: {"rich_text": {}}}
-    try:
-        client.databases.update(database_id=db_id, properties=updates)
-        log.info(f"[{label}] update sent: drop '{LEGACY_PROP}', ensure '{REPLACEMENT_PROP}'")
-    except Exception as e:  # noqa: BLE001
-        # Tags が既に無いケース等。TagsText 確保だけは試みる。
-        log.warning(f"[{label}] combined update failed ({e}); retrying TagsText only")
-        client.databases.update(database_id=db_id, properties={REPLACEMENT_PROP: {"rich_text": {}}})
-        log.info(f"[{label}] ensured '{REPLACEMENT_PROP}' only")
+    # Tags=null で削除 + TagsText を rich_text で確保 (名前ベースで冪等)。
+    status, body = _patch_db(db_id, {LEGACY_PROP: None, REPLACEMENT_PROP: {"rich_text": {}}})
+    if status == 200:
+        log.info(f"[{label}] PATCH 200: dropped '{LEGACY_PROP}', ensured '{REPLACEMENT_PROP}'")
+    else:
+        log.warning(f"[{label}] PATCH {status}: {body}")
 
     after = client.databases.retrieve(database_id=db_id).get("properties", {})
     log.info(f"[{label}] after: properties={len(after)} tags_present={LEGACY_PROP in after}")
