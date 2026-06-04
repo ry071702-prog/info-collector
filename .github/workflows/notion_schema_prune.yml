@@ -1,0 +1,25 @@
+name: Prune Notion Schema (drop legacy Tags)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Drop legacy Tags multi_select from Notion DBs
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 || '' }}
+          NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
+          NOTION_DATABASE_ID_ANIME: ${{ secrets.NOTION_DATABASE_ID_ANIME }}
+          NOTION_DATABASE_ID_DISNEY: ${{ secrets.NOTION_DATABASE_ID_DISNEY }}
+        run: python -m src.admin.prune_notion_schema
