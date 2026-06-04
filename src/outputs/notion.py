@@ -22,7 +22,9 @@ _CORE_SAFE_PROPS: set[str] = {
     "URL",
     "Author",
     "Timestamp",
-    "Tags",
+    # 旧 "Tags" (multi_select) は schema を肥大化させたため廃止し rich_text の
+    # "TagsText" に移行済み (_properties 参照)。fallback 書き込みでも TagsText を使う。
+    "TagsText",
     "Spoiler",
     "Source",
     "DedupKey",
