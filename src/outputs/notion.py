@@ -67,11 +67,18 @@ def normalize_db_id(raw: str | None) -> str | None:
     return s
 
 
+# このコードは DB 直下に `properties` が返る旧スキーマモデル前提。新しい
+# Notion API バージョン (data source モデル) では databases.retrieve が
+# properties を返さず schema 取得が 0 件になり、書き込みの property フィルタや
+# Tags 削除が機能しなくなる。バージョンを固定して旧来の応答形に揃える。
+NOTION_API_VERSION = "2022-06-28"
+
+
 def _client():
     from notion_client import Client
 
     token = env("NOTION_TOKEN", required=True)
-    return Client(auth=token)
+    return Client(auth=token, notion_version=NOTION_API_VERSION)
 
 
 def _properties(item: ProcessedItem) -> dict:
