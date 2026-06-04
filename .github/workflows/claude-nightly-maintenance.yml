@@ -45,7 +45,7 @@ jobs:
         run: |
           claude --print \
             --model claude-haiku-4-5 \
-            --max-turns 50 \
+            --max-turns 30 \
             --allowedTools "Read,Write,Edit,Glob,Grep,Bash(git:*),Bash(gh:*),Bash(pytest:*),Bash(ruff:*),Bash(black:*),Bash(isort:*),Bash(pip:*),Bash(python3:*),Bash(ls:*),Bash(cat:*),Bash(find:*),Bash(date:*),Bash(echo:*),Bash(rm:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*)" \
             <<'PROMPT'
           あなたは info-collector プロジェクトの自動メンテナンス担当エージェントです。
@@ -86,8 +86,9 @@ jobs:
           ```
           PR 本文には: 変更概要 / 動機 / リスク評価 (低中高) / レビュー確認ポイント
 
-          ## ステップ 6: 余裕があれば次の Easy Win に着手 (ステップ 2 へ戻る)
-          ただし **必ずステップ 5 まで完了させてから** 次を始める。
+          ## ステップ 6: 終了 (ループしない)
+          **1 実行 = 最大 1 PR。** ステップ 5 で PR を作成したら、
+          追加の Easy Win には着手せず、その時点で終了する (コスト抑制のため)。
           作りかけで終わるくらいなら、小さくても PR まで持っていく。
 
           # 厳守ルール
