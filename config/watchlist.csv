@@ -4,11 +4,11 @@ W002,ファミ通.com,@famitsu,https://x.com/famitsu,X,games,メディア,"A,B,C
 W003,Automaton,@AUTOMATONJapan,https://x.com/AUTOMATONJapan,X,games,メディア,"A,B,F,J,KK",high,TRUE,hourly,ja,海外情報・インディー強い
 W101,任天堂株式会社,@Nintendo,https://x.com/Nintendo,X,games,公式,"A,B,JJ",high,TRUE,hourly,ja,自社IP発表が早い
 W102,プレイステーション,@PlayStation_jp,https://x.com/PlayStation_jp,X,games,公式,"A,B,JJ",high,TRUE,hourly,ja,PSプラットフォーム公式
-W201,VCT Pacific,@vctpacific,https://x.com/vctpacific,X,games,大会,"C",high,TRUE,realtime,en,VALORANT国際大会
+W201,VCT Pacific,@vctpacific,https://x.com/vctpacific,X,games,大会,C,high,TRUE,realtime,en,VALORANT国際大会
 W501,コミックナタリー,@comic_natalie,https://x.com/comic_natalie,X,anime,メディア,"M,Q,X,BB",high,TRUE,hourly,ja,アニメ・漫画総合最大手
 W502,アニメイトタイムズ,@atimes_news,https://x.com/atimes_news,X,anime,メディア,"M,N,O,V,W",high,TRUE,hourly,ja,アニメ・グッズ・声優情報
 W601,集英社 少年ジャンプ＋,@jump_henshubu,https://x.com/jump_henshubu,X,anime,公式,"Q,M",high,TRUE,hourly,ja,ジャンプ＋編集部
-W602,週刊少年ジャンプ,@WSJ_manga,https://x.com/WSJ_manga,X,anime,公式,"Q",high,TRUE,hourly,ja,本誌
+W602,週刊少年ジャンプ,@WSJ_manga,https://x.com/WSJ_manga,X,anime,公式,Q,high,TRUE,hourly,ja,本誌
 DSY001,Disney 公式,@Disney,https://x.com/Disney,X,disney,公式,"DA,DB,DC,DG",high,TRUE,6h,en,Walt Disney Company 米国本社の総合公式
 DSY002,Disney+ 公式 (US),@DisneyPlus,https://x.com/DisneyPlus,X,disney,公式,"DC,DA",high,TRUE,6h,en,Disney+ 米国
 DSY003,Disney+ Japan,@DisneyPlusJP,https://x.com/DisneyPlusJP,X,disney,公式,"DC,DA",high,TRUE,6h,ja,Disney+ 日本
@@ -20,9 +20,9 @@ DSY008,Pixar,@Pixar,https://x.com/Pixar,X,disney,公式,"DA,DB,DI",high,TRUE,6h,
 DSY009,Lucasfilm,@lucasfilm,https://x.com/lucasfilm,X,disney,公式,"DA,DB,DG",medium,TRUE,daily,en,Lucasfilm
 DSY010,Walt Disney Animation,@DisneyAnimation,https://x.com/DisneyAnimation,X,disney,公式,"DA,DB",medium,TRUE,daily,en,Walt Disney Animation Studios
 DSY011,東京ディズニーリゾートPR,@TDR_PR,https://x.com/TDR_PR,X,disney,公式,"DA,DE,DH",high,TRUE,6h,ja,東京ディズニーリゾート公式PR
-DSY012,Disney Parks,@DisneyParks,https://x.com/DisneyParks,X,disney,公式,"DE",medium,TRUE,daily,en,Disney Parks 全体（米国系）
-DSY013,Walt Disney World,@WaltDisneyWorld,https://x.com/WaltDisneyWorld,X,disney,公式,"DE",low,TRUE,daily,en,WDW（フロリダ）
-DSY014,Disneyland,@Disneyland,https://x.com/Disneyland,X,disney,公式,"DE",low,TRUE,daily,en,Anaheim ディズニーランド
+DSY012,Disney Parks,@DisneyParks,https://x.com/DisneyParks,X,disney,公式,DE,medium,TRUE,daily,en,Disney Parks 全体（米国系）
+DSY013,Walt Disney World,@WaltDisneyWorld,https://x.com/WaltDisneyWorld,X,disney,公式,DE,low,TRUE,daily,en,WDW（フロリダ）
+DSY014,Disneyland,@Disneyland,https://x.com/Disneyland,X,disney,公式,DE,low,TRUE,daily,en,Anaheim ディズニーランド
 DSY015,D23,@DisneyD23,https://x.com/DisneyD23,X,disney,公式,"DA,DH",medium,TRUE,daily,en,Disney 公式ファンクラブ D23
 DSY016,Disney YouTube,UC_5niPa-d35gg88HaS7RrIw,https://www.youtube.com/channel/UC_5niPa-d35gg88HaS7RrIw,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,en,Disney 公式 YouTube（DSY001 対応）
 DSY017,Disney+ YouTube,UCIrgJInjLS2BhlHOMDW7v0g,https://www.youtube.com/channel/UCIrgJInjLS2BhlHOMDW7v0g,YouTube,disney,公式,"DC,DA",high,TRUE,daily,en,Disney Plus 公式（DSY002 対応）
@@ -35,11 +35,11 @@ DSY023,Pixar YouTube,UC_IRYSp4auq7hKLvziWVH6w,https://www.youtube.com/channel/UC
 DSY024,Lucasfilm YouTube,UCnwY6fAhE3ePu0F2nMP-DLg,https://www.youtube.com/channel/UCnwY6fAhE3ePu0F2nMP-DLg,YouTube,disney,公式,"DA,DB,DG",medium,TRUE,daily,en,Lucasfilm 公式（DSY009 対応）
 DSY025,Walt Disney Animation YouTube,UC_976xMxPgzIa290Hqtk-9g,https://www.youtube.com/channel/UC_976xMxPgzIa290Hqtk-9g,YouTube,disney,公式,"DA,DB",medium,TRUE,daily,en,Walt Disney Animation Studios 公式（DSY010 対応）
 DSY026,Tokyo Disney Resort YouTube,UCLz9NUWuVLmYTuwCRG2WykQ,https://www.youtube.com/channel/UCLz9NUWuVLmYTuwCRG2WykQ,YouTube,disney,公式,"DA,DE,DH",high,TRUE,daily,ja,東京ディズニーリゾート公式（DSY011 対応）
-DSY027,Disney Parks YouTube,UC1xwwLwm6WSMbUn_Tp597hQ,https://www.youtube.com/channel/UC1xwwLwm6WSMbUn_Tp597hQ,YouTube,disney,公式,"DE",medium,TRUE,daily,en,Disney Parks 公式（DSY012 対応）
-DSY028,Disneyland Resort YouTube,UCuRtXPHmnpkZetkb8ft7mzw,https://www.youtube.com/channel/UCuRtXPHmnpkZetkb8ft7mzw,YouTube,disney,公式,"DE",low,TRUE,daily,en,Disneyland Resort 公式（DSY014 対応）
+DSY027,Disney Parks YouTube,UC1xwwLwm6WSMbUn_Tp597hQ,https://www.youtube.com/channel/UC1xwwLwm6WSMbUn_Tp597hQ,YouTube,disney,公式,DE,medium,TRUE,daily,en,Disney Parks 公式（DSY012 対応）
+DSY028,Disneyland Resort YouTube,UCuRtXPHmnpkZetkb8ft7mzw,https://www.youtube.com/channel/UCuRtXPHmnpkZetkb8ft7mzw,YouTube,disney,公式,DE,low,TRUE,daily,en,Disneyland Resort 公式（DSY014 対応）
 DSY029,D23 YouTube,UC83IJ4TTV8pCCPkE42ptmGw,https://www.youtube.com/channel/UC83IJ4TTV8pCCPkE42ptmGw,YouTube,disney,公式,"DA,DH",medium,TRUE,daily,en,D23 公式（DSY015 対応）
-DSY030,The Walt Disney Company RSS,corporate-rss,https://thewaltdisneycompany.com/feed/,RSS,disney,公式,"DA,DL",high,TRUE,daily,en,Walt Disney Company コーポレートRSS (100件/feed, IR/組織/決算等)
-DSY031,Disney Parks Blog RSS,parks-blog-rss,https://disneyparks.disney.go.com/blog/feed/,RSS,disney,公式,"DE",high,TRUE,daily,en,Disney Parks Blog 公式RSS
+DSY030,The Walt Disney Company RSS,corporate-rss,https://thewaltdisneycompany.com/feed/,RSS,disney,公式,"DA,DL",high,TRUE,daily,en,"Walt Disney Company コーポレートRSS (100件/feed, IR/組織/決算等)"
+DSY031,Disney Parks Blog RSS,parks-blog-rss,https://disneyparks.disney.go.com/blog/feed/,RSS,disney,公式,DE,high,TRUE,daily,en,Disney Parks Blog 公式RSS
 DSY032,D23 RSS,d23-rss,https://www.d23.com/feed/,RSS,disney,公式,"DA,DH",medium,TRUE,daily,en,D23 公式RSS
 W301,Nintendo of America YouTube,UCGIY_O-8vW4rfX98KlMkvRg,https://www.youtube.com/channel/UCGIY_O-8vW4rfX98KlMkvRg,YouTube,games,公式,"A,L,JJ",high,TRUE,daily,en,Nintendo of America 公式 (15件/feed)
 W312,Nintendo 公式日本 YouTube,UCkH3CcMfqww9RsZvPRPkAJA,https://www.youtube.com/channel/UCkH3CcMfqww9RsZvPRPkAJA,YouTube,games,公式,"A,L,JJ",high,TRUE,daily,ja,任天堂公式チャンネル 日本 (15件/feed)
@@ -73,20 +73,112 @@ SR002,YT検索 Disney+ 新作,Disney+ 新作,,YouTubeSearch,disney,メディア,
 DSY033,Star Wars 公式日本 YouTube,UCGzKKabQ36Chhas5nermAGA,https://www.youtube.com/channel/UCGzKKabQ36Chhas5nermAGA,YouTube,disney,公式,"DA,DB,DC,DG",high,TRUE,daily,ja,スター・ウォーズ公式 日本 (DSY007/DSY022 と連動、Mandalorian 等の映画情報)
 DSY034,20th Century Studios YouTube,UC2-BeLxzUBSs0uSrmzWhJuQ,https://www.youtube.com/channel/UC2-BeLxzUBSs0uSrmzWhJuQ,YouTube,disney,公式,"DB,DO",high,TRUE,daily,en,20th Century Studios 公式 (Disney傘下、15件/feed)
 DSY035,Disney Channel YouTube,UCktaw9L-f65LzUUdjmCFkbQ,https://www.youtube.com/channel/UCktaw9L-f65LzUUdjmCFkbQ,YouTube,disney,公式,"DD,DG",medium,TRUE,daily,en,Disney Channel 公式
-DSY036,Disney Music YouTube,UCyJBuaK-Qqe4N5QNE1xn86A,https://www.youtube.com/channel/UCyJBuaK-Qqe4N5QNE1xn86A,YouTube,disney,公式,"DI",medium,TRUE,daily,en,Disney Music 公式
+DSY036,Disney Music YouTube,UCyJBuaK-Qqe4N5QNE1xn86A,https://www.youtube.com/channel/UCyJBuaK-Qqe4N5QNE1xn86A,YouTube,disney,公式,DI,medium,TRUE,daily,en,Disney Music 公式
 DSY037,DisneyMusicVEVO YouTube,UCgwv23FVv3lqh567yagXfNg,https://www.youtube.com/channel/UCgwv23FVv3lqh567yagXfNg,YouTube,disney,公式,"DI,DO",medium,TRUE,daily,en,Disney Music VEVO 公式 MV
 DSY038,Hulu YouTube,UCE5mQnNl8Q4H2qcv4ikaXeA,https://www.youtube.com/channel/UCE5mQnNl8Q4H2qcv4ikaXeA,YouTube,disney,公式,"DC,DD",medium,TRUE,daily,en,Hulu 公式 (Disney系配信プラットフォーム)
-DSY039,National Geographic YouTube,UCpVm7bg6pXKo1Pr6k5kxG9A,https://www.youtube.com/channel/UCpVm7bg6pXKo1Pr6k5kxG9A,YouTube,disney,公式,"DD",medium,TRUE,daily,en,National Geographic 公式 (Disney傘下)
-DSY040,FX Networks YouTube,UC2dIDJBf9W88PxGm-uHZPaQ,https://www.youtube.com/channel/UC2dIDJBf9W88PxGm-uHZPaQ,YouTube,disney,公式,"DD",medium,TRUE,daily,en,FX Networks 公式 (Disney傘下)
-DSY041,Disneyland Paris YouTube,UC1t74cS15eURW0YCpsRaDuw,https://www.youtube.com/channel/UC1t74cS15eURW0YCpsRaDuw,YouTube,disney,公式,"DE",medium,TRUE,daily,en,Disneyland Paris 公式
+DSY039,National Geographic YouTube,UCpVm7bg6pXKo1Pr6k5kxG9A,https://www.youtube.com/channel/UCpVm7bg6pXKo1Pr6k5kxG9A,YouTube,disney,公式,DD,medium,TRUE,daily,en,National Geographic 公式 (Disney傘下)
+DSY040,FX Networks YouTube,UC2dIDJBf9W88PxGm-uHZPaQ,https://www.youtube.com/channel/UC2dIDJBf9W88PxGm-uHZPaQ,YouTube,disney,公式,DD,medium,TRUE,daily,en,FX Networks 公式 (Disney傘下)
+DSY041,Disneyland Paris YouTube,UC1t74cS15eURW0YCpsRaDuw,https://www.youtube.com/channel/UC1t74cS15eURW0YCpsRaDuw,YouTube,disney,公式,DE,medium,TRUE,daily,en,Disneyland Paris 公式
 DSY042,Walt Disney Imagineering YouTube,UC4DavIB24rEr5waVY5AgZLg,https://www.youtube.com/channel/UC4DavIB24rEr5waVY5AgZLg,YouTube,disney,公式,"DE,DG",low,TRUE,daily,en,Walt Disney Imagineering 公式 (パーク技術)
 DSY043,Marvel Comics YouTube,UCkVeakgcYOh4TOSUl1uno4w,https://www.youtube.com/channel/UCkVeakgcYOh4TOSUl1uno4w,YouTube,disney,公式,"DG,DA",medium,TRUE,daily,en,Marvel Comics 公式
 DSY044,Disney On Ice YouTube,UCfCnkH0vIMVcPUmbgeBdryg,https://www.youtube.com/channel/UCfCnkH0vIMVcPUmbgeBdryg,YouTube,disney,公式,"DH,DF",low,TRUE,daily,en,Disney On Ice 公式 ライブショー
-DSY045,Searchlight Pictures YouTube,UCor9rW6PgxSQ9vUPWQdnaYQ,https://www.youtube.com/channel/UCor9rW6PgxSQ9vUPWQdnaYQ,YouTube,disney,公式,"DB",medium,TRUE,daily,en,Searchlight Pictures 公式 (Disney傘下インディーズ系)
+DSY045,Searchlight Pictures YouTube,UCor9rW6PgxSQ9vUPWQdnaYQ,https://www.youtube.com/channel/UCor9rW6PgxSQ9vUPWQdnaYQ,YouTube,disney,公式,DB,medium,TRUE,daily,en,Searchlight Pictures 公式 (Disney傘下インディーズ系)
 DSY046,ESPN YouTube,UCiWLfSweyRNmLpgEHekhoAg,https://www.youtube.com/channel/UCiWLfSweyRNmLpgEHekhoAg,YouTube,disney,公式,"DD,DL",medium,TRUE,daily,en,ESPN 公式 (Disney傘下80%)
 DSY047,ABC News YouTube,UCBi2mrWuNuyYy4gbM6fU18Q,https://www.youtube.com/channel/UCBi2mrWuNuyYy4gbM6fU18Q,YouTube,disney,公式,"DD,DA",medium,TRUE,daily,en,ABC News 公式 (Disney傘下)
 DSY048,Marvel Anime YouTube,UCE8Ur9XUGIexHqCpHRg0WNA,https://www.youtube.com/channel/UCE8Ur9XUGIexHqCpHRg0WNA,YouTube,disney,公式,"DG,DB",medium,TRUE,daily,en,Marvel Anime 公式
-DSY049,Freeform YouTube,UCMHofhulcABy6MZR8ZfCYCQ,https://www.youtube.com/channel/UCMHofhulcABy6MZR8ZfCYCQ,YouTube,disney,公式,"DD",low,TRUE,daily,en,Freeform 公式 (Disney傘下ケーブル)
+DSY049,Freeform YouTube,UCMHofhulcABy6MZR8ZfCYCQ,https://www.youtube.com/channel/UCMHofhulcABy6MZR8ZfCYCQ,YouTube,disney,公式,DD,low,TRUE,daily,en,Freeform 公式 (Disney傘下ケーブル)
 DSY050,Disney Latino YouTube,UClqaA_LwJVaKrZn0g5NQDjA,https://www.youtube.com/channel/UClqaA_LwJVaKrZn0g5NQDjA,YouTube,disney,公式,"DA,DC,DG",medium,TRUE,daily,en,Disney Latino 公式 (中南米)
 DSY051,Disney+ Brasil YouTube,UCApaSzvP6jM9rfs8UbcqD1g,https://www.youtube.com/channel/UCApaSzvP6jM9rfs8UbcqD1g,YouTube,disney,公式,"DC,DA",medium,TRUE,daily,en,Disney+ Brasil 公式
 DSY052,Pixar Shorts YouTube,UCE7GgeiHAENezCxPe65SSOA,https://www.youtube.com/channel/UCE7GgeiHAENezCxPe65SSOA,YouTube,disney,公式,"DB,DG",low,TRUE,daily,en,Pixar Shorts 公式 (短編)
+S001,SPYGEA / スパイギア,UCBnFEiB9v4afsg8tbhmIACQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S005,らっだぁ,UClNdVSK1uy2xFHTaXZYXopw,,YouTube,games,個人,,low,TRUE,daily,ja,restored from raw 2026-05
+S006,牛沢,UCZMRuagdTBKmmrFtSMN48Xw,,YouTube,games,個人,,low,TRUE,daily,ja,restored from raw 2026-05
+S008,SHAKAch,UCjg5-lUiUzdmzzBRY9Xqrhw,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S009,k4sen / かせん,UChUjERVG8eKEAJSCef-tTmg,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S010,ありさか/Arisakaaa,UCLLuaTElO1eRGOo2qc_Rdsw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S011,もこうの実況,UCENoC6MLc4pL-vehJyzSWmg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S012,よしなま,UCEnkd5D-53MDGpgpiQRbUqw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S013,兄者弟者,UC2GuoutVyegg6PUK88lLpjw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S014,レトルト,UCPVr7clenPjpD7WNsSI3UBQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S015,キヨ。,UCMJiPpN_09F0aWpQrgbc_qg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S017,IShowSpeed,UCWsDFcIhY2DBi3GB5uykGXA,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S019,xQc,UCmDTrq0LNgPodDOFZiSbsww,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S020,Ninja,UCAW-NpUFkMyCNrvRSSGIvDQ,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S022,Markiplier,UC7_YxT-KID8kRbqZo7MyscQ,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S023,jacksepticeye,UCYzPXprvl5Y-Sf0g4vX-m6g,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S024,Ludwig,UCrPseYLGpNygVi34QpGNqpA,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S025,Asmongold TV,UCQeRaTukNYft1_6AZPACnog,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+S026,Pokimane,UChXKjLEzAB1K7EZQey7Fm1Q,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S027,Dr DisRespect,UCcJL2ld6kxy_nuV1u7PVQ0g,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S029,Typical Gamer,UC2wKfjlioOCLP4xQMOWNcgg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S031,DanTDM,UCS5Oz6CHmeoF7vSad0qqXfw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S032,Dream,UCTkXRDQl0luXxVQrRQvWS6w,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S033,SypherPK,UC_q5WZtFp36adwqhKpZzxwQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+S034,NickEh30,UCt9nYeSz90lnOnaVFjxFJzw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V001,hololive ホロライブ,UCJFZiqLMntJufDCHc6bQixg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V002,にじさんじ,UCX7YkU9nEeaoZbkVLVajcMg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V003,兎田ぺこら,UC1DCedRgGHBdm81E1llLhOQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V004,宝鐘マリン,UCCzUftO8KOVkV4wQG1vkUvg,,YouTube,games,VTuber,,medium,TRUE,daily,ja,restored from raw 2026-05
+V005,さくらみこ,UC-hM6YJuNYVAmUWxeIr9FeA,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V006,星街すいせい,UC5CwaMl1eIgY8h02uZw7u8A,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V009,剣持刀也,UCv1fFr156jc65EMiLbaLImw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V010,花芽すみれ,UCyLGcqYs7RsBb3L0SJfzGYA,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V011,一ノ瀬うるは,UC5LyYg6cCA4yHEYvtUsir3g,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V012,渋谷ハル,UChLfthKoUV502J7gU9STArg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V013,赤見かるび,UCWV9E1l5YItrPEAWHoNmieQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+V016,Neo-Porte,UCm5rjZAFQuRrnDCkxnwvWkg,,YouTube,games,公式,,high,TRUE,daily,ja,restored from raw 2026-05
+Y003,PlayStation Japan,UCaghC0OZwAdidMrbvxkcrPg,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+Y004,IGN Japan(YouTube),UCUzl0dAdU3IUGrChjqbMuqQ,,YouTube,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y005,ジャンプチャンネル,UC47AYUs8AVU1QsT5LhpXjaw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y013,Bandai Namco Entertainment,UCqly9F4Fr_jf2Y1Cy5hacRg,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y014,Pokémon 公式,UCFctpiB_Hnlk3ejWfHqSm6Q,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y015,ファミ通TUBE,UCtPyU9cJgvvgH03PQKgaucA,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y016,4GamerSP,UCfIgNVCiAei8r-haGHDnedg,,YouTube,games,メディア,,high,TRUE,daily,ja,restored from raw 2026-05
+Y017,Genshin Impact,UCiS882YPwZt1NfaM0gR0D9Q,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y018,Honkai: Star Rail,UC2PeMPA8PAOp-bynLoCeMLA,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+Y019,SEGA,UCVkqs_Q88BDmyaWwjYJ8_Ig,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y021,KONAMI公式,UCWSPqhLRvqjC-vLYA5_n4LQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y022,VALORANT // JAPAN,UCzVgCrOcBAWYEHTtVOMPAtw,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y023,Riot Games,UCJEGvSZnQ1pkVfHO8s5G8hA,,YouTube,games,公式,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y024,電撃オンライン,UCQb6W0vblp5ewU75watnqQQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y029,バンダイナムコフィルムワークス,UCQ5URCSs1f5Cz9rh-cDGxNQ,,YouTube,games,個人,,high,TRUE,daily,ja,restored from raw 2026-05
+Y030,Toei Animation,UCQYYekTKCb1y12sas08T6gQ,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y031,Netflix Anime,UCBSs9x2KzSLhyyA9IKyt4YA,,YouTube,games,個人,,medium,TRUE,daily,ja,restored from raw 2026-05
+Y033,Cygames公式チャンネル,UCYa_8apEN2srh1xXyDDU8Tw,,YouTube,games,公式,,high,TRUE,daily,ja,restored from raw 2026-05
+Y034,ABEMA アニメ&声優【公式】,UCpR3X7_RKNjTTUV51CxURGQ,,YouTube,anime,公式,,high,TRUE,daily,ja,restored from raw 2026-05
+W711,コミックナタリー(RSS),,https://natalie.mu/comic/feed/news,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W712,映画ナタリー,,https://natalie.mu/eiga/feed/news,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W713,アニメ!アニメ!,,https://animeanime.jp/rss/index.rdf,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W731,Anime News Network,,https://www.animenewsnetwork.com/news/rss.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W732,Eurogamer,,https://www.eurogamer.net/feed,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W733,Kotaku,,https://kotaku.com/rss,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W734,Video Games Chronicle,,https://www.videogameschronicle.com/feed/,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W735,Rock Paper Shotgun,,https://www.rockpapershotgun.com/feed,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W736,Gematsu,,https://www.gematsu.com/feed,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W737,Siliconera,,https://www.siliconera.com/feed/,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W738,Niche Gamer,,https://nichegamer.com/feed/,RSS,games,メディア,,low,TRUE,daily,ja,restored from raw 2026-05
+W739,Nintendo Everything,,https://nintendoeverything.com/feed/,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W740,GamesIndustry.biz,,https://www.gamesindustry.biz/feed,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W741,PC Gamer,,https://www.pcgamer.com/rss/,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W742,Dualshockers,,https://www.dualshockers.com/feed/,RSS,games,メディア,,medium,FALSE,daily,ja,restored from raw 2026-05 (feed要確認)
+W743,The Verge,,https://www.theverge.com/rss/index.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W745,Yahoo IT,,https://news.yahoo.co.jp/rss/topics/it.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W746,Yahoo エンタメ,,https://news.yahoo.co.jp/rss/topics/entertainment.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W751,Disney 公式 RSS,,https://thewaltdisneycompany.com/feed/,RSS,disney,公式,,high,TRUE,daily,ja,restored from raw 2026-05
+W752,MyAnimeList News,,https://myanimelist.net/rss/news.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+SRQ001,検索: VTuber 切り抜き,,VTuber 切り抜き,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ002,検索: VTuber 同時接続,,VTuber 同時接続,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ003,検索: VTuber 新作ゲーム,,VTuber 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ004,検索: k4sen 新作ゲーム,,k4sen 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ005,検索: ありさか 新作ゲーム,,ありさか 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ006,検索: だるまいずごっど 新作ゲーム,,だるまいずごっど 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ007,検索: ぶいすぽ 新作ゲーム,,ぶいすぽ 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ008,検索: もこう 新作ゲーム,,もこう 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ009,検索: アニメ 新作 PV,,アニメ 新作 PV,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ010,検索: ストリーマー 流行りゲーム,,ストリーマー 流行りゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ011,検索: 加藤純一 新作ゲーム,,加藤純一 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ012,検索: 新作ゲーム 実況,,新作ゲーム 実況,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ013,検索: 漫画 アニメ化,,漫画 アニメ化,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ014,検索: 配信者 切り抜き 話題,,配信者 切り抜き 話題,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ015,検索: 配信者 流行りゲーム,,配信者 流行りゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ016,検索: 関優太 新作ゲーム,,関優太 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05

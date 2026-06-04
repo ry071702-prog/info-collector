@@ -16,10 +16,14 @@ def load() -> list[WatchSource]:
     sources = _load_from_csv(LOCAL_CACHE)
     log.info(f"Loaded {len(sources)} sources from local CSV")
 
-    if env_bool("SYNC_SHEETS_FROM_CSV", True):
+    # NOTE: Sheets 同期はデフォルト無効。_sync_csv_to_sheets は ws.clear() で
+    # Sheets を毎回上書きするため、過去に Sheets 側のみに存在したソースを破壊した
+    # 実績がある (2026-05-21)。CSV を唯一の canonical とし、明示的に
+    # SYNC_SHEETS_FROM_CSV=true を設定した場合のみ同期する。
+    if env_bool("SYNC_SHEETS_FROM_CSV", False):
         _sync_csv_to_sheets(sources)
     else:
-        log.info("Sheets sync skipped: SYNC_SHEETS_FROM_CSV=false")
+        log.info("Sheets sync skipped (SYNC_SHEETS_FROM_CSV not enabled)")
 
     return [s for s in sources if s.enabled]
 
