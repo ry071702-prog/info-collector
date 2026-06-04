@@ -19,11 +19,9 @@ Required env: NOTION_TOKEN + at least one of NOTION_DATABASE_ID_{GAMES,ANIME,DIS
 from __future__ import annotations
 import sys
 
-from notion_client import Client
-
 from .. import logger
 from ..config import env
-from ..outputs.notion import normalize_db_id
+from ..outputs.notion import _client, normalize_db_id
 
 log = logger.get(__name__)
 
@@ -31,30 +29,34 @@ LEGACY_PROP = "Tags"
 REPLACEMENT_PROP = "TagsText"
 
 
-def prune(client: Client, db_id: str, label: str) -> None:
+def prune(client, db_id: str, label: str) -> None:
+    # retrieve は新 API バージョンだと properties を返さない (0 件) ことがあるため、
+    # 検知に依存せず Tags を無条件で削除し、TagsText を冪等に確保する。
     schema = client.databases.retrieve(database_id=db_id)
-    existing = set(schema.get("properties", {}).keys())
-    log.info(f"[{label}] current schema has {len(existing)} properties")
+    props = schema.get("properties", {})
+    # 原因確定用: retrieve の応答形を診断ログに残す。
+    log.info(
+        f"[{label}] retrieve keys={sorted(schema.keys())} "
+        f"properties={len(props)} has_data_sources={'data_sources' in schema}"
+    )
 
-    updates: dict[str, dict | None] = {}
-    if REPLACEMENT_PROP not in existing:
-        updates[REPLACEMENT_PROP] = {"rich_text": {}}
-        log.info(f"[{label}] will add '{REPLACEMENT_PROP}' (rich_text)")
-    if LEGACY_PROP in existing:
-        updates[LEGACY_PROP] = None  # None で Notion 上のプロパティを削除
-        log.info(f"[{label}] will remove legacy '{LEGACY_PROP}' (multi_select)")
+    # Tags=None で削除 / TagsText を rich_text で確保 (どちらも名前ベースで冪等)。
+    updates: dict[str, dict | None] = {LEGACY_PROP: None, REPLACEMENT_PROP: {"rich_text": {}}}
+    try:
+        client.databases.update(database_id=db_id, properties=updates)
+        log.info(f"[{label}] update sent: drop '{LEGACY_PROP}', ensure '{REPLACEMENT_PROP}'")
+    except Exception as e:  # noqa: BLE001
+        # Tags が既に無いケース等。TagsText 確保だけは試みる。
+        log.warning(f"[{label}] combined update failed ({e}); retrying TagsText only")
+        client.databases.update(database_id=db_id, properties={REPLACEMENT_PROP: {"rich_text": {}}})
+        log.info(f"[{label}] ensured '{REPLACEMENT_PROP}' only")
 
-    if not updates:
-        log.info(f"[{label}] nothing to do (no legacy '{LEGACY_PROP}', '{REPLACEMENT_PROP}' present)")
-        return
-
-    client.databases.update(database_id=db_id, properties=updates)
-    log.info(f"[{label}] updated: {sorted(k for k in updates)}")
+    after = client.databases.retrieve(database_id=db_id).get("properties", {})
+    log.info(f"[{label}] after: properties={len(after)} tags_present={LEGACY_PROP in after}")
 
 
 def main() -> int:
-    token = env("NOTION_TOKEN", required=True)
-    client = Client(auth=token)
+    client = _client()
     targets = [
         ("GAMES", env("NOTION_DATABASE_ID_GAMES")),
         ("ANIME", env("NOTION_DATABASE_ID_ANIME")),
