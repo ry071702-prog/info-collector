@@ -52,9 +52,8 @@ jobs:
         continue-on-error: true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 既定は日本語テキスト描画が正確な pro (flash-image は日本語が崩れるため)。
-          # コスト抑制したい場合は repo variable で gemini-2.5-flash-image を指定。1日1枚=月¥600〜1,100目安。
-          NEWSPAPER_IMAGE_MODEL: ${{ vars.NEWSPAPER_IMAGE_MODEL || 'gemini-3-pro-image-preview' }}
+          # 既定は無料枠寄りの flash-image。品質優先なら repo variable で gemini-3-pro-image-preview を指定。
+          NEWSPAPER_IMAGE_MODEL: ${{ vars.NEWSPAPER_IMAGE_MODEL || 'gemini-2.5-flash-image' }}
         run: python scripts/generate_newspaper_image.py
       - name: Commit
         if: ${{ inputs.dry_run != true }}
