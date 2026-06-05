@@ -45,12 +45,22 @@ jobs:
           DISCORD_WEBHOOK_OPS: ${{ secrets.DISCORD_WEBHOOK_OPS }}
           DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
         run: python -m src.jobs.process_digest
+      - name: Generate newspaper image
+        # 当日の digest から新聞風 1 枚画像を生成 (site/public/newspaper-img/<date>.png)。
+        # 失敗してもダイジェスト本体の commit は止めない。当日分が既にあればスクリプト側でスキップ。
+        if: ${{ inputs.dry_run != true }}
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # 既定は無料枠寄りの flash-image。品質優先なら repo variable で gemini-3-pro-image-preview を指定。
+          NEWSPAPER_IMAGE_MODEL: ${{ vars.NEWSPAPER_IMAGE_MODEL || 'gemini-2.5-flash-image' }}
+        run: python scripts/generate_newspaper_image.py
       - name: Commit
         if: ${{ inputs.dry_run != true }}
         run: |
           git config user.email "actions@github.com"
           git config user.name "github-actions"
-          git add data/processed docs/digests data/cache data/logs || true
+          git add data/processed docs/digests data/cache data/logs site/public/newspaper-img || true
           git diff --quiet --staged || git commit -m "digest $(date -u +%F)"
           for i in 1 2 3; do
             git pull --rebase --autostash -X theirs && git push && break

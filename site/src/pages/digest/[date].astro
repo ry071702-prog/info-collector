@@ -28,7 +28,7 @@ const fullDateLabel = formatJapaneseDate(publicationDate);
 const editionLabel = publication.edition === "AM" ? "朝刊" : "夕刊";
 const issueLabel = `${editionLabel} 第${publication.issueNumber}号`;
 const exportDate = date.slice(0, 10);
-const exportFilename = `日刊情報収集_${editionLabel}第${publication.issueNumber}号_${exportDate}.png`;
+const exportFilename = `情報収集_${editionLabel}第${publication.issueNumber}号_${exportDate}.png`;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function cleanLine(line: string): string {
@@ -93,10 +93,18 @@ const leadArticle = relatedArticles[0];
 const leadImage = localImagePath(leadArticle);
 const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
-    <rect width="640" height="480" fill="#eee8de"/>
-    <rect x="86" y="72" width="468" height="336" fill="none" stroke="#11100f" stroke-width="16"/>
-    <path d="M138 148h224M138 204h364M138 260h364M138 316h244" stroke="#11100f" stroke-width="18"/>
-    <path d="M410 124h92v92h-92z" fill="#1e3a5f"/>
+    <defs>
+      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+        <stop stop-color="#2563eb"/>
+        <stop offset="0.52" stop-color="#06b6d4"/>
+        <stop offset="1" stop-color="#fbbf24"/>
+      </linearGradient>
+    </defs>
+    <rect width="640" height="480" fill="#edf5ff"/>
+    <rect x="72" y="64" width="496" height="352" rx="42" fill="url(#g)" opacity="0.9"/>
+    <circle cx="184" cy="152" r="64" fill="white" opacity="0.32"/>
+    <path d="M154 280h332M154 326h258" stroke="white" stroke-width="24" stroke-linecap="round" opacity="0.72"/>
+    <path d="M154 214h196" stroke="white" stroke-width="34" stroke-linecap="round" opacity="0.9"/>
   </svg>
 `)}`;
 ---
@@ -108,66 +116,66 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
         <div class="mb-4 flex justify-end">
           <button
             type="button"
-            class="rounded-sm border border-stone-500 bg-[var(--paper)] px-4 py-2 text-sm font-bold text-stone-800 shadow-sm hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800"
+            class="glass-control px-4 text-sm font-bold"
             data-export-newspaper
             data-export-filename={exportFilename}
           >
-            📸 画像として保存
+            画像として保存
           </button>
         </div>
 
         <article
           data-newspaper-page
-          class="newspaper-page grid gap-0 overflow-hidden border-2 border-stone-950 bg-[var(--paper)] text-stone-950 shadow-xl dark:border-stone-200 dark:bg-[var(--ink-bg)] dark:text-stone-100 lg:grid-cols-[minmax(0,1fr)_96px]"
+          class="glass-panel grid gap-0 overflow-hidden text-[var(--text-primary)] lg:grid-cols-[minmax(0,1fr)_96px]"
         >
-          <aside class="newspaper-sidebar order-first border-b-2 border-stone-950 bg-[#f1ece3] p-4 dark:border-stone-200 dark:bg-stone-900 lg:order-last lg:border-b-0 lg:border-l-2">
+          <aside class="newspaper-sidebar order-first border-b border-[var(--glass-hairline)] bg-white/36 p-4 dark:bg-white/5 lg:order-last lg:border-b-0 lg:border-l">
             <div class="flex flex-wrap items-center justify-between gap-3 text-sm font-bold lg:h-full lg:flex-col lg:justify-start lg:[writing-mode:vertical-rl]">
-              <span class="font-serif-jp text-2xl tracking-[0.12em]">{publication.name}</span>
-              <span class="font-serif-jp text-xl">{issueLabel}</span>
-              <time class="font-serif text-sm tracking-normal" datetime={exportDate}>{publication.dateLabel}</time>
+              <span class="text-2xl font-black tracking-normal">{publication.name}</span>
+              <span class="text-xl font-black">{issueLabel}</span>
+              <time class="text-sm tracking-normal section-kicker" datetime={exportDate}>{publication.dateLabel}</time>
             </div>
           </aside>
 
           <div class="p-5 sm:p-8 lg:p-10">
-            <div class="mb-6 flex flex-col gap-2 border-b-2 border-stone-950 pb-3 text-xs font-bold text-stone-700 dark:border-stone-300 dark:text-stone-300 sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-6 flex flex-col gap-2 border-b border-[var(--glass-hairline)] pb-3 text-xs font-bold section-kicker sm:flex-row sm:items-center sm:justify-between">
               <span>著者: 自動生成 (Gemini)</span>
-              <time class="font-serif text-sm" datetime={exportDate}>{fullDateLabel}</time>
+              <time class="text-sm" datetime={exportDate}>{fullDateLabel}</time>
             </div>
 
-            <header class="border-b border-stone-400 pb-6 dark:border-stone-700">
-              <p class="mb-2 font-serif text-sm font-bold tracking-[0.35em] text-[#1e3a5f] dark:text-stone-300">{issueLabel}</p>
-              <h1 class="font-serif-jp text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">{title}</h1>
-              <p class="font-serif-jp mt-5 text-center text-lg font-bold leading-8 text-stone-700 dark:text-stone-300">〜 {subtitle} 〜</p>
+            <header class="border-b border-[var(--glass-hairline)] pb-6">
+              <p class="mb-2 text-sm font-black tracking-normal text-cyan-700 dark:text-cyan-200">{issueLabel}</p>
+              <h1 class="text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">{title}</h1>
+              <p class="mt-5 text-lg font-bold leading-8 section-copy">{subtitle}</p>
             </header>
 
-            <section class="mt-7 flow-root border-b border-stone-400 pb-7 dark:border-stone-700">
-              <figure class="mb-4 overflow-hidden border border-stone-900 bg-stone-200 dark:border-stone-300 dark:bg-stone-800 sm:float-left sm:mb-3 sm:mr-6 sm:w-[42%] lg:w-[38%]">
+            <section class="mt-7 flow-root border-b border-[var(--glass-hairline)] pb-7">
+              <figure class="mb-4 overflow-hidden rounded-3xl border border-white/50 bg-white/35 shadow-lg dark:border-white/10 dark:bg-white/5 sm:float-left sm:mb-3 sm:mr-6 sm:w-[42%] lg:w-[38%]">
                 <img
                   src={leadImage ?? placeholderSvg}
                   alt=""
-                  class="aspect-[4/3] w-full object-cover grayscale-[15%]"
+                  class="aspect-[4/3] w-full object-cover"
                   loading="eager"
                 />
-                <figcaption class="border-t border-stone-900 px-3 py-2 text-xs text-stone-600 dark:border-stone-300 dark:text-stone-300">
-                  source: {leadArticle?.category_name ?? leadArticle?.author ?? "日刊 情報収集"}
+                <figcaption class="border-t border-[var(--glass-hairline)] px-3 py-2 text-xs section-kicker">
+                  source: {leadArticle?.category_name ?? leadArticle?.author ?? "情報収集"}
                 </figcaption>
               </figure>
-              <div class="newspaper-lead space-y-4 text-base leading-8 text-stone-800 dark:text-stone-200">
+              <div class="newspaper-lead space-y-4 text-base leading-8 section-copy">
                 {leadParagraphs.map((paragraph) => <p>{paragraph}</p>)}
               </div>
             </section>
 
             <section class="mt-7">
-              <h2 class="font-serif-jp border-y-2 border-stone-950 py-3 text-2xl font-black dark:border-stone-300">
+              <h2 class="border-y border-[var(--glass-hairline)] py-3 text-2xl font-black">
                 {sections[0]?.title ?? "なぜいま注目なのか"}
               </h2>
               <div class="mt-5 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {columnSections.map((section) => (
-                  <section class="border-t border-stone-500 pt-4 dark:border-stone-600">
-                    <h3 class="font-serif-jp mb-3 text-xl font-black leading-snug">
+                  <section class="rounded-3xl border border-white/45 bg-white/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.52)] dark:border-white/10 dark:bg-white/5">
+                    <h3 class="mb-3 text-xl font-black leading-snug">
                       （{section.title.replace(/^速報・重要\s*\(S\/A\)$/, "速報・重要")}）
                     </h3>
-                    <div class="space-y-3 text-sm leading-7 text-stone-800 dark:text-stone-200">
+                    <div class="space-y-3 text-sm leading-7 section-copy">
                       {(section.items.length > 0 ? section.items : leadParagraphs).slice(0, 5).map((item) => (
                         <p>{item}</p>
                       ))}
@@ -180,7 +188,7 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
         </article>
       </>
     ) : (
-      <p class="rounded-sm border border-dashed border-stone-300 p-6 text-sm text-stone-500 dark:border-stone-700 dark:text-stone-400">
+      <p class="glass-empty p-6 text-sm">
         指定されたまとめは見つかりません。
       </p>
     )

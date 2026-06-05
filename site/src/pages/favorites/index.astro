@@ -10,16 +10,16 @@ const articles = allArticles();
 
 <BaseLayout title="お気に入り">
   <section class="mb-6">
-    <h1 class="text-3xl font-bold tracking-tight">お気に入り</h1>
-    <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">このブラウザで⭐したニュース。</p>
+    <h1 class="section-title text-3xl">お気に入り</h1>
+    <p class="mt-2 text-sm section-copy">このブラウザで保存したニュース。</p>
   </section>
   <ArticleControls showRange />
   <p
-    class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400"
+    class="glass-empty p-6 text-sm"
     data-favorites-empty
     hidden
   >
-    まだ⭐していません
+    まだ保存していません
   </p>
   {
     articles.length > 0 ? (
@@ -32,8 +32,8 @@ const articles = allArticles();
         </div>
       </>
     ) : (
-      <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-        まだ⭐していません
+      <p class="glass-empty p-6 text-sm">
+        まだ保存していません
       </p>
     )
   }

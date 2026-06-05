@@ -1,0 +1,19 @@
+---
+import LandingIcon from "./LandingIcon.astro";
+
+interface Props {
+  title: string;
+  body: string;
+  icon: string;
+}
+
+const { title, body, icon } = Astro.props;
+---
+
+<article class="lp-card p-5" data-reveal>
+  <div class="lp-icon mb-4">
+    <LandingIcon name={icon} />
+  </div>
+  <h3 class="text-base font-bold text-slate-950">{title}</h3>
+  <p class="mt-2 text-sm leading-6 text-slate-600">{body}</p>
+</article>

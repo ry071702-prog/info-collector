@@ -7,6 +7,8 @@ import {
   type Genre,
 } from "../../lib/articles";
 import { formatJapaneseDate } from "../../lib/japaneseDate";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 
 export async function getStaticPaths() {
   // 直近30日に該当する記事が1件でもある日付ぶん静的生成
@@ -26,6 +28,21 @@ interface Props {
 
 const { date } = Astro.params as { date: string };
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+// AI 生成の新聞ビジュアル (scripts/generate_newspaper_image.py の出力)。あれば最上部に表示
+const aiImage = (() => {
+  for (const ext of ["jpg", "png"]) {
+    if (existsSync(join(process.cwd(), "public", "newspaper-img", `${date}.${ext}`))) {
+      return `${base}/newspaper-img/${date}.${ext}`;
+    }
+  }
+  return null;
+})();
+
+function imgSrc(a: Article | undefined): string | null {
+  if (!a?.image_url) return null;
+  return a.image_url.startsWith("http") ? a.image_url : `${base}${a.image_url}`;
+}
 
 // 1日分の記事を絞り込む (JST 基準で 1 日)
 function isOnDate(article: Article, targetDate: string): boolean {
@@ -47,10 +64,13 @@ const sorted = [...articlesAll].sort((a, b) => {
 // トップ記事 (S/A 上位 1 件)
 const headline = sorted[0];
 
-// 次点 3 件
+// メインビジュアル: トップ記事の画像、なければ当日で最初に画像を持つ記事
+const heroImage = imgSrc(headline) ?? imgSrc(sorted.find((a) => imgSrc(a)));
+
+// 次点 3 件 (1 面下段の 3 段組)
 const leads = sorted.slice(1, 4);
 
-// ジャンル別 (重要度上位 4 件ずつ)
+// ジャンル別 (2 面・重要度上位 5 件ずつ)
 const byGenre = (g: Genre): Article[] => {
   const used = new Set([headline?.url, ...leads.map((a) => a.url)]);
   return sorted.filter((a) => a.genre === g && !used.has(a.url)).slice(0, 5);
@@ -62,15 +82,22 @@ const disneyItems = byGenre("disney");
 
 const formattedDate = formatJapaneseDate(`${date}T12:00:00+09:00`);
 
-// 日付の前後リンク用に他の生成済み日付を取得
+// 日付の前後リンク用に他の生成済み日付を取得 (昇順)
 const allDates = (() => {
   const set = new Set<string>();
-  for (const a of allArticles()) set.add(a.timestamp.slice(0, 10));
+  for (const a of allArticles()) {
+    const ts = new Date(a.timestamp);
+    if (Number.isNaN(ts.getTime())) continue;
+    const jst = new Date(ts.getTime() + 9 * 60 * 60 * 1000);
+    set.add(jst.toISOString().slice(0, 10));
+  }
   return [...set].sort();
 })();
 const idx = allDates.indexOf(date);
 const prevDate = idx > 0 ? allDates[idx - 1] : null;
 const nextDate = idx >= 0 && idx < allDates.length - 1 ? allDates[idx + 1] : null;
+// 通巻号数: 最古の発行日を第 1 号として通し番号
+const issueNo = idx >= 0 ? idx + 1 : allDates.length;
 
 function summaryOf(a: Article): string {
   return a.summary || a.category_name || "";
@@ -81,124 +108,193 @@ function authorOf(a: Article): string {
 }
 ---
 
-<BaseLayout title={`新聞 ${date}`}>
-  <div class="newspaper mx-auto max-w-7xl px-2 py-4 sm:px-4">
-    <header class="newspaper-masthead border-y-4 border-double border-stone-900 py-4 dark:border-stone-200">
-      <div class="text-center">
-        <p class="font-serif-jp text-xs tracking-widest text-stone-600 dark:text-stone-400">DAILY NEWSPAPER · GAMES / ANIME / DISNEY</p>
-        <h1 class="font-serif-jp text-5xl font-black tracking-normal text-stone-950 sm:text-6xl dark:text-white">
-          日刊 情報収集
-        </h1>
-        <p class="mt-2 font-serif-jp text-sm text-stone-700 dark:text-stone-300">{formattedDate}</p>
-        <p class="mt-1 text-xs text-stone-500 dark:text-stone-400">
-          記事 {articlesAll.length} 件 · 各見出しから元記事へ遷移できます
-        </p>
-      </div>
-    </header>
+<BaseLayout title={`週刊 情報収集 第${issueNo}号 (${date})`}>
+  <div class="np mx-auto max-w-7xl px-2 py-4 sm:px-4">
+    {aiImage && (
+      <figure class="mb-8">
+        <img
+          src={aiImage}
+          alt={`${date} の AI 生成新聞ビジュアル`}
+          loading="eager"
+          class="w-full border-4 border-double border-stone-900 shadow-lg dark:border-stone-300"
+        />
+        <figcaption class="mt-1 text-center text-[11px] text-stone-500 dark:text-stone-400">
+          AI 生成の新聞ビジュアル(ベータ) · 下は HTML 版
+        </figcaption>
+      </figure>
+    )}
 
-    <nav class="my-3 flex items-center justify-between text-xs text-stone-600 dark:text-stone-400 print:hidden">
-      <div>
-        {prevDate && (
-          <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/${prevDate}/`}>← {prevDate}</a>
-        )}
-      </div>
-      <button type="button" class="rounded border border-stone-400 px-3 py-1 hover:bg-stone-100 dark:border-stone-600 dark:hover:bg-stone-800" onclick="window.print()">印刷 / PDF 保存</button>
-      <div>
-        {nextDate && (
-          <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/${nextDate}/`}>{nextDate} →</a>
-        )}
-      </div>
-    </nav>
+    <!-- 紙面トップ: 横長 1 枚もの。本紙(左) + 縦書き題字(右) -->
+    <div class="np-sheet grid gap-3 lg:grid-cols-[1fr_8.5rem]">
+      <!-- ===== 本紙 ===== -->
+      <div class="np-body order-2 lg:order-1">
+        <!-- 発行メタ -->
+        <div class="flex items-end justify-between border-b border-stone-900 pb-1 text-[11px] text-stone-600 dark:border-stone-300 dark:text-stone-400">
+          <span class="font-serif-jp">情報収集 編集部 AI 編</span>
+          <span class="font-serif-jp">{formattedDate}</span>
+        </div>
 
-    {articlesAll.length === 0 ? (
-      <p class="mt-12 text-center text-stone-500 dark:text-stone-400">この日のデータはまだありません。</p>
-    ) : (
-      <>
-        {headline && (
-          <section class="newspaper-headline mt-4 border-b border-stone-400 pb-6 dark:border-stone-700">
-            <p class="font-serif-jp text-xs tracking-widest text-stone-600 dark:text-stone-400">本日のトップ — {genreLabels[headline.genre]}</p>
-            <a href={headline.url} target="_blank" rel="noreferrer" class="block group">
-              <h2 class="font-serif-jp mt-1 text-3xl font-black leading-tight text-stone-950 group-hover:underline sm:text-4xl dark:text-white">
-                {headline.category_name}
-              </h2>
-            </a>
-            <p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
-              {authorOf(headline)} · 重要度 {headline.final_priority}
-            </p>
-            <p class="newspaper-lead mt-3 font-serif-jp text-base leading-7 text-stone-800 dark:text-stone-200">
-              {summaryOf(headline)}
-            </p>
-          </section>
-        )}
+        {articlesAll.length === 0 ? (
+          <p class="mt-16 text-center text-stone-500 dark:text-stone-400">この日のデータはまだありません。</p>
+        ) : (
+          <>
+            <!-- 大見出しバナー -->
+            {headline && (
+              <a href={headline.url} target="_blank" rel="noreferrer" class="group block">
+                <h1 class="np-banner font-serif-jp mt-2 bg-stone-800 px-4 py-3 text-2xl font-black leading-tight tracking-tight text-stone-50 group-hover:bg-stone-900 sm:text-4xl dark:bg-stone-200 dark:text-stone-900">
+                  {headline.category_name}
+                </h1>
+              </a>
+            )}
 
-        {leads.length > 0 && (
-          <section class="newspaper-leads mt-6 grid gap-6 sm:grid-cols-3 border-b border-stone-400 pb-6 dark:border-stone-700">
-            {leads.map((a) => (
-              <article>
-                <p class="font-serif-jp text-[10px] tracking-widest text-stone-600 dark:text-stone-400">{genreLabels[a.genre]}</p>
-                <a href={a.url} target="_blank" rel="noreferrer" class="group block">
-                  <h3 class="font-serif-jp mt-1 text-xl font-black leading-snug text-stone-950 group-hover:underline dark:text-white">
-                    {a.category_name}
-                  </h3>
-                </a>
-                <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400">{authorOf(a)} · 重要度 {a.final_priority}</p>
-                <p class="mt-2 font-serif-jp text-sm leading-6 text-stone-800 dark:text-stone-200">{summaryOf(a)}</p>
-              </article>
-            ))}
-          </section>
-        )}
-
-        <section class="newspaper-columns mt-6 grid gap-6 lg:grid-cols-3">
-          {[
-            { label: "ゲーム面", items: gameItems },
-            { label: "アニメ面", items: animeItems },
-            { label: "Disney 面", items: disneyItems },
-          ].map(({ label, items }) => (
-            <div class="border-t-2 border-stone-900 pt-3 dark:border-stone-200">
-              <h2 class="font-serif-jp text-lg font-black tracking-wide text-stone-950 dark:text-white">{label}</h2>
-              {items.length === 0 ? (
-                <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">この面の記事はありません。</p>
+            <!-- 1 面: メイン画像 + トップ記事 -->
+            <section class="np-lead mt-3 grid gap-4 border-b-2 border-stone-900 pb-5 sm:grid-cols-[minmax(0,18rem)_1fr] dark:border-stone-300">
+              {heroImage ? (
+                <figure class="np-hero overflow-hidden border-2 border-stone-900 bg-stone-100 dark:border-stone-300 dark:bg-stone-800">
+                  <img src={heroImage} alt={headline?.category_name ?? ""} loading="eager" class="h-full w-full object-cover" />
+                </figure>
               ) : (
-                <ul class="mt-3 divide-y divide-stone-300 dark:divide-stone-700">
-                  {items.map((a) => (
-                    <li class="py-3">
-                      <a href={a.url} target="_blank" rel="noreferrer" class="group">
-                        <h3 class="font-serif-jp text-base font-bold leading-snug text-stone-950 group-hover:underline dark:text-white">
+                <div class="hidden sm:block" />
+              )}
+
+              <div>
+                {headline && (
+                  <p class="font-serif-jp text-center text-lg font-bold text-stone-800 sm:text-xl dark:text-stone-200">
+                    〜 {genreLabels[headline.genre]}面 トップ・重要度 {headline.final_priority} 〜
+                  </p>
+                )}
+                <p class="mt-3 font-serif-jp text-[15px] leading-7 text-stone-800 dark:text-stone-200" style="text-indent:1em">
+                  {summaryOf(headline)}
+                </p>
+                <p class="mt-2 text-[11px] text-stone-500 dark:text-stone-400">
+                  {headline && authorOf(headline)}
+                </p>
+
+                {leads.length > 0 && (
+                  <p class="np-subhead font-serif-jp mt-4 border-l-4 border-stone-900 pl-2 text-lg font-black text-stone-950 dark:border-stone-300 dark:text-white">
+                    関連の動き
+                  </p>
+                )}
+                <div class="np-3col mt-2 grid gap-4 sm:grid-cols-3">
+                  {leads.map((a) => (
+                    <article>
+                      <p class="font-serif-jp text-[10px] tracking-widest text-stone-600 dark:text-stone-400">{genreLabels[a.genre]}</p>
+                      <a href={a.url} target="_blank" rel="noreferrer" class="group block">
+                        <h3 class="font-serif-jp mt-0.5 text-base font-black leading-snug text-stone-950 group-hover:underline dark:text-white">
                           {a.category_name}
                         </h3>
                       </a>
-                      <p class="mt-1 text-[10px] text-stone-500 dark:text-stone-400">{authorOf(a)} · 重要度 {a.final_priority}</p>
-                      <p class="mt-1 font-serif-jp text-sm leading-6 text-stone-700 dark:text-stone-300 line-clamp-3">{summaryOf(a)}</p>
-                    </li>
+                      <p class="mt-1 font-serif-jp text-[13px] leading-6 text-stone-700 dark:text-stone-300 line-clamp-3">{summaryOf(a)}</p>
+                    </article>
                   ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </section>
+                </div>
+              </div>
+            </section>
 
-        <footer class="mt-8 border-t-2 border-stone-900 pt-3 text-center text-xs text-stone-500 dark:border-stone-200 dark:text-stone-400">
-          このページは AI で自動生成された日刊紙です · ソースは X / YouTube / Twitch / RSS
-        </footer>
-      </>
-    )}
+            <!-- 2 面: ジャンル各面 -->
+            <section class="np-columns mt-5 grid gap-6 lg:grid-cols-3">
+              {[
+                { label: "ゲーム面", items: gameItems },
+                { label: "アニメ面", items: animeItems },
+                { label: "Disney 面", items: disneyItems },
+              ].map(({ label, items }) => (
+                <div class="border-t-2 border-stone-900 pt-2 dark:border-stone-300">
+                  <h2 class="font-serif-jp text-base font-black tracking-wide text-stone-950 dark:text-white">{label}</h2>
+                  {items.length === 0 ? (
+                    <p class="mt-3 text-sm text-stone-500 dark:text-stone-400">この面の記事はありません。</p>
+                  ) : (
+                    <ul class="mt-2 divide-y divide-stone-300 dark:divide-stone-700">
+                      {items.map((a) => (
+                        <li class="py-2">
+                          <a href={a.url} target="_blank" rel="noreferrer" class="group">
+                            <h3 class="font-serif-jp text-[15px] font-bold leading-snug text-stone-950 group-hover:underline dark:text-white">
+                              {a.category_name}
+                            </h3>
+                          </a>
+                          <p class="mt-0.5 text-[10px] text-stone-500 dark:text-stone-400">{authorOf(a)} · 重要度 {a.final_priority}</p>
+                          <p class="mt-1 font-serif-jp text-[13px] leading-6 text-stone-700 dark:text-stone-300 line-clamp-3">{summaryOf(a)}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </section>
+
+            <footer class="mt-6 border-t-2 border-stone-900 pt-2 text-center text-[11px] text-stone-500 dark:border-stone-300 dark:text-stone-400">
+              このページは AI が自動生成した日刊紙です · ソースは X / YouTube / Twitch / RSS · 全 {articlesAll.length} 件収録
+            </footer>
+          </>
+        )}
+      </div>
+
+      <!-- ===== 縦書き題字 (右柱) ===== -->
+      <aside class="np-masthead order-1 flex flex-row items-stretch justify-between gap-2 lg:order-2 lg:flex-col">
+        <div class="np-title flex flex-1 items-center justify-center bg-stone-900 px-2 py-3 text-stone-50 dark:bg-stone-100 dark:text-stone-900">
+          <span class="font-serif-jp text-2xl font-black tracking-[0.35em] sm:text-3xl">週刊 情報収集</span>
+        </div>
+        <div class="np-issue flex flex-col items-center justify-center gap-1 border-2 border-stone-900 px-2 py-2 dark:border-stone-300">
+          <span class="font-serif-jp text-xl font-black text-stone-950 dark:text-white">第{issueNo}号</span>
+          <span class="font-serif-jp text-center text-[11px] leading-tight text-stone-600 dark:text-stone-400">{formattedDate}</span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- ナビ (印刷時は隠す) -->
+    <nav class="mt-4 flex items-center justify-between text-xs text-stone-600 dark:text-stone-400 print:hidden">
+      <div>
+        {prevDate && (
+          <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/${prevDate}/`}>← 前号 {prevDate}</a>
+        )}
+      </div>
+      <div class="flex items-center gap-3">
+        <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/`}>アーカイブ</a>
+        <button type="button" class="rounded border border-stone-400 px-3 py-1 hover:bg-stone-100 dark:border-stone-600 dark:hover:bg-stone-800" onclick="window.print()">印刷 / PDF 保存</button>
+      </div>
+      <div>
+        {nextDate && (
+          <a class="underline hover:text-stone-950 dark:hover:text-white" href={`${base}/newspaper/${nextDate}/`}>次号 {nextDate} →</a>
+        )}
+      </div>
+    </nav>
   </div>
 </BaseLayout>
 
 <style>
+  /* 縦書き題字 (lg 以上で縦組み) */
+  @media (min-width: 1024px) {
+    .np-title span {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 0.15em;
+      white-space: nowrap;
+    }
+    .np-issue .font-serif-jp:first-child {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+    }
+  }
+  /* メイン画像の比率 (新聞らしい縦長気味) */
+  .np-hero {
+    aspect-ratio: 3 / 4;
+  }
   @media print {
-    :global(header.border-b-2),
+    :global(header),
     :global(.print\:hidden) {
       display: none !important;
     }
-    .newspaper {
+    .np {
       max-width: none;
       padding: 0;
     }
-    .newspaper-headline,
-    .newspaper-leads,
-    .newspaper-columns {
+    .np-lead,
+    .np-3col,
+    .np-columns {
       page-break-inside: avoid;
+    }
+    /* 印刷は本紙を主役に、題字は上部へ */
+    .np-sheet {
+      display: block;
     }
   }
 </style>

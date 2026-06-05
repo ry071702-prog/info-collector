@@ -14,6 +14,7 @@ const { title, description = "X / YouTube / Twitch から収集したゲーム�
 const pageTitle = `${title} | info-collector`;
 const basePath = import.meta.env.BASE_URL;
 const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+const feedPath = `${homePath}feed/`;
 const manifestPath = `${homePath}manifest.json`;
 const icon192Path = `${homePath}icon-192.svg`;
 const siteData = loadSiteData();
@@ -45,10 +46,10 @@ const mastheadDate = formatJapaneseDate(new Date());
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#faf7f2" />
+    <meta name="theme-color" content="#edf5ff" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@600;700;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
     <link rel="manifest" href={manifestPath} />
     <link rel="icon" href={icon192Path} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={icon192Path} />
@@ -65,65 +66,66 @@ const mastheadDate = formatJapaneseDate(new Date());
     </script>
   </head>
   <body>
+    <div class="mesh-stage" aria-hidden="true"></div>
     <UpdateToast generatedAt={siteData.generated_at ?? ""} articleCount={siteData.articles.length} />
-    <header class="border-b-2 border-stone-900 bg-[var(--paper)] dark:border-stone-200 dark:bg-[var(--ink-bg)]">
-      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:px-8">
-        <div class="border-y border-stone-900 py-3 dark:border-stone-300">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <a href={homePath} class="font-serif-jp text-4xl font-black tracking-normal text-stone-950 sm:text-5xl dark:text-stone-100">
-                日刊 情報収集
-              </a>
-              <p class="mt-2 text-sm font-medium text-stone-700 dark:text-stone-300">
-                {mastheadDate}
-              </p>
-              <p class="mt-1 text-xs font-medium text-stone-500 dark:text-stone-400">
-                最終更新: {generatedLabel} JST · 直近 12 時間で {window12hCount} 件追加
-              </p>
+    <header class="site-header sticky top-0 z-40">
+      <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="min-w-0">
+            <a href={feedPath} class="wordmark inline-flex items-center gap-3 text-3xl font-black tracking-normal sm:text-4xl">
+              <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/60 bg-white/55 text-base font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.8),0_12px_34px_rgba(37,99,235,0.16)] backdrop-blur-xl dark:border-white/15 dark:bg-white/10">
+                情
+              </span>
+              <span>情報収集</span>
+            </a>
+            <div class="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium section-kicker">
+              <time class="glass-chip px-2.5 py-1" datetime={new Date().toISOString()}>{mastheadDate}</time>
+              <span class="glass-chip px-2.5 py-1">最終更新: {generatedLabel} JST</span>
+              <span class="glass-chip px-2.5 py-1">直近 12 時間で {window12hCount} 件追加</span>
             </div>
-            <div class="flex items-center gap-2 sm:justify-end">
-              <button
-                type="button"
-                class="h-10 rounded-sm border border-stone-400 bg-[var(--paper)] px-3 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white dark:focus:ring-stone-700"
-                data-reset-reads
-              >
-                既読履歴をリセット
-              </button>
-              <button
-                type="button"
-                class="h-10 rounded-sm border border-stone-400 bg-[var(--paper)] px-3 text-sm font-medium text-stone-700 hover:bg-stone-100 hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white dark:focus:ring-stone-700"
-                data-exclude-submit
-                title="不要マーク済みの記事を Sheets/Notion からも削除依頼として送信"
-              >
-                不要リスト送信 <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 text-xs font-bold text-white" data-exclude-count hidden>0</span>
-              </button>
-              <button
-                type="button"
-                class="inline-flex h-10 w-10 items-center justify-center rounded-sm border border-stone-400 bg-[var(--paper)] text-stone-700 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:bg-stone-800 dark:focus:ring-stone-700"
-                data-theme-toggle
-                aria-label="テーマを切り替え"
-              >
-                <svg data-theme-icon="light" class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <circle cx="12" cy="12" r="4"></circle>
-                  <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
-                </svg>
-                <svg data-theme-icon="dark" class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"></path>
-                </svg>
-              </button>
-              <label class="sr-only" for="theme-select">テーマ</label>
-              <select id="theme-select" class="article-control-field h-10 pr-8" data-theme-select>
-                <option value="system">System</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+            <button
+              type="button"
+              class="glass-control px-3 text-sm font-bold"
+              data-reset-reads
+            >
+              既読履歴をリセット
+            </button>
+            <button
+              type="button"
+              class="glass-control px-3 text-sm font-bold"
+              data-exclude-submit
+              title="不要マーク済みの記事を Sheets/Notion からも削除依頼として送信"
+            >
+              不要リスト送信 <span class="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-bold text-white shadow-sm" data-exclude-count hidden>0</span>
+            </button>
+            <button
+              type="button"
+              class="glass-icon-button"
+              data-theme-toggle
+              aria-label="テーマを切り替え"
+            >
+              <svg data-theme-icon="light" class="h-5 w-5 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+              </svg>
+              <svg data-theme-icon="dark" class="hidden h-5 w-5 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79Z"></path>
+              </svg>
+            </button>
+            <label class="sr-only" for="theme-select">テーマ</label>
+            <select id="theme-select" class="article-control-field h-10 pr-8" data-theme-select>
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
           </div>
         </div>
         <CategoryNav currentPath={Astro.url.pathname} />
       </div>
     </header>
-    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main class="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <slot />
     </main>
     <script>
@@ -132,17 +134,17 @@ const mastheadDate = formatJapaneseDate(new Date());
     </script>
     <div
       data-shortcut-help
-      class="fixed inset-0 z-50 hidden items-center justify-center bg-stone-950/70 px-4 py-6"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/55 px-4 py-6 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="shortcut-help-title"
     >
-      <div class="w-full max-w-md rounded-sm border border-stone-300 bg-[var(--paper)] p-5 shadow-xl dark:border-stone-700 dark:bg-stone-900">
+      <div class="glass-popover w-full max-w-md p-5">
         <div class="mb-4 flex items-start justify-between gap-4">
-          <h2 id="shortcut-help-title" class="font-serif-jp text-lg font-bold text-stone-950 dark:text-white">キーボードショートカット</h2>
+          <h2 id="shortcut-help-title" class="text-lg font-bold section-title">キーボードショートカット</h2>
           <button
             type="button"
-            class="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-300 text-stone-600 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:focus:ring-stone-700"
+            class="glass-icon-button h-9 w-9"
             data-shortcut-help-close
             aria-label="ショートカットヘルプを閉じる"
           >
@@ -150,18 +152,18 @@ const mastheadDate = formatJapaneseDate(new Date());
           </button>
         </div>
         <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-sm">
-          <dt class="font-mono font-bold text-stone-950 dark:text-white">j / ↓</dt>
-          <dd class="text-stone-600 dark:text-stone-300">次の記事カードへ移動</dd>
-          <dt class="font-mono font-bold text-stone-950 dark:text-white">k / ↑</dt>
-          <dd class="text-stone-600 dark:text-stone-300">前の記事カードへ移動</dd>
-          <dt class="font-mono font-bold text-stone-950 dark:text-white">Enter</dt>
-          <dd class="text-stone-600 dark:text-stone-300">選択中の記事を新しいタブで開く</dd>
-          <dt class="font-mono font-bold text-stone-950 dark:text-white">/</dt>
-          <dd class="text-stone-600 dark:text-stone-300">検索ボックスへ移動</dd>
-          <dt class="font-mono font-bold text-stone-950 dark:text-white">?</dt>
-          <dd class="text-stone-600 dark:text-stone-300">このヘルプを表示</dd>
-          <dt class="font-mono font-bold text-stone-950 dark:text-white">Esc</dt>
-          <dd class="text-stone-600 dark:text-stone-300">ヘルプを閉じる</dd>
+          <dt class="font-mono font-bold text-[var(--text-primary)]">j / ↓</dt>
+          <dd class="section-copy">次の記事カードへ移動</dd>
+          <dt class="font-mono font-bold text-[var(--text-primary)]">k / ↑</dt>
+          <dd class="section-copy">前の記事カードへ移動</dd>
+          <dt class="font-mono font-bold text-[var(--text-primary)]">Enter</dt>
+          <dd class="section-copy">選択中の記事を新しいタブで開く</dd>
+          <dt class="font-mono font-bold text-[var(--text-primary)]">/</dt>
+          <dd class="section-copy">検索ボックスへ移動</dd>
+          <dt class="font-mono font-bold text-[var(--text-primary)]">?</dt>
+          <dd class="section-copy">このヘルプを表示</dd>
+          <dt class="font-mono font-bold text-[var(--text-primary)]">Esc</dt>
+          <dd class="section-copy">ヘルプを閉じる</dd>
         </dl>
       </div>
     </div>

@@ -6,17 +6,17 @@ interface Props {
 const { showRange = false } = Astro.props;
 ---
 
-<div class="mb-5 flex flex-col gap-3" data-article-controls data-show-range={String(showRange)}>
+<div class="glass-panel mb-6 flex flex-col gap-3 p-3" data-article-controls data-show-range={String(showRange)}>
   <div class="flex flex-wrap items-center gap-3">
     <label class="flex items-center gap-2">
-      <span class="text-sm font-medium text-slate-600 dark:text-slate-300">並び順</span>
+      <span class="text-sm font-bold section-kicker">並び順</span>
       <select class="article-control-field h-10 pr-8" data-sort-select>
         <option value="new">新着順</option>
         <option value="importance">重要度順</option>
       </select>
     </label>
     <label class="flex items-center gap-2">
-      <span class="text-sm font-medium text-slate-600 dark:text-slate-300">期間</span>
+      <span class="text-sm font-bold section-kicker">期間</span>
       <select class="article-control-field h-10 pr-8" data-period-select>
         <option value="all">全期間</option>
         <option value="24h">過去24h</option>
@@ -27,20 +27,20 @@ const { showRange = false } = Astro.props;
     <details class="relative" data-tag-filter>
       <summary class="article-control-field flex h-10 cursor-pointer list-none items-center gap-2">
         タグ
-        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400" data-tag-count>0</span>
+        <span class="glass-chip px-1.5 py-0.5 text-xs" data-tag-count>0</span>
       </summary>
       <div class="article-filter-panel max-h-80 overflow-y-auto" data-tag-options></div>
     </details>
     <details class="relative" data-source-filter>
       <summary class="article-control-field flex h-10 cursor-pointer list-none items-center gap-2">
         Source
-        <span class="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400" data-source-count>0</span>
+        <span class="glass-chip px-1.5 py-0.5 text-xs" data-source-count>0</span>
       </summary>
       <div class="article-filter-panel" data-source-options></div>
     </details>
     <button
       type="button"
-      class="h-10 rounded-md border border-slate-200 px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+      class="glass-control px-3 text-sm font-bold"
       data-clear-filters
     >
       フィルタクリア
@@ -50,11 +50,11 @@ const { showRange = false } = Astro.props;
     <span class="sr-only">記事検索</span>
     <input
       type="search"
-      class="article-control-field min-w-48 flex-1 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+      class="article-control-field min-w-48 flex-1"
       placeholder="タイトル・要約・タグで検索..."
       autocomplete="off"
       data-search-input
     />
-    <span class="shrink-0 text-sm tabular-nums text-slate-500 dark:text-slate-400" data-search-count>0 件</span>
+    <span class="shrink-0 text-sm tabular-nums section-kicker" data-search-count>0 件</span>
   </label>
 </div>

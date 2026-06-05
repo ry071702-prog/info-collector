@@ -1,0 +1,314 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "X・YouTube・Twitch・RSS からゲーム/アニメ/Disney の話題を AI が自動収集・要約・分類するニュースリーダー。",
+} = Astro.props;
+const basePath = import.meta.env.BASE_URL;
+const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
+const feedPath = `${homePath}feed/`;
+const pageTitle = `${title} | info-collector`;
+const manifestPath = `${homePath}manifest.json`;
+const icon192Path = `${homePath}icon-192.svg`;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="application-name" content="info-collector" />
+    <meta name="apple-mobile-web-app-title" content="Info" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#f8fafc" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet" />
+    <link rel="manifest" href={manifestPath} />
+    <link rel="icon" href={icon192Path} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={icon192Path} />
+    <title>{pageTitle}</title>
+  </head>
+  <body class="landing-body">
+    <header class="landing-header">
+      <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8" aria-label="ランディングページ">
+        <a href={homePath} class="landing-logo" aria-label="情報収集 ホーム">
+          <span class="landing-logo-mark">情</span>
+          <span>情報収集</span>
+        </a>
+        <button
+          type="button"
+          class="landing-menu-button md:hidden"
+          aria-controls="landing-nav"
+          aria-expanded="false"
+          data-landing-menu-toggle
+        >
+          <span class="sr-only">メニューを開閉</span>
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" stroke-linecap="round"></path>
+          </svg>
+        </button>
+        <div id="landing-nav" class="landing-nav" data-landing-nav>
+          <a href={`${homePath}#features`}>機能</a>
+          <a href={`${homePath}#how`}>使い方</a>
+          <a href={`${homePath}#usecases`}>活用シーン</a>
+          <a href={feedPath} class="landing-nav-cta">今日のフィードを見る</a>
+        </div>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <script is:inline define:vars={{ basePath }}>
+      (() => {
+        if (!("serviceWorker" in navigator)) return;
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register(`${basePath}sw.js`, { scope: basePath }).catch((error) => {
+            console.warn("Service Worker registration failed:", error);
+          });
+        });
+      })();
+    </script>
+    <script is:inline>
+      (() => {
+        document.body.classList.add("landing-js");
+        const toggle = document.querySelector("[data-landing-menu-toggle]");
+        const nav = document.querySelector("[data-landing-nav]");
+        toggle?.addEventListener("click", () => {
+          const expanded = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!expanded));
+          nav?.classList.toggle("is-open", !expanded);
+        });
+
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const targets = Array.from(document.querySelectorAll("[data-reveal]"));
+        if (reduced || !("IntersectionObserver" in window)) {
+          targets.forEach((target) => target.classList.add("is-visible"));
+          return;
+        }
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            });
+          },
+          { rootMargin: "0px 0px -10% 0px", threshold: 0.12 },
+        );
+        targets.forEach((target) => observer.observe(target));
+      })();
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  body.landing-body {
+    --lp-navy: #0f172a;
+    --lp-blue: #2563eb;
+    --lp-cyan: #06b6d4;
+    --lp-green: #16a34a;
+    --lp-lime: #84cc16;
+    --lp-muted: #64748b;
+    background:
+      radial-gradient(circle at 12% 10%, rgba(37, 99, 235, 0.1), transparent 28rem),
+      radial-gradient(circle at 84% 20%, rgba(6, 182, 212, 0.1), transparent 24rem),
+      linear-gradient(180deg, #ffffff 0%, #f8fafc 42%, #eef6ff 100%);
+    color: var(--lp-navy);
+    font-family: "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  .landing-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  }
+
+  .landing-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 900;
+    color: var(--lp-navy);
+    letter-spacing: 0;
+  }
+
+  .landing-logo-mark {
+    display: inline-flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, var(--lp-blue), var(--lp-cyan));
+    color: white;
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.24);
+  }
+
+  .landing-menu-button,
+  .landing-nav-cta,
+  .lp-button {
+    min-height: 2.75rem;
+    border-radius: 999px;
+  }
+
+  .landing-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    border: 1px solid #dbeafe;
+    background: white;
+    color: var(--lp-navy);
+  }
+
+  .landing-nav {
+    display: none;
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    top: 4.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    border: 1px solid #dbeafe;
+    border-radius: 1.25rem;
+    background: white;
+    padding: 0.75rem;
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+  }
+
+  .landing-nav.is-open {
+    display: flex;
+  }
+
+  .landing-nav a {
+    border-radius: 999px;
+    padding: 0.75rem 1rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #334155;
+  }
+
+  .landing-nav a:hover {
+    background: #f1f5f9;
+    color: var(--lp-navy);
+  }
+
+  .landing-nav .landing-nav-cta,
+  .lp-primary {
+    background: linear-gradient(135deg, var(--lp-blue), var(--lp-cyan));
+    color: white;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.24);
+  }
+
+  .landing-nav .landing-nav-cta:hover,
+  .lp-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8, #0891b2);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .lp-secondary {
+    border: 1px solid #cbd5e1;
+    background: white;
+    color: var(--lp-navy);
+  }
+
+  .lp-secondary:hover {
+    border-color: #93c5fd;
+    background: #f8fafc;
+    transform: translateY(-1px);
+  }
+
+  .lp-card {
+    border: 1px solid rgba(226, 232, 240, 0.92);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .lp-card:hover {
+    border-color: rgba(14, 165, 233, 0.34);
+    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.11);
+    transform: translateY(-3px);
+  }
+
+  .lp-icon {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1rem;
+    background: #eff6ff;
+    color: var(--lp-blue);
+  }
+
+  .landing-js [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 520ms ease,
+      transform 520ms ease;
+  }
+
+  .landing-js [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .lp-floating {
+    animation: lp-float 6s ease-in-out infinite;
+  }
+
+  @keyframes lp-float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .landing-nav {
+      position: static;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .landing-js [data-reveal],
+    .lp-floating,
+    .lp-card,
+    .lp-button {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>

@@ -1,0 +1,39 @@
+---
+interface Props {
+  name?: string;
+  className?: string;
+}
+
+const { name = "spark", className = "h-5 w-5" } = Astro.props;
+const icons: Record<string, string[]> = {
+  spark: ["M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z", "M19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9L19 16Z"],
+  collect: ["M5 6h14v12H5z", "M8 9h3M8 12h8M8 15h5", "M16 4v4M8 4v4"],
+  summary: ["M7 4h7l3 3v13H7z", "M14 4v4h4", "M9 12h6M9 15h6M9 18h3"],
+  classify: ["M4 5h7v7H4z", "M13 5h7v7h-7z", "M4 14h7v5H4z", "M13 14h7v5h-7z"],
+  priority: ["M4 14a8 8 0 1 1 16 0", "M12 14l4-5", "M8 20h8"],
+  tag: ["M20 12l-8 8-8-8V4h8l8 8Z", "M8 8h.01"],
+  search: ["M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z", "m16 16 4 4"],
+  star: ["M12 3l2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9L12 3Z"],
+  digest: ["M6 4h12v16H6z", "M9 8h6M9 12h6M9 16h4"],
+  trend: ["M4 16l5-5 4 4 7-8", "M15 7h5v5"],
+  newspaper: ["M5 5h14v14H5z", "M8 9h8M8 12h3M13 12h3M8 15h8"],
+  pwa: ["M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z", "M10 18h4"],
+  theme: ["M12 4a8 8 0 1 0 8 8", "M12 4v16M4 12h16"],
+  users: ["M16 19a4 4 0 0 0-8 0", "M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z", "M20 18a3.5 3.5 0 0 0-3-3.4", "M17 6.2a2.5 2.5 0 0 1 0 4.6"],
+  source: ["M6 8a6 6 0 0 1 12 0", "M9 8a3 3 0 0 1 6 0", "M12 8v8", "M9 16h6"],
+};
+const paths = icons[name] ?? icons.spark;
+---
+
+<svg
+  class={className}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.9"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+>
+  {paths.map((path) => <path d={path}></path>)}
+</svg>

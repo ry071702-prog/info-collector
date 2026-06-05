@@ -22,26 +22,26 @@ const dates = [...dateMap.entries()]
 
 <BaseLayout title="新聞アーカイブ">
   <section class="mb-6">
-    <h1 class="font-serif-jp text-3xl font-black tracking-normal text-stone-950 sm:text-4xl dark:text-white">日刊 情報収集 — 新聞アーカイブ</h1>
-    <p class="mt-2 text-sm text-stone-600 dark:text-stone-400">
+    <h1 class="section-title text-3xl sm:text-4xl">新聞アーカイブ</h1>
+    <p class="mt-2 text-sm section-copy">
       毎日その日のニュースを 1 ページの新聞風レイアウトでまとめます。見出しから元記事へ遷移できます。
     </p>
   </section>
 
   {dates.length === 0 ? (
-    <p class="text-sm text-stone-500 dark:text-stone-400">まだ新聞が発行されていません。</p>
+    <p class="glass-empty p-6 text-sm">まだ新聞が発行されていません。</p>
   ) : (
-    <ul class="divide-y divide-stone-300 dark:divide-stone-700">
+    <ul class="glass-panel divide-y divide-white/45 overflow-hidden dark:divide-white/10">
       {dates.map(([date, count]) => (
-        <li class="py-3">
-          <a href={`${base}/newspaper/${date}/`} class="group flex items-center justify-between gap-4">
+        <li>
+          <a href={`${base}/newspaper/${date}/`} class="group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-white/42 dark:hover:bg-white/8">
             <div>
-              <h2 class="font-serif-jp text-lg font-bold text-stone-950 group-hover:underline dark:text-white">
+              <h2 class="text-lg font-black text-[var(--text-primary)]">
                 {formatJapaneseDate(`${date}T12:00:00+09:00`)}
               </h2>
-              <p class="text-xs text-stone-500 dark:text-stone-400">{count} 件の記事を収録</p>
+              <p class="text-xs section-kicker">{count} 件の記事を収録</p>
             </div>
-            <span class="font-serif-jp text-xs text-stone-500 group-hover:text-stone-900 dark:text-stone-400 dark:group-hover:text-white">読む →</span>
+            <span class="text-xs font-bold section-kicker group-hover:text-[var(--text-primary)]">読む</span>
           </a>
         </li>
       ))}

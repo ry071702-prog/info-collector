@@ -1,0 +1,88 @@
+---
+const articles = [
+  { category: "ゲーム", priority: "A", title: "大会アップデートまとめ", summary: "公式発表と配信者の反応を整理。大会環境への影響を短く確認できます。", tags: ["eスポーツ", "大会"], date: "06/05" },
+  { category: "アニメ", priority: "S", title: "続編発表の注目ポイント", summary: "放送予定、制作体制、SNS の反応を重要度付きでまとめています。", tags: ["続編", "制作発表"], date: "06/05" },
+  { category: "Disney", priority: "B", title: "パーク運営情報の更新", summary: "新施設と混雑に関わる変更点を、来園前に読める粒度へ圧縮します。", tags: ["パーク", "施設"], date: "06/04" },
+];
+---
+
+<section class="px-4 py-20 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl">
+    <div class="mx-auto max-w-3xl text-center" data-reveal>
+      <p class="text-sm font-black uppercase text-blue-700">気になる情報を、AIが整理する。</p>
+      <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">“使えそう”が、ひと目で分かる。</h2>
+      <p class="mt-4 text-base leading-7 text-slate-600">
+        検索、カテゴリ、重要度、タグを同じ画面で扱えるフィード。読む順番を決めやすいように、必要な文脈を先に見せます。
+      </p>
+    </div>
+
+    <div class="mt-10 grid gap-5 rounded-[2rem] border border-slate-200 bg-white/92 p-4 shadow-[0_24px_70px_rgba(15,23,42,0.12)] sm:p-6 lg:grid-cols-[1fr_18rem]" data-reveal>
+      <div class="min-w-0">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div class="flex min-h-12 flex-1 items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-500">
+            <svg class="h-5 w-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z" stroke-linecap="round"></path>
+              <path d="m16 16 4 4" stroke-linecap="round"></path>
+            </svg>
+            キーワードで検索
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <span class="rounded-full bg-blue-600 px-4 py-2 text-xs font-black text-white">ゲーム</span>
+            <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-600">アニメ</span>
+            <span class="rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-600">Disney</span>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-4 lg:grid-cols-3">
+          {
+            articles.map((article) => (
+              <article class="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{article.category}</span>
+                  <span class="rounded-full bg-orange-50 px-3 py-1 text-xs font-black text-orange-700">重要度{article.priority}</span>
+                  <time class="ml-auto text-xs font-bold text-slate-400">{article.date}</time>
+                </div>
+                <h3 class="mt-3 text-base font-black leading-6 text-slate-950">{article.title}</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-600">{article.summary}</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  {article.tags.map((tag) => (
+                    <span class="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-500">#{tag}</span>
+                  ))}
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+
+      <aside class="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div class="rounded-2xl bg-white p-4 shadow-sm">
+            <p class="text-xs font-bold text-slate-500">今日の新着数</p>
+            <p class="mt-1 text-3xl font-black text-slate-950">42</p>
+          </div>
+          <div class="rounded-2xl bg-white p-4 shadow-sm">
+            <p class="text-xs font-bold text-slate-500">今週の新着数</p>
+            <p class="mt-1 text-3xl font-black text-slate-950">318</p>
+          </div>
+        </div>
+        <div class="mt-5">
+          <p class="text-xs font-black uppercase text-slate-500">よく使うタグ</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            {["FPS", "新作", "パーク", "続編", "大会"].map((tag) => (
+              <span class="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-slate-600 shadow-sm">#{tag}</span>
+            ))}
+          </div>
+        </div>
+        <div class="mt-5">
+          <p class="text-xs font-black uppercase text-slate-500">最近の更新</p>
+          <ul class="mt-3 space-y-2 text-sm font-bold text-slate-600">
+            <li class="rounded-2xl bg-white px-3 py-2 shadow-sm">12分前 RSS更新</li>
+            <li class="rounded-2xl bg-white px-3 py-2 shadow-sm">28分前 YouTube更新</li>
+            <li class="rounded-2xl bg-white px-3 py-2 shadow-sm">41分前 X更新</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

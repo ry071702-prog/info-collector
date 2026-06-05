@@ -6,7 +6,7 @@ import { buildTrendsData } from "../../lib/trends";
 const siteData = loadSiteData();
 const trends = buildTrendsData(siteData.articles, siteData.generated_at);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const homePath = `${base}/`;
+const feedPath = `${base}/feed/`;
 
 const summaryCards = [
   { label: "総記事数", value: `${trends.summary.totalArticles}`, note: "過去30日" },
@@ -66,8 +66,8 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
 
 <BaseLayout title="トレンド" description="直近30日の記事数、ジャンル比率、source別配信数、活発な時間帯を可視化します。">
   <section class="mb-8">
-    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">トレンド</h1>
-    <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
+    <h1 class="section-title text-3xl sm:text-4xl">トレンド</h1>
+    <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
       直近30日の収集データを、件数推移・ジャンル構成・source別の動きで俯瞰します。
     </p>
   </section>
@@ -75,20 +75,20 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
   <section class="mb-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="サマリー">
     {
       summaryCards.map((card) => (
-        <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{card.label}</p>
-          <p class="mt-3 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{card.value}</p>
-          <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{card.note}</p>
+        <div class="glass-panel p-5">
+          <p class="text-sm font-bold section-kicker">{card.label}</p>
+          <p class="mt-3 text-3xl font-black tracking-normal text-[var(--text-primary)]">{card.value}</p>
+          <p class="mt-2 text-xs section-kicker">{card.note}</p>
         </div>
       ))
     }
   </section>
 
   <div class="grid gap-8 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
-    <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="glass-panel p-5">
       <div class="mb-5">
-        <h2 class="text-xl font-bold text-slate-950 dark:text-white">日次推移</h2>
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">過去30日の日別記事数をジャンルごとに積み上げ表示します。</p>
+        <h2 class="section-title text-xl">日次推移</h2>
+        <p class="mt-1 text-sm section-copy">過去30日の日別記事数をジャンルごとに積み上げ表示します。</p>
       </div>
       <div class="overflow-x-auto">
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} class="h-auto min-w-[640px] max-w-full" role="img" aria-label="過去30日の日別記事数">
@@ -97,15 +97,15 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
             y1={chartPadding.top + plotHeight}
             x2={chartPadding.left + plotWidth}
             y2={chartPadding.top + plotHeight}
-            class="stroke-slate-300 dark:stroke-slate-700"
+            class="stroke-slate-300/80 dark:stroke-white/20"
           />
           {
             yTicks.map((tick) => {
               const y = chartPadding.top + plotHeight - (tick / maxDaily) * plotHeight;
               return (
                 <g>
-                  <line x1={chartPadding.left} y1={y} x2={chartPadding.left + plotWidth} y2={y} class="stroke-slate-100 dark:stroke-slate-800" />
-                  <text x={chartPadding.left - 8} y={y + 4} text-anchor="end" class="fill-slate-500 text-[10px] dark:fill-slate-400">
+                  <line x1={chartPadding.left} y1={y} x2={chartPadding.left + plotWidth} y2={y} class="stroke-slate-200/70 dark:stroke-white/10" />
+                  <text x={chartPadding.left - 8} y={y + 4} text-anchor="end" class="fill-slate-500 text-[10px] dark:fill-slate-300">
                     {tick}
                   </text>
                 </g>
@@ -133,7 +133,7 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
                     x={chartPadding.left + index * barSlot + barSlot / 2}
                     y={chartHeight - 10}
                     text-anchor="middle"
-                    class="fill-slate-500 text-[10px] dark:fill-slate-400"
+                    class="fill-slate-500 text-[10px] dark:fill-slate-300"
                   >
                     {day.label}
                   </text>
@@ -146,7 +146,7 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
       <div class="mt-4 flex flex-wrap gap-3">
         {
           genres.map((genre) => (
-            <span class="inline-flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+            <span class="inline-flex items-center gap-2 text-xs section-kicker">
               <span class="h-2.5 w-2.5 rounded-sm" style={`background-color: ${genreColors[genre]}`}></span>
               {genreLabels[genre]}
             </span>
@@ -155,14 +155,14 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
       </div>
     </section>
 
-    <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="glass-panel p-5">
       <div class="mb-5">
-        <h2 class="text-xl font-bold text-slate-950 dark:text-white">ジャンル別比率</h2>
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">過去30日の全記事をジャンル別の割合で確認します。</p>
+        <h2 class="section-title text-xl">ジャンル別比率</h2>
+        <p class="mt-1 text-sm section-copy">過去30日の全記事をジャンル別の割合で確認します。</p>
       </div>
       <div class="flex flex-col items-center gap-5">
         <svg viewBox="0 0 160 160" class="h-48 w-48" role="img" aria-label="ジャンル別比率">
-          <circle cx="80" cy="80" r={donutRadius} fill="none" class="stroke-slate-100 dark:stroke-slate-800" stroke-width="22" />
+          <circle cx="80" cy="80" r={donutRadius} fill="none" class="stroke-slate-200/80 dark:stroke-white/10" stroke-width="22" />
           {
             donutSegments.map((segment) =>
               segment.count > 0 ? (
@@ -184,18 +184,18 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
               ) : null,
             )
           }
-          <text x="80" y="76" text-anchor="middle" class="fill-slate-500 text-[11px] font-medium dark:fill-slate-400">全体</text>
+          <text x="80" y="76" text-anchor="middle" class="fill-slate-500 text-[11px] font-medium dark:fill-slate-300">全体</text>
           <text x="80" y="96" text-anchor="middle" class="fill-slate-950 text-[16px] font-bold dark:fill-white">{totalLabel}</text>
         </svg>
         <div class="w-full space-y-2">
           {
             trends.genreShares.map((share) => (
               <div class="flex items-center justify-between gap-4 text-sm">
-                <span class="inline-flex min-w-0 items-center gap-2 text-slate-700 dark:text-slate-300">
+                <span class="inline-flex min-w-0 items-center gap-2 section-copy">
                   <span class="h-2.5 w-2.5 shrink-0 rounded-sm" style={`background-color: ${share.color}`}></span>
                   <span class="truncate">{share.label}</span>
                 </span>
-                <span class="shrink-0 font-medium text-slate-950 dark:text-white">{share.count}件</span>
+                <span class="shrink-0 font-bold text-[var(--text-primary)]">{share.count}件</span>
               </div>
             ))
           }
@@ -205,10 +205,10 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
   </div>
 
   <div class="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-    <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="glass-panel p-5">
       <div class="mb-5">
-        <h2 class="text-xl font-bold text-slate-950 dark:text-white">source 別 Top 10</h2>
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">配信数の多い source をランキングし、クリックでホームの source フィルタへ移動します。</p>
+        <h2 class="section-title text-xl">source 別 Top 10</h2>
+        <p class="mt-1 text-sm section-copy">配信数の多い source をランキングし、クリックで最新フィードの source フィルタへ移動します。</p>
       </div>
       {
         trends.topSources.length > 0 ? (
@@ -216,45 +216,45 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
             {trends.topSources.map((source, index) => (
               <li>
                 <a
-                  href={`${homePath}?source=${encodeURIComponent(source.key)}`}
-                  class="group block rounded-md border border-slate-100 p-3 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-800/60"
+                  href={`${feedPath}?source=${encodeURIComponent(source.key)}`}
+                  class="group block rounded-2xl border border-white/45 bg-white/34 p-3 transition hover:border-cyan-300/60 hover:bg-white/55 dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-300/35 dark:hover:bg-white/10"
                 >
                   <div class="mb-2 flex items-center justify-between gap-3 text-sm">
-                    <span class="min-w-0 truncate font-medium text-slate-800 group-hover:text-slate-950 dark:text-slate-200 dark:group-hover:text-white">
+                    <span class="min-w-0 truncate font-bold section-copy group-hover:text-[var(--text-primary)]">
                       {index + 1}. {source.label} — {source.count}件
                     </span>
-                    <span class="shrink-0 text-xs text-slate-500 dark:text-slate-400">{Math.round(source.percentage)}%</span>
+                    <span class="shrink-0 text-xs section-kicker">{Math.round(source.percentage)}%</span>
                   </div>
-                  <div class="h-2 overflow-hidden rounded bg-slate-100 dark:bg-slate-800">
-                    <div class="h-full rounded bg-blue-600 dark:bg-blue-400" style={`width: ${source.percentage}%`}></div>
+                  <div class="h-2 overflow-hidden rounded-full bg-white/55 dark:bg-white/10">
+                    <div class="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={`width: ${source.percentage}%`}></div>
                   </div>
                 </a>
               </li>
             ))}
           </ol>
         ) : (
-          <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+          <p class="glass-empty p-6 text-sm">
             集計できる source はまだありません。
           </p>
         )
       }
     </section>
 
-    <section class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section class="glass-panel p-5">
       <div class="mb-5">
-        <h2 class="text-xl font-bold text-slate-950 dark:text-white">直近の活発な時間帯</h2>
-        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">過去7日分を4時間ごとに集計し、濃淡で活動量を示します。</p>
+        <h2 class="section-title text-xl">直近の活発な時間帯</h2>
+        <p class="mt-1 text-sm section-copy">過去7日分を4時間ごとに集計し、濃淡で活動量を示します。</p>
       </div>
       <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-2">
         {
           trends.activeHours.map((bucket) => (
             <div
-              class="rounded-md border border-slate-200 p-3 dark:border-slate-800"
+              class="rounded-2xl border border-white/45 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] dark:border-white/10"
               style={heatBackground(bucket.intensity)}
             >
-              <p class="text-xs font-medium text-slate-600 dark:text-slate-300">{bucket.label}</p>
-              <p class="mt-2 text-2xl font-bold text-slate-950 dark:text-white">{bucket.count}</p>
-              <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">件</p>
+              <p class="text-xs font-bold section-copy">{bucket.label}</p>
+              <p class="mt-2 text-2xl font-black text-[var(--text-primary)]">{bucket.count}</p>
+              <p class="mt-1 text-xs section-kicker">件</p>
             </div>
           ))
         }

@@ -9,17 +9,17 @@ const { generatedAt, articleCount } = Astro.props;
 
 <div
   id="update-toast"
-  class="sticky top-0 z-50 hidden border-b border-blue-300 bg-blue-50 px-4 py-2 text-sm text-blue-950 shadow-sm dark:border-blue-800 dark:bg-blue-950 dark:text-blue-100"
+  class="sticky top-0 z-50 hidden border-b border-white/45 bg-white/78 px-4 py-2 text-sm text-[var(--text-primary)] shadow-[0_12px_36px_rgba(37,99,235,0.14)] backdrop-blur-2xl dark:border-white/15 dark:bg-slate-950/72"
   data-generated-at={generatedAt}
   data-article-count={articleCount}
 >
   <div class="mx-auto flex max-w-7xl items-center justify-between gap-3">
-    <span data-update-toast-message>新しい記事があります</span>
+    <span class="font-bold" data-update-toast-message>新しい記事があります</span>
     <div class="flex items-center gap-2">
-      <button type="button" class="rounded bg-blue-600 px-3 py-1 text-xs font-bold text-white hover:bg-blue-700" data-update-toast-reload>
+      <button type="button" class="rounded-full bg-gradient-to-r from-blue-600 to-cyan-500 px-3 py-1 text-xs font-bold text-white shadow-sm hover:brightness-110" data-update-toast-reload>
         更新
       </button>
-      <button type="button" class="px-2 py-1 text-base leading-none text-blue-700 hover:text-blue-950 dark:text-blue-200 dark:hover:text-white" data-update-toast-close aria-label="閉じる">
+      <button type="button" class="px-2 py-1 text-base leading-none text-[var(--text-secondary)] hover:text-[var(--text-primary)]" data-update-toast-close aria-label="閉じる">
         ×
       </button>
     </div>
