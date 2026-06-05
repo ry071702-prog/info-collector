@@ -6,17 +6,17 @@ interface Props {
 }
 
 const { priority } = Astro.props;
-const colors: Record<Priority, string> = {
-  S: "#dc2626",
-  A: "#ea580c",
-  B: "#ca8a04",
-  C: "#6b7280",
+const styles: Record<Priority, string> = {
+  S: "background: linear-gradient(135deg, #dc2626, #f43f5e); border-color: rgba(244, 63, 94, 0.55); color: white; box-shadow: 0 8px 24px rgba(220, 38, 38, 0.26);",
+  A: "background: linear-gradient(135deg, #ea580c, #f59e0b); border-color: rgba(245, 158, 11, 0.5); color: white; box-shadow: 0 8px 22px rgba(234, 88, 12, 0.22);",
+  B: "background: rgba(255, 255, 255, 0.58); border-color: rgba(100, 116, 139, 0.28); color: var(--text-secondary);",
+  C: "background: rgba(148, 163, 184, 0.14); border-color: rgba(100, 116, 139, 0.24); color: var(--text-muted);",
 };
 ---
 
 <span
-  class="inline-flex min-w-8 items-center justify-center rounded px-2 py-1 text-xs font-bold text-white"
-  style={`background-color: ${colors[priority] ?? colors.C}`}
+  class="inline-flex min-w-8 items-center justify-center rounded-full border px-2.5 py-1 text-xs font-black backdrop-blur-md"
+  style={styles[priority] ?? styles.C}
 >
   {priority}
 </span>

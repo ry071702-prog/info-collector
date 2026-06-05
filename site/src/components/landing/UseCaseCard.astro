@@ -1,0 +1,22 @@
+---
+import LandingIcon from "./LandingIcon.astro";
+
+interface Props {
+  title: string;
+  body: string;
+  icon: string;
+}
+
+const { title, body, icon } = Astro.props;
+---
+
+<article class="lp-card p-5 sm:p-6" data-reveal>
+  <div class="mb-5 flex items-center justify-between gap-3">
+    <div class="lp-icon">
+      <LandingIcon name={icon} />
+    </div>
+    <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">活用シーン</span>
+  </div>
+  <h3 class="text-lg font-bold text-slate-950">{title}</h3>
+  <p class="mt-3 text-sm leading-6 text-slate-600">{body}</p>
+</article>

@@ -1,83 +1,211 @@
 ---
-import ArticleControls from "../components/ArticleControls.astro";
-import DigestCard from "../components/DigestCard.astro";
-import NewsCard from "../components/NewsCard.astro";
-import NewsCardSkeleton from "../components/NewsCardSkeleton.astro";
-import BaseLayout from "../layouts/BaseLayout.astro";
-import { allArticles, genres, genreLabels, latestByGenre, loadDigests } from "../lib/articles";
+import DashboardMock from "../components/landing/DashboardMock.astro";
+import FeatureCard from "../components/landing/FeatureCard.astro";
+import FinalCta from "../components/landing/FinalCta.astro";
+import Hero from "../components/landing/Hero.astro";
+import ProblemCard from "../components/landing/ProblemCard.astro";
+import SolutionItem from "../components/landing/SolutionItem.astro";
+import StepCard from "../components/landing/StepCard.astro";
+import UseCaseCard from "../components/landing/UseCaseCard.astro";
+import LandingLayout from "../layouts/LandingLayout.astro";
 
-const latest = allArticles();
-const digests = loadDigests().slice(0, 8);
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const feedPath = `${base}/feed/`;
+
+const problems = [
+  {
+    title: "SNS・動画・RSSが多すぎて追いきれない",
+    body: "X、YouTube、Twitch、RSS を横断するだけで、確認の時間が膨らみます。",
+    icon: "source",
+  },
+  {
+    title: "重要なニュースほど、流れて消える",
+    body: "アップデートや公式発表も、タイムラインの速度に埋もれると見逃しやすくなります。",
+    icon: "trend",
+  },
+  {
+    title: "情報が各サービスに散らばる",
+    body: "ゲーム、アニメ、Disney の話題が別々の場所にあり、全体像をつかみにくい状態になります。",
+    icon: "classify",
+  },
+  {
+    title: "要約がなく読むのに時間がかかる",
+    body: "長い発表や動画の文脈を読む前に、まず要点だけ知りたい場面があります。",
+    icon: "summary",
+  },
+  {
+    title: "「あとで読む」が溜まって見返せない",
+    body: "後回しにした情報ほど、タグや重要度なしでは探し直す手間が増えます。",
+    icon: "star",
+  },
+];
+
+const solutions = [
+  {
+    title: "AIが24時間自動で収集",
+    body: "気になるジャンルの話題を、自分で探しに行かなくても集まる",
+    icon: "collect",
+  },
+  {
+    title: "長文も要点を自動要約",
+    body: "読む前に要点が分かるから、短時間で把握できる",
+    icon: "summary",
+  },
+  {
+    title: "ジャンル・カテゴリで自動整理",
+    body: "情報が増えても、テーマごとに迷子にならない",
+    icon: "classify",
+  },
+  {
+    title: "重要度で“今読むべき”が分かる",
+    body: "S/A/B/C のスコアで優先順位がひと目で",
+    icon: "priority",
+  },
+];
+
+const useCases = [
+  {
+    title: "ゲーマー・eスポーツ好き",
+    body: "アップデート、大会、配信者発の話題を短時間で追えます。",
+    icon: "priority",
+  },
+  {
+    title: "アニメ・漫画ファン",
+    body: "公式発表、続編、SNS 反応を要約とタグで確認できます。",
+    icon: "spark",
+  },
+  {
+    title: "Disney・パーク好き",
+    body: "パーク、新施設、配信作品の更新をカテゴリ別に見られます。",
+    icon: "star",
+  },
+  {
+    title: "トレンドを追う仕事の人",
+    body: "毎日の話題を、重要度とトレンドの切り口で確認できます。",
+    icon: "trend",
+  },
+  {
+    title: "「あとで読む」が溜まりがちな人",
+    body: "お気に入り、検索、タグで必要な記事を戻りやすくします。",
+    icon: "tag",
+  },
+];
+
+const steps = [
+  {
+    step: "1",
+    title: "AIが自動で収集",
+    body: "X/YouTube/Twitch/RSS の公開情報を定期的に取得します。",
+    icon: "collect",
+  },
+  {
+    step: "2",
+    title: "要約・分類・重要度づけ",
+    body: "Gemini が要点、ジャンル、タグ、S/A/B/C の重要度を付与します。",
+    icon: "priority",
+  },
+  {
+    step: "3",
+    title: "フィードで読む・検索・お気に入り",
+    body: "最新フィード、カテゴリページ、検索、フィルタ、お気に入りで確認できます。",
+    icon: "search",
+  },
+];
+
+const features = [
+  { title: "AI要約", body: "長い投稿や記事の要点を、読む前に短く確認できます。", icon: "summary" },
+  { title: "自動ジャンル分類", body: "ゲーム、アニメ、Disney の話題をジャンル別に整理します。", icon: "classify" },
+  { title: "重要度スコア(S/A/B/C)", body: "優先して読むべき情報を重要度で見分けられます。", icon: "priority" },
+  { title: "自動タグ付け", body: "作品名、イベント、話題の切り口をタグで追いやすくします。", icon: "tag" },
+  { title: "カテゴリ別ページ", body: "ゲーム、アニメ、Disney それぞれの専用ページで確認できます。", icon: "classify" },
+  { title: "キーワード検索", body: "気になるタイトルやトピックでフィードを絞り込めます。", icon: "search" },
+  { title: "お気に入り", body: "後で見返したい記事をお気に入りとして残せます。", icon: "star" },
+  { title: "日次ダイジェスト", body: "1日の主要トピックをまとめて読み返せます。", icon: "digest" },
+  { title: "トレンド", body: "ソース別の増加や注目されている話題を確認できます。", icon: "trend" },
+  { title: "新聞風ビュー", body: "1日分のニュースを紙面風レイアウトで眺められます。", icon: "newspaper" },
+  { title: "PWA・オフライン", body: "インストールして、取得済み画面をオフラインでも開けます。", icon: "pwa" },
+  { title: "ダーク&ライト", body: "明るい環境でも暗い環境でも読みやすい表示に切り替えられます。", icon: "theme" },
+];
 ---
 
-<BaseLayout title="ホーム">
-  <section class="mb-10">
-    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">統合ニュース</h1>
-    <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-400">
-      直近30日の収集データを、重要度と新しさで整理しています。
-    </p>
-  </section>
+<LandingLayout
+  title="追いかけなくても、最新情報は集まる"
+  description="X・YouTube・Twitch・RSS からゲーム/アニメ/Disney の話題を AI が24時間自動で収集・要約・分類するニュースリーダー。"
+>
+  <Hero feedPath={feedPath} />
 
-  {
-    genres.map((genre) => {
-      const articles = latestByGenre(genre, 8);
-      return (
-        <section class="mb-12">
-          <div class="mb-4 flex items-end justify-between gap-4">
-            <h2 class="text-2xl font-bold">{genreLabels[genre]}</h2>
-            <a href={`${base}/${genre}/`} class="text-sm font-medium text-slate-600 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white">
-              すべて見る
-            </a>
-          </div>
-          {articles.length > 0 ? (
-            <>
-              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-skeletons>
-                <NewsCardSkeleton count={4} />
-              </div>
-              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-static-list>
-                {articles.map((article) => <NewsCard article={article} />)}
-              </div>
-            </>
-          ) : (
-            <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-              このカテゴリのニュースはまだありません。
-            </p>
-          )}
-        </section>
-      );
-    })
-  }
-
-  <section class="mb-12">
-    <h2 class="mb-4 text-2xl font-bold">全体新着</h2>
-    <ArticleControls />
-    {
-      latest.length > 0 ? (
-        <>
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-skeletons>
-            <NewsCardSkeleton count={8} />
-          </div>
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list>
-            {latest.map((article) => <NewsCard article={article} />)}
-          </div>
-        </>
-      ) : (
-        <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          表示できるニュースはまだありません。
+  <section class="px-4 py-20 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="max-w-3xl" data-reveal>
+        <p class="text-sm font-black uppercase text-blue-700">Problem</p>
+        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">情報は、追うだけで時間が溶ける。</h2>
+        <p class="mt-4 text-base leading-7 text-slate-600">
+          速報、動画、配信、公式発表。多すぎる情報を人力で追い続けるほど、読む前の整理に時間を取られます。
         </p>
-      )
-    }
+      </div>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        {problems.map((problem) => <ProblemCard {...problem} />)}
+      </div>
+    </div>
   </section>
 
-  {
-    digests.length > 0 && (
-      <section>
-        <h2 class="mb-4 text-2xl font-bold">デイリーまとめ</h2>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {digests.map((digest) => <DigestCard digest={digest} />)}
-        </div>
-      </section>
-    )
-  }
-</BaseLayout>
+  <section class="bg-white/62 px-4 py-20 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="mx-auto max-w-3xl text-center" data-reveal>
+        <p class="text-sm font-black uppercase text-emerald-700">Solution</p>
+        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">集めるのをやめて、“届く”に変える。</h2>
+        <p class="mt-4 text-base leading-7 text-slate-600">
+          気になる情報を、AIが整理する。収集、要約、分類、重要度づけまで自動化し、毎日の確認を短くします。
+        </p>
+      </div>
+      <div class="mt-10 grid gap-5 md:grid-cols-2">
+        {solutions.map((solution) => <SolutionItem {...solution} />)}
+      </div>
+    </div>
+  </section>
+
+  <section id="usecases" class="px-4 py-20 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="mx-auto max-w-3xl text-center" data-reveal>
+        <p class="text-sm font-black uppercase text-blue-700">Use Case</p>
+        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">情報感度を、保ちたいすべての人へ。</h2>
+      </div>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
+        {useCases.map((useCase) => <UseCaseCard {...useCase} />)}
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="bg-slate-950 px-4 py-20 text-white sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="mx-auto max-w-3xl text-center" data-reveal>
+        <p class="text-sm font-black uppercase text-cyan-200">How It Works</p>
+        <h2 class="mt-4 text-3xl font-black sm:text-4xl">仕組みは、たった3ステップ。</h2>
+        <p class="mt-4 text-base leading-7 text-slate-300">
+          集めた情報を、使える知識に。公開情報の収集から、読むための整理までを毎日回します。
+        </p>
+      </div>
+      <div class="mt-10 grid gap-5 md:grid-cols-3">
+        {steps.map((step) => <StepCard {...step} />)}
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="px-4 py-20 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="mx-auto max-w-3xl text-center" data-reveal>
+        <p class="text-sm font-black uppercase text-blue-700">Features</p>
+        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">使える機能。</h2>
+        <p class="mt-4 text-base leading-7 text-slate-600">
+          AI要約で、読む前に要点が分かる。タグとカテゴリで、情報が迷子にならない。
+        </p>
+      </div>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {features.map((feature) => <FeatureCard {...feature} />)}
+      </div>
+    </div>
+  </section>
+
+  <DashboardMock />
+  <FinalCta feedPath={feedPath} />
+</LandingLayout>

@@ -1,6 +1,6 @@
 ---
 import PriorityBadge from "./PriorityBadge.astro";
-import { genreColors, genreLabels, sourceKey, sourceLabel, type Article } from "../lib/articles";
+import { genreLabels, sourceKey, sourceLabel, type Article, type Genre } from "../lib/articles";
 
 interface Props {
   article: Article;
@@ -28,12 +28,35 @@ const searchBlob = [
   .filter(Boolean)
   .join(" ")
   .toLowerCase();
-const fallbackStyle = `background: linear-gradient(135deg, ${genreColors[article.genre]}, #0f172a);`;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
 const isUrgent = article.final_priority === "S" || article.final_priority === "A";
 const source = { key: sourceKey(article), label: sourceLabel(article) };
 const articleId = article.url;
+const genreAccent: Record<Genre, { start: string; end: string; glow: string; border: string }> = {
+  games: {
+    start: "var(--color-games-start)",
+    end: "var(--color-games-end)",
+    glow: "var(--glow-games)",
+    border: "rgba(6, 182, 212, 0.42)",
+  },
+  anime: {
+    start: "var(--color-anime-start)",
+    end: "var(--color-anime-end)",
+    glow: "var(--glow-anime)",
+    border: "rgba(236, 72, 153, 0.42)",
+  },
+  disney: {
+    start: "var(--color-disney-start)",
+    end: "var(--color-disney-end)",
+    glow: "var(--glow-disney)",
+    border: "rgba(251, 191, 36, 0.52)",
+  },
+};
+const accent = genreAccent[article.genre];
+const cardStyle = `--card-accent: ${accent.start}; --card-accent-end: ${accent.end}; --card-glow: ${accent.glow}; --card-border-hover: ${accent.border};`;
+const genreBadgeStyle = `background: linear-gradient(135deg, ${accent.start}, ${accent.end});`;
+const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,255,255,0.38), transparent 10rem), linear-gradient(135deg, ${accent.start}, ${accent.end});`;
 ---
 
 <article
@@ -46,18 +69,19 @@ const articleId = article.url;
   data-source={source.key}
   data-source-label={source.label}
   tabindex="-1"
-  class="group relative flex h-full flex-col overflow-hidden rounded-sm border border-stone-300 bg-[var(--paper)] shadow-sm transition-opacity hover:border-stone-500 hover:shadow-md dark:border-stone-700 dark:bg-stone-900 dark:hover:border-stone-500"
+  style={cardStyle}
+  class="glass-card group relative flex h-full flex-col overflow-hidden transition-opacity"
 >
   <span
-    class="pointer-events-none absolute left-2 top-2 z-10 hidden rounded-sm bg-stone-950/85 px-2 py-1 text-xs font-bold text-white shadow-sm dark:bg-white/90 dark:text-stone-950"
+    class="pointer-events-none absolute left-3 top-3 z-10 hidden rounded-full bg-slate-950/80 px-2.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-md dark:bg-white/90 dark:text-slate-950"
     data-read-label
   >
     既読
   </span>
-  <div class="absolute right-2 top-2 z-20 flex items-center gap-1.5">
+  <div class="absolute right-3 top-3 z-20 flex items-center gap-1.5">
     <button
       type="button"
-      class="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-100/80 bg-[var(--paper)]/95 text-lg leading-none text-stone-500 shadow-sm hover:bg-white hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700/80 dark:bg-stone-950/90 dark:text-stone-400 dark:hover:bg-stone-900 dark:hover:text-rose-400"
+      class="glass-icon-button h-9 w-9 text-base leading-none hover:text-rose-500"
       data-hide-toggle
       aria-label="この記事を不要として隠す"
       aria-pressed="false"
@@ -67,7 +91,7 @@ const articleId = article.url;
     </button>
     <button
       type="button"
-      class="inline-flex h-9 w-9 items-center justify-center rounded-sm border border-stone-100/80 bg-[var(--paper)]/95 text-lg leading-none text-stone-500 shadow-sm hover:bg-white hover:text-[#1e3a5f] focus:outline-none focus:ring-2 focus:ring-stone-300 dark:border-stone-700/80 dark:bg-stone-950/90 dark:text-stone-400 dark:hover:bg-stone-900 dark:hover:text-stone-100"
+      class="glass-icon-button h-9 w-9 text-lg leading-none hover:text-[var(--card-accent)]"
       data-favorite-toggle
       aria-label="お気に入りに追加"
       aria-pressed="false"
@@ -75,14 +99,14 @@ const articleId = article.url;
       ☆
     </button>
   </div>
-  <div class="aspect-[4/3] overflow-hidden bg-stone-200 dark:bg-stone-800">
+  <div class="aspect-[4/3] overflow-hidden bg-slate-200/70 dark:bg-slate-900/70">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="block h-full">
       {
         imageSrc ? (
           <img
             src={imageSrc}
             alt=""
-            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.035]"
             loading="lazy"
           />
         ) : (
@@ -91,7 +115,7 @@ const articleId = article.url;
               <img
                 src={article.favicon_url}
                 alt=""
-                class="h-12 w-12 rounded bg-white/90 p-1.5 shadow"
+                class="h-12 w-12 rounded-2xl bg-white/90 p-1.5 shadow"
                 loading="lazy"
               />
             )}
@@ -104,28 +128,28 @@ const articleId = article.url;
       }
     </a>
   </div>
-  <div class="flex flex-1 flex-col gap-3 border-t border-stone-300 p-4 dark:border-stone-700">
+  <div class="flex flex-1 flex-col gap-3 border-t border-[var(--glass-hairline)] bg-white/48 p-4 dark:bg-slate-950/28">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="contents">
       <div class="flex flex-wrap items-center gap-2">
         <PriorityBadge priority={article.final_priority} />
-          <span class="rounded-sm bg-stone-200 px-2 py-1 text-xs font-medium text-stone-700 dark:bg-stone-800 dark:text-stone-300">
+        <span class="rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-sm" style={genreBadgeStyle}>
           {genreLabels[article.genre]}
         </span>
         {
           article.flags.speed === "速報" && (
-            <span class="rounded-sm bg-[#1e3a5f] px-2 py-1 text-xs font-bold text-white">速報</span>
+            <span class="rounded-full bg-cyan-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm">速報</span>
           )
         }
         {
           article.flags.spoiler !== "なし" && (
-            <span class="rounded-sm bg-stone-900 px-2 py-1 text-xs font-bold text-white dark:bg-stone-100 dark:text-stone-950">ネタバレ注意</span>
+            <span class="rounded-full bg-slate-950 px-2.5 py-1 text-xs font-bold text-white shadow-sm dark:bg-white dark:text-slate-950">ネタバレ注意</span>
           )
         }
       </div>
-      <h3 class="font-serif-jp text-lg font-black leading-snug text-stone-950 group-hover:text-[#1e3a5f] dark:text-white dark:group-hover:text-stone-200">
+      <h3 class="news-card-title text-lg font-black leading-snug">
         {article.category_name}
       </h3>
-      <p class="line-clamp-2 text-sm leading-6 text-stone-600 dark:text-stone-300">
+      <p class="line-clamp-2 text-sm leading-6 section-copy">
         {article.summary || "概要はまだありません。"}
       </p>
     </a>
@@ -135,7 +159,7 @@ const articleId = article.url;
           {entities.map((tag) => (
             <button
               type="button"
-              class="rounded-sm bg-stone-200 px-2 py-1 text-xs text-stone-600 hover:bg-stone-300 hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-stone-400 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700 dark:hover:text-white"
+              class="entity-tag rounded-full px-2.5 py-1 text-xs font-medium"
               data-search-tag={tag}
             >
               {tag}
@@ -145,13 +169,13 @@ const articleId = article.url;
       )
     }
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="mt-auto block">
-      <div class="flex items-center justify-between gap-3 border-t border-stone-200 pt-3 text-xs text-stone-500 dark:border-stone-800 dark:text-stone-400">
+      <div class="flex items-center justify-between gap-3 border-t border-[var(--glass-hairline)] pt-3 text-xs section-kicker">
         <span class="min-w-0 truncate">{article.author || "unknown"}</span>
         <time
           datetime={article.timestamp}
           class:list={[
             "shrink-0",
-            isUrgent && "font-bold text-[#1e3a5f] dark:text-stone-200",
+            isUrgent && "font-bold text-rose-600 dark:text-rose-300",
           ]}
         >
           {relativeTime}

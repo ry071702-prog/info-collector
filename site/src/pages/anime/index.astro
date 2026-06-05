@@ -10,8 +10,8 @@ const articles = articlesByGenre("anime");
 
 <BaseLayout title="アニメ">
   <section class="mb-6">
-    <h1 class="text-3xl font-bold tracking-tight">アニメ</h1>
-    <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">直近30日のアニメニュース全件。</p>
+    <h1 class="section-title text-3xl">アニメ</h1>
+    <p class="mt-2 text-sm section-copy">直近30日のアニメニュース全件。</p>
   </section>
   <ArticleControls showRange />
   {
@@ -25,7 +25,7 @@ const articles = articlesByGenre("anime");
         </div>
       </>
     ) : (
-      <p class="rounded-lg border border-dashed border-slate-300 p-6 text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400">
+      <p class="glass-empty p-6 text-sm">
         表示できるアニメニュースはまだありません。
       </p>
     )

@@ -52,8 +52,8 @@ export const genreLabels: Record<Genre, string> = {
 
 export const genreColors: Record<Genre, string> = {
   games: "#2563eb",
-  anime: "#db2777",
-  disney: "#7c3aed",
+  anime: "#a855f7",
+  disney: "#f59e0b",
 };
 
 const priorityOrder: Record<Priority, number> = {

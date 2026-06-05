@@ -41,7 +41,7 @@ export function getPublicationMeta(slug: string): {
   const day = date.getDate();
 
   return {
-    name: "日刊 情報収集",
+    name: "情報収集",
     issueNumber: getIssueNumber(slug, edition),
     edition,
     dateLabel: `${year}年(令和${toReiwaYear(year)}年) ${month}月${day}日`,

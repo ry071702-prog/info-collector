@@ -1,0 +1,83 @@
+---
+import ArticleControls from "../../components/ArticleControls.astro";
+import DigestCard from "../../components/DigestCard.astro";
+import NewsCard from "../../components/NewsCard.astro";
+import NewsCardSkeleton from "../../components/NewsCardSkeleton.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { allArticles, genres, genreLabels, latestByGenre, loadDigests } from "../../lib/articles";
+
+const latest = allArticles();
+const digests = loadDigests().slice(0, 8);
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title="最新フィード">
+  <section class="mb-10">
+    <h1 class="section-title text-3xl sm:text-4xl">統合ニュース</h1>
+    <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
+      直近30日の収集データを、重要度と新しさで整理しています。
+    </p>
+  </section>
+
+  {
+    genres.map((genre) => {
+      const articles = latestByGenre(genre, 8);
+      return (
+        <section class="mb-12">
+          <div class="mb-4 flex items-end justify-between gap-4">
+            <h2 class="section-title text-2xl">{genreLabels[genre]}</h2>
+            <a href={`${base}/${genre}/`} class="text-sm font-bold section-kicker hover:text-[var(--text-primary)]">
+              すべて見る
+            </a>
+          </div>
+          {articles.length > 0 ? (
+            <>
+              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-skeletons>
+                <NewsCardSkeleton count={4} />
+              </div>
+              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-static-list>
+                {articles.map((article) => <NewsCard article={article} />)}
+              </div>
+            </>
+          ) : (
+            <p class="glass-empty p-6 text-sm">
+              このカテゴリのニュースはまだありません。
+            </p>
+          )}
+        </section>
+      );
+    })
+  }
+
+  <section class="mb-12">
+    <h2 class="section-title mb-4 text-2xl">全体新着</h2>
+    <ArticleControls />
+    {
+      latest.length > 0 ? (
+        <>
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-skeletons>
+            <NewsCardSkeleton count={8} />
+          </div>
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list>
+            {latest.map((article) => <NewsCard article={article} />)}
+          </div>
+        </>
+      ) : (
+        <p class="glass-empty p-6 text-sm">
+          表示できるニュースはまだありません。
+        </p>
+      )
+    }
+  </section>
+
+  {
+    digests.length > 0 && (
+      <section>
+        <h2 class="section-title mb-4 text-2xl">デイリーまとめ</h2>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {digests.map((digest) => <DigestCard digest={digest} />)}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
