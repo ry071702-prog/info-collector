@@ -1,4 +1,4 @@
-const CACHE_VERSION = "info-collector-v1";
+const CACHE_VERSION = "info-collector-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DATA_CACHE = `${CACHE_VERSION}-data`;
 const STATIC_ASSETS = ["./", "./articles.json", "./manifest.json", "./icon-192.svg", "./icon-512.svg"];
