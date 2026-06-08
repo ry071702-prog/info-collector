@@ -1,0 +1,44 @@
+name: Purge Sources (delete past items + data)
+on:
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: '削除対象 source_id (空白区切り)。空なら既定のノイズ群'
+        required: false
+        default: 'DSY046 DSY047 DSY038 DSY039 DSY040 DSY049'
+
+permissions:
+  contents: write
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: data-write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Purge items + Notion/Sheets by source
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID_GAMES: ${{ secrets.NOTION_DATABASE_ID_GAMES }}
+          NOTION_DATABASE_ID_ANIME: ${{ secrets.NOTION_DATABASE_ID_ANIME }}
+          NOTION_DATABASE_ID_DISNEY: ${{ secrets.NOTION_DATABASE_ID_DISNEY }}
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+        run: python -m src.admin.purge_by_source ${{ github.event.inputs.sources }}
+      - name: Commit purged processed data
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add data/processed || true
+          git diff --quiet --staged || git commit -m "purge: drop non-Disney items from removed sources"
+          for i in 1 2 3; do
+            git pull --rebase --autostash -X ours && git push && break
+            echo "push attempt $i failed; retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
