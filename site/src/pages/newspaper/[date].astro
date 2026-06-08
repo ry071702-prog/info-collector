@@ -44,13 +44,9 @@ function imgSrc(a: Article | undefined): string | null {
   return a.image_url.startsWith("http") ? a.image_url : `${base}${a.image_url}`;
 }
 
-// 1日分の記事を絞り込む (JST 基準で 1 日)
+// 1日分の記事を絞り込む (route 生成と同じ UTC 日付)
 function isOnDate(article: Article, targetDate: string): boolean {
-  // article.timestamp は UTC ISO 文字列。JST 換算で targetDate と一致する日を取る
-  const ts = new Date(article.timestamp);
-  if (Number.isNaN(ts.getTime())) return false;
-  const jst = new Date(ts.getTime() + 9 * 60 * 60 * 1000);
-  return jst.toISOString().slice(0, 10) === targetDate;
+  return article.timestamp.slice(0, 10) === targetDate;
 }
 
 const articlesAll = allArticles().filter((a) => isOnDate(a, date));
@@ -86,10 +82,8 @@ const formattedDate = formatJapaneseDate(`${date}T12:00:00+09:00`);
 const allDates = (() => {
   const set = new Set<string>();
   for (const a of allArticles()) {
-    const ts = new Date(a.timestamp);
-    if (Number.isNaN(ts.getTime())) continue;
-    const jst = new Date(ts.getTime() + 9 * 60 * 60 * 1000);
-    set.add(jst.toISOString().slice(0, 10));
+    const d = a.timestamp.slice(0, 10);
+    if (d) set.add(d);
   }
   return [...set].sort();
 })();

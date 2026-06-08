@@ -5,7 +5,8 @@ Gemini 画像モデルには文字を描かせず、文字は Pillow + 実フォ
 使い方:
     GEMINI_API_KEY=xxxx python scripts/generate_newspaper_image.py [YYYY-MM-DD]
 
-    日付を省略すると、docs/digests/ にある最新日付を使う。
+    日付を省略すると、data/processed/ にある記事 timestamp の最新 UTC 日付を使う。
+    processed を読めない場合のみ docs/digests/ の最新日付へフォールバックする。
     モデルは環境変数 NEWSPAPER_IMAGE_MODEL で上書き可
     (既定: gemini-3-pro-image-preview / 安価に試すなら gemini-2.5-flash-image)。
     フォントは NEWSPAPER_FONT=/path/to/font で明示指定可。
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import base64
 import io
+import json
 import os
 import re
 import sys
@@ -28,6 +30,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIGEST_DIR = ROOT / "docs" / "digests"
+PROCESSED_DIR = ROOT / "data" / "processed"
 OUT_DIR = ROOT / "site" / "public" / "newspaper-img"
 DEFAULT_MODEL = "gemini-3-pro-image-preview"
 CANVAS_SIZE = (1600, 900)
@@ -65,11 +68,17 @@ class FontSet:
 
 
 def resolve_date(arg: str | None) -> str:
-    """対象日付 (YYYY-MM-DD) を決める。引数なしなら最新の digest 日付。"""
+    """対象日付を決める。引数なしなら記事 timestamp の最新 UTC 日付。"""
     if arg:
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", arg):
             raise SystemExit(f"日付は YYYY-MM-DD 形式で: {arg!r}")
         return arg
+
+    article_dates = [date for item in load_processed_items() if (date := article_date(item))]
+    if article_dates:
+        return max(article_dates)
+
+    # processed が無い・読めない場合のみ digest 実行日にフォールバックする。
     dates = sorted(
         {
             m.group(1)
@@ -83,10 +92,44 @@ def resolve_date(arg: str | None) -> str:
     return dates[0]
 
 
+def article_date(item: dict[str, object]) -> str:
+    """Astro の timestamp.slice(0, 10) と同じ規則で UTC 日付を返す。"""
+    timestamp = item.get("timestamp")
+    return timestamp[:10] if isinstance(timestamp, str) else ""
+
+
+def load_processed_items(date: str | None = None) -> list[dict[str, object]]:
+    """processed 配下の JSONL を読み、必要なら UTC 記事日で絞り込む。"""
+    items: list[dict[str, object]] = []
+    try:
+        paths = sorted(PROCESSED_DIR.glob("**/items.jsonl"))
+    except OSError:
+        return items
+
+    for path in paths:
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            if not line.strip():
+                continue
+            try:
+                item = json.loads(line)
+            except (json.JSONDecodeError, TypeError):
+                continue
+            if not isinstance(item, dict):
+                continue
+            if date is None or article_date(item) == date:
+                items.append(item)
+    return items
+
+
 def load_headlines(date: str, limit: int = 6) -> list[str]:
-    """その日の digest (AM/PM 両方) から箇条書きの見出しを集める。"""
+    """同日の digest、無ければ processed 記事から見出しを集める。"""
     headlines: list[str] = []
-    for path in sorted(DIGEST_DIR.glob(f"{date}*.md")):
+    digest_paths = sorted(DIGEST_DIR.glob(f"{date}*.md"))
+    for path in digest_paths:
         for line in path.read_text(encoding="utf-8").splitlines():
             m = _BULLET_RE.match(line)
             if not m:
@@ -95,6 +138,24 @@ def load_headlines(date: str, limit: int = 6) -> list[str]:
             # リンクや記号だけの行・短すぎる行は除外
             if len(text) >= 10:
                 headlines.append(text)
+
+    if not digest_paths:
+        priority_rank = {"S": 0, "A": 1, "B": 2, "C": 3}
+        items = sorted(
+            load_processed_items(date),
+            key=lambda item: str(item.get("timestamp", "")),
+            reverse=True,
+        )
+        items.sort(
+            key=lambda item: priority_rank.get(str(item.get("final_priority", "")), 9)
+        )
+        for item in items:
+            title = clean_text(str(item.get("category_name") or ""))
+            summary = clean_text(str(item.get("summary") or ""))
+            text = "。".join(part for part in (title, summary) if part)
+            if len(text) >= 10:
+                headlines.append(text)
+
     # 重複を避けつつ上位 limit 件
     seen: set[str] = set()
     uniq: list[str] = []
