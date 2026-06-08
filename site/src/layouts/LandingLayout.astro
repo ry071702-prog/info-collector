@@ -13,6 +13,7 @@ const {
 const basePath = import.meta.env.BASE_URL;
 const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
 const feedPath = `${homePath}feed/`;
+const collectionPath = `${homePath}collection/`;
 const pageTitle = `${title} | info-collector`;
 const manifestPath = `${homePath}manifest.json`;
 const icon192Path = `${homePath}icon-192.svg`;
@@ -61,6 +62,7 @@ const icon192Path = `${homePath}icon-192.svg`;
           <a href={`${homePath}#features`}>機能</a>
           <a href={`${homePath}#how`}>使い方</a>
           <a href={`${homePath}#usecases`}>活用シーン</a>
+          <a href={collectionPath}>コレクション</a>
           <a href={feedPath} class="landing-nav-cta">今日のフィードを見る</a>
         </div>
       </nav>

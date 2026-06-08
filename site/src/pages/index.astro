@@ -13,6 +13,7 @@ import { buildSiteStats } from "../lib/stats";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const feedPath = `${base}/feed/`;
+const collectionPath = `${base}/collection/`;
 const siteData = loadSiteData();
 const stats = buildSiteStats(siteData.articles, siteData.generated_at, { dailyDays: 14, tagLimit: 10, sourceLimit: 10 });
 const latestArticles = sortArticlesByTimestamp(siteData.articles).slice(0, 3);
@@ -125,6 +126,7 @@ const features = [
   { title: "カテゴリ別ページ", body: "ゲーム、アニメ、Disney それぞれの専用ページで確認できます。", icon: "classify" },
   { title: "キーワード検索", body: "気になるタイトルやトピックでフィードを絞り込めます。", icon: "search" },
   { title: "お気に入り", body: "後で見返したい記事をお気に入りとして残せます。", icon: "star" },
+  { title: "保存コレクション", body: "自分で見つけたURLやメモも、AI要約つきでひとつの場所に残せます。", icon: "tag" },
   { title: "日次ダイジェスト", body: "1日の主要トピックをまとめて読み返せます。", icon: "digest" },
   { title: "トレンド", body: "ソース別の増加や注目されている話題を確認できます。", icon: "trend" },
   { title: "新聞風ビュー", body: "1日分のニュースを紙面風レイアウトで眺められます。", icon: "newspaper" },
@@ -212,5 +214,5 @@ const features = [
   </section>
 
   <DashboardMock stats={stats} articles={latestArticles} />
-  <FinalCta feedPath={feedPath} />
+  <FinalCta feedPath={feedPath} collectionPath={collectionPath} />
 </LandingLayout>

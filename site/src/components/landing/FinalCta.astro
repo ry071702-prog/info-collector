@@ -1,9 +1,10 @@
 ---
 interface Props {
   feedPath: string;
+  collectionPath: string;
 }
 
-const { feedPath } = Astro.props;
+const { feedPath, collectionPath } = Astro.props;
 ---
 
 <section class="px-4 py-20 sm:px-6 lg:px-8">
@@ -13,8 +14,13 @@ const { feedPath } = Astro.props;
     <p class="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-300">
       ゲーム、アニメ、Disney の最新トピックを、要約・カテゴリ・重要度つきのフィードで確認できます。
     </p>
-    <a href={feedPath} class="mt-8 inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-cyan-50">
-      今日のフィードを見る
-    </a>
+    <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+      <a href={feedPath} class="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-cyan-50">
+        今日のフィードを見る
+      </a>
+      <a href={collectionPath} class="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 px-6 py-3 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/10">
+        コレクションを開く
+      </a>
+    </div>
   </div>
 </section>

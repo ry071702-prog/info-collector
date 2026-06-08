@@ -1,0 +1,290 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const feedPath = `${base}/feed/`;
+---
+
+<BaseLayout
+  title="コレクション"
+  description="自分で保存したURLやメモをAI要約つきで保管する個人用コレクション。"
+>
+  <section class="mb-8">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p class="section-kicker text-sm font-black">Personal Collection</p>
+        <h1 class="section-title mt-2 text-3xl sm:text-4xl">保存コレクション</h1>
+        <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
+          気になったURLやメモを保存し、AI要約・タグ・重要度つきでひとつのコレクションにまとめます。
+        </p>
+      </div>
+      <a href={feedPath} class="glass-control inline-flex items-center justify-center px-4 text-sm font-bold">
+        最新フィードへ
+      </a>
+    </div>
+  </section>
+
+  <section class="glass-panel mb-8 p-4 sm:p-6" aria-labelledby="collection-save-title">
+    <div class="mb-5">
+      <h2 id="collection-save-title" class="section-title text-xl">保存する</h2>
+      <p class="mt-1 text-sm section-copy">URL、またはメモだけでも保存できます。要約に失敗した場合も保存は継続します。</p>
+    </div>
+    <form class="grid gap-4" data-collection-form>
+      <div class="grid gap-2">
+        <label for="collection-url" class="text-sm font-bold text-[var(--text-primary)]">URL</label>
+        <input
+          id="collection-url"
+          name="url"
+          type="url"
+          inputmode="url"
+          placeholder="https://example.com/article"
+          class="article-control-field min-h-12 w-full"
+          data-collection-url
+        />
+      </div>
+      <div class="grid gap-2">
+        <label for="collection-note" class="text-sm font-bold text-[var(--text-primary)]">メモ</label>
+        <textarea
+          id="collection-note"
+          name="note"
+          rows="4"
+          placeholder="保存理由や補足メモ"
+          class="article-control-field min-h-28 w-full resize-y py-3"
+          data-collection-note
+        ></textarea>
+      </div>
+      <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+        <div class="grid gap-2">
+          <label for="collection-passcode" class="text-sm font-bold text-[var(--text-primary)]">保存パスコード</label>
+          <input
+            id="collection-passcode"
+            name="passcode"
+            type="password"
+            autocomplete="current-password"
+            class="article-control-field min-h-12 w-full"
+            data-collection-passcode
+            required
+          />
+        </div>
+        <button type="submit" class="glass-control min-h-12 px-5 text-sm font-black" data-collection-submit>
+          保存
+        </button>
+      </div>
+      <label class="inline-flex items-center gap-2 text-sm section-copy">
+        <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" data-collection-remember checked />
+        この端末にパスコードを保存
+      </label>
+      <p class="text-sm section-copy" role="status" aria-live="polite" data-collection-status></p>
+    </form>
+  </section>
+
+  <section aria-labelledby="collection-list-title">
+    <div class="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 id="collection-list-title" class="section-title text-2xl">保存済み</h2>
+        <p class="mt-1 text-sm section-copy">新しい順に最大200件を表示します。</p>
+      </div>
+      <button type="button" class="glass-control min-h-10 px-4 text-sm font-bold" data-collection-refresh>
+        再読み込み
+      </button>
+    </div>
+    <p class="glass-empty p-6 text-sm" data-collection-loading>読み込み中...</p>
+    <p class="glass-empty hidden p-6 text-sm" data-collection-empty>まだ保存はありません。</p>
+    <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-collection-list></div>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const STORAGE_KEY = "info-collector-save-passcode";
+      const form = document.querySelector("[data-collection-form]");
+      const urlInput = document.querySelector("[data-collection-url]");
+      const noteInput = document.querySelector("[data-collection-note]");
+      const passcodeInput = document.querySelector("[data-collection-passcode]");
+      const rememberInput = document.querySelector("[data-collection-remember]");
+      const submitButton = document.querySelector("[data-collection-submit]");
+      const status = document.querySelector("[data-collection-status]");
+      const loading = document.querySelector("[data-collection-loading]");
+      const empty = document.querySelector("[data-collection-empty]");
+      const list = document.querySelector("[data-collection-list]");
+      const refreshButton = document.querySelector("[data-collection-refresh]");
+
+      const setStatus = (message, tone = "neutral") => {
+        if (!(status instanceof HTMLElement)) return;
+        status.textContent = message;
+        status.classList.toggle("text-rose-600", tone === "error");
+        status.classList.toggle("dark:text-rose-300", tone === "error");
+        status.classList.toggle("text-emerald-700", tone === "success");
+        status.classList.toggle("dark:text-emerald-300", tone === "success");
+      };
+
+      const escapeHtml = (value) =>
+        String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+
+      const formatDate = (value) => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return "";
+        return new Intl.DateTimeFormat("ja-JP", {
+          timeZone: "Asia/Tokyo",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        }).format(date).replaceAll("/", "-");
+      };
+
+      const priorityClass = (importance) => {
+        if (importance === "S") return "bg-rose-500 text-white";
+        if (importance === "A") return "bg-orange-500 text-white";
+        if (importance === "B") return "bg-slate-600 text-white dark:bg-slate-300 dark:text-slate-950";
+        return "bg-white/70 text-slate-600 dark:bg-white/10 dark:text-slate-300";
+      };
+
+      const renderItem = (item) => {
+        const tags = Array.isArray(item.tags) ? item.tags : [];
+        const title = item.title || item.url || "無題";
+        const href = item.url ? escapeHtml(item.url) : "";
+        const favicon = item.favicon_url ? `<img src="${escapeHtml(item.favicon_url)}" alt="" class="h-5 w-5 rounded bg-white/80" loading="lazy" />` : "";
+        const titleNode = href
+          ? `<a href="${href}" target="_blank" rel="noreferrer" class="news-card-title block text-lg font-black leading-snug" data-article-link>${escapeHtml(title)}</a>`
+          : `<h3 class="news-card-title text-lg font-black leading-snug">${escapeHtml(title)}</h3>`;
+        return `
+          <article class="glass-card group flex h-full flex-col overflow-hidden p-4" data-collection-card data-id="${escapeHtml(item.id)}">
+            <div class="mb-3 flex flex-wrap items-center gap-2">
+              <span class="rounded-full px-2.5 py-1 text-xs font-black ${priorityClass(item.importance)}">重要度${escapeHtml(item.importance || "C")}</span>
+              <span class="rounded-full bg-white/54 px-2.5 py-1 text-xs font-bold section-kicker dark:bg-white/10">${escapeHtml(item.category || "other")}</span>
+            </div>
+            ${titleNode}
+            <p class="mt-3 line-clamp-3 text-sm leading-6 section-copy">${escapeHtml(item.summary || "要約はまだありません。")}</p>
+            ${item.note ? `<p class="mt-3 rounded-2xl border border-white/45 bg-white/30 p-3 text-xs leading-5 section-copy dark:border-white/10 dark:bg-white/5">${escapeHtml(item.note)}</p>` : ""}
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              ${tags.map((tag) => `<span class="entity-tag rounded-full px-2.5 py-1 text-xs font-medium">#${escapeHtml(tag)}</span>`).join("")}
+            </div>
+            <div class="mt-auto flex items-center justify-between gap-3 border-t border-[var(--glass-hairline)] pt-4 text-xs section-kicker">
+              <span class="inline-flex min-w-0 items-center gap-1.5">
+                ${favicon}
+                <span class="truncate">${escapeHtml(item.domain || "manual")}</span>
+              </span>
+              <time class="shrink-0" datetime="${escapeHtml(item.created_at)}">${escapeHtml(formatDate(item.created_at))}</time>
+            </div>
+            <button type="button" class="glass-control mt-4 min-h-10 px-3 text-sm font-bold hover:text-rose-600 dark:hover:text-rose-300" data-collection-delete="${escapeHtml(item.id)}">
+              削除
+            </button>
+          </article>
+        `;
+      };
+
+      const renderItems = (items) => {
+        if (!(list instanceof HTMLElement) || !(empty instanceof HTMLElement)) return;
+        list.innerHTML = items.map(renderItem).join("");
+        empty.classList.toggle("hidden", items.length > 0);
+      };
+
+      const loadItems = async () => {
+        if (loading instanceof HTMLElement) loading.hidden = false;
+        try {
+          const response = await fetch("/api/collection", { headers: { Accept: "application/json" } });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "読み込みに失敗しました");
+          renderItems(Array.isArray(data.items) ? data.items : []);
+          setStatus("");
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : "読み込みに失敗しました", "error");
+        } finally {
+          if (loading instanceof HTMLElement) loading.hidden = true;
+        }
+      };
+
+      const passcodeValue = () => (passcodeInput instanceof HTMLInputElement ? passcodeInput.value : "");
+
+      const rememberPasscode = () => {
+        if (!(rememberInput instanceof HTMLInputElement)) return;
+        if (rememberInput.checked) {
+          localStorage.setItem(STORAGE_KEY, passcodeValue());
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      };
+
+      const savedPasscode = localStorage.getItem(STORAGE_KEY);
+      if (savedPasscode && passcodeInput instanceof HTMLInputElement) {
+        passcodeInput.value = savedPasscode;
+      }
+
+      form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!(urlInput instanceof HTMLInputElement) || !(noteInput instanceof HTMLTextAreaElement)) return;
+        const payload = {
+          url: urlInput.value.trim(),
+          note: noteInput.value.trim(),
+          passcode: passcodeValue(),
+        };
+        if (!payload.url && !payload.note) {
+          setStatus("URLかメモを入力してください。", "error");
+          return;
+        }
+        rememberPasscode();
+        if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
+        setStatus("保存中です。AI要約に少し時間がかかる場合があります。");
+        try {
+          const response = await fetch("/api/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "保存に失敗しました");
+          urlInput.value = "";
+          noteInput.value = "";
+          setStatus("保存しました。", "success");
+          await loadItems();
+        } catch (error) {
+          setStatus(error instanceof Error ? error.message : "保存に失敗しました", "error");
+        } finally {
+          if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
+        }
+      });
+
+      list?.addEventListener("click", async (event) => {
+        const target = event.target instanceof Element ? event.target.closest("[data-collection-delete]") : null;
+        if (!(target instanceof HTMLButtonElement)) return;
+        const id = target.dataset.collectionDelete;
+        if (!id) return;
+        if (!passcodeValue()) {
+          setStatus("削除にはパスコードが必要です。", "error");
+          passcodeInput?.focus?.();
+          return;
+        }
+        if (!window.confirm("この保存を削除しますか?")) return;
+        rememberPasscode();
+        target.disabled = true;
+        try {
+          const response = await fetch(`/api/item/${encodeURIComponent(id)}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({ passcode: passcodeValue() }),
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "削除に失敗しました");
+          target.closest("[data-collection-card]")?.remove();
+          if (list instanceof HTMLElement && list.children.length === 0 && empty instanceof HTMLElement) {
+            empty.classList.remove("hidden");
+          }
+          setStatus("削除しました。", "success");
+        } catch (error) {
+          target.disabled = false;
+          setStatus(error instanceof Error ? error.message : "削除に失敗しました", "error");
+        }
+      });
+
+      refreshButton?.addEventListener("click", loadItems);
+      loadItems();
+    })();
+  </script>
+</BaseLayout>
