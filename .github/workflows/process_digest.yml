@@ -45,6 +45,9 @@ jobs:
           DISCORD_WEBHOOK_OPS: ${{ secrets.DISCORD_WEBHOOK_OPS }}
           DISCORD_WEBHOOK_ALERTS: ${{ secrets.DISCORD_WEBHOOK_ALERTS }}
         run: python -m src.jobs.process_digest
+      - name: Install Japanese fonts
+        if: ${{ inputs.dry_run != true }}
+        run: sudo apt-get update && sudo apt-get install -y fonts-noto-cjk
       - name: Generate newspaper image
         # 当日の digest から新聞風 1 枚画像を生成 (site/public/newspaper-img/<date>.png)。
         # 失敗してもダイジェスト本体の commit は止めない。当日分が既にあればスクリプト側でスキップ。
@@ -52,7 +55,7 @@ jobs:
         continue-on-error: true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 既定は日本語テキスト描画が正確な pro (flash-image は日本語が崩れるため)。
+          # Gemini は文字なし背景のみ生成し、日本語テキストは Pillow + Noto CJK で合成する。
           # コスト抑制したい場合は repo variable で gemini-2.5-flash-image を指定。1日1枚=月¥600〜1,100目安。
           NEWSPAPER_IMAGE_MODEL: ${{ vars.NEWSPAPER_IMAGE_MODEL || 'gemini-3-pro-image-preview' }}
         run: python scripts/generate_newspaper_image.py

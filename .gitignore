@@ -45,3 +45,4 @@ site/.astro/
 site/src/data/articles.json
 site/public/articles.json
 site/public/og-cache/
+site/public/newspaper-img/*.preview.png
