@@ -1,0 +1,205 @@
+---
+import { genreColors } from "../lib/articles";
+import { hasTagPage, tagPathSegment, type SiteStats } from "../lib/stats";
+
+interface Props {
+  stats: SiteStats;
+  basePath?: string;
+  compact?: boolean;
+}
+
+const { stats, basePath = import.meta.env.BASE_URL.replace(/\/$/, ""), compact = false } = Astro.props;
+const maxDaily = Math.max(1, ...stats.dailyCounts.map((day) => day.total));
+const chartWidth = 680;
+const chartHeight = 180;
+const chartPadding = { top: 14, right: 10, bottom: 28, left: 28 };
+const plotWidth = chartWidth - chartPadding.left - chartPadding.right;
+const plotHeight = chartHeight - chartPadding.top - chartPadding.bottom;
+const barSlot = plotWidth / Math.max(1, stats.dailyCounts.length);
+const barWidth = Math.max(7, barSlot * 0.62);
+const yTicks = Array.from(new Set([0, Math.ceil(maxDaily / 2), maxDaily]));
+const priorityColors: Record<string, string> = {
+  S: "#ef4444",
+  A: "#f97316",
+  B: "#64748b",
+  C: "#94a3b8",
+};
+
+function dailySegments(day: (typeof stats.dailyCounts)[number], index: number) {
+  const x = chartPadding.left + index * barSlot + (barSlot - barWidth) / 2;
+  let usedHeight = 0;
+  return stats.genreCounts.map((genre) => {
+    const count = day.genres[genre.genre] ?? 0;
+    const height = (count / maxDaily) * plotHeight;
+    usedHeight += height;
+    return {
+      key: genre.genre,
+      count,
+      x,
+      y: chartPadding.top + plotHeight - usedHeight,
+      width: barWidth,
+      height,
+      color: genreColors[genre.genre],
+    };
+  });
+}
+---
+
+<section class={compact ? "space-y-6" : "space-y-8"}>
+  <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="記事統計">
+    <article class="glass-panel p-5">
+      <p class="text-sm font-bold section-kicker">今日の新着</p>
+      <p class="mt-3 text-3xl font-black text-[var(--text-primary)]">{stats.todayArticles}</p>
+      <p class="mt-2 text-xs section-copy">JST 今日の追加件数</p>
+    </article>
+    <article class="glass-panel p-5">
+      <p class="text-sm font-bold section-kicker">今週の新着</p>
+      <p class="mt-3 text-3xl font-black text-[var(--text-primary)]">{stats.weekArticles}</p>
+      <p class="mt-2 text-xs section-copy">直近7日間</p>
+    </article>
+    <article class="glass-panel p-5">
+      <p class="text-sm font-bold section-kicker">総記事数</p>
+      <p class="mt-3 text-3xl font-black text-[var(--text-primary)]">{stats.totalArticles}</p>
+      <p class="mt-2 text-xs section-copy">ビルド時点の記事配列</p>
+    </article>
+    <article class="glass-panel p-5">
+      <p class="text-sm font-bold section-kicker">最近更新</p>
+      <p class="mt-3 text-lg font-black leading-7 text-[var(--text-primary)]">{stats.lastUpdatedLabel}</p>
+      <p class="mt-2 text-xs section-copy">articles.json 基準</p>
+    </article>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
+    <section class="glass-panel p-5">
+      <div class="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="section-title text-xl">直近の日別件数</h2>
+          <p class="mt-1 text-sm section-copy">ジャンル別に積み上げた記事数推移です。</p>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} class="h-auto min-w-[560px] max-w-full" role="img" aria-label="直近の日別記事数">
+          {
+            yTicks.map((tick) => {
+              const y = chartPadding.top + plotHeight - (tick / maxDaily) * plotHeight;
+              return (
+                <g>
+                  <line x1={chartPadding.left} y1={y} x2={chartPadding.left + plotWidth} y2={y} class="stroke-slate-200/70 dark:stroke-white/10" />
+                  <text x={chartPadding.left - 8} y={y + 4} text-anchor="end" class="fill-slate-500 text-[10px] dark:fill-slate-300">{tick}</text>
+                </g>
+              );
+            })
+          }
+          {
+            stats.dailyCounts.map((day, index) => (
+              <g>
+                <title>{`${day.date}: ${day.total}件`}</title>
+                {dailySegments(day, index).map((segment) =>
+                  segment.count > 0 ? (
+                    <rect x={segment.x} y={segment.y} width={segment.width} height={Math.max(1, segment.height)} fill={segment.color} rx="2" />
+                  ) : null,
+                )}
+                {index % 2 === 0 && (
+                  <text x={chartPadding.left + index * barSlot + barSlot / 2} y={chartHeight - 9} text-anchor="middle" class="fill-slate-500 text-[10px] dark:fill-slate-300">
+                    {day.label}
+                  </text>
+                )}
+              </g>
+            ))
+          }
+        </svg>
+      </div>
+    </section>
+
+    <section class="glass-panel p-5">
+      <h2 class="section-title text-xl">ジャンル別件数</h2>
+      <div class="mt-5 space-y-4">
+        {
+          stats.genreCounts.map((genre) => (
+            <div>
+              <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                <span class="font-bold section-copy">{genre.label}</span>
+                <span class="font-black text-[var(--text-primary)]">{genre.count}件</span>
+              </div>
+              <svg viewBox="0 0 100 8" class="h-3 w-full" role="img" aria-label={`${genre.label} ${genre.count}件`}>
+                <rect x="0" y="0" width="100" height="8" rx="4" class="fill-white/60 dark:fill-white/10" />
+                <rect x="0" y="0" width={Math.max(1, genre.percentage)} height="8" rx="4" fill={genre.color} />
+              </svg>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+
+  <div class="grid gap-6 xl:grid-cols-3">
+    <section class="glass-panel p-5">
+      <h2 class="section-title text-xl">重要度分布</h2>
+      <div class="mt-5 space-y-4">
+        {
+          stats.priorityCounts.map((priority) => (
+            <a href={`${basePath}/feed/?priority=${priority.key}`} class="group block">
+              <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                <span class="font-bold section-copy group-hover:text-[var(--text-primary)]">重要度 {priority.label}</span>
+                <span class="font-black text-[var(--text-primary)]">{priority.count}件</span>
+              </div>
+              <svg viewBox="0 0 100 8" class="h-3 w-full" role="img" aria-label={`重要度 ${priority.label} ${priority.count}件`}>
+                <rect x="0" y="0" width="100" height="8" rx="4" class="fill-white/60 dark:fill-white/10" />
+                <rect x="0" y="0" width={Math.max(1, priority.percentage)} height="8" rx="4" fill={priorityColors[priority.label]} />
+              </svg>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="glass-panel p-5">
+      <div class="mb-5 flex items-center justify-between gap-3">
+        <h2 class="section-title text-xl">人気タグ Top10</h2>
+        <a href={`${basePath}/tags/`} class="text-xs font-bold section-kicker hover:text-[var(--text-primary)]">一覧</a>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {
+          stats.topTags.map((tag) => {
+            const tagLabel = (
+              <>
+                #{tag.tag}
+                <span class="ml-1 opacity-70">{tag.count}</span>
+              </>
+            );
+            return hasTagPage(tag.tag) ? (
+              <a href={`${basePath}/tags/${tagPathSegment(tag.tag)}/`} class="entity-tag rounded-full px-3 py-1.5 text-sm font-bold">
+                {tagLabel}
+              </a>
+            ) : (
+              <span class="entity-tag rounded-full px-3 py-1.5 text-sm font-bold">
+                {tagLabel}
+              </span>
+            );
+          })
+        }
+      </div>
+    </section>
+
+    <section class="glass-panel p-5">
+      <h2 class="section-title text-xl">ソース Top10</h2>
+      <ol class="mt-5 space-y-3">
+        {
+          stats.topSources.map((source, index) => (
+            <li>
+              <a href={`${basePath}/feed/?source=${encodeURIComponent(source.key)}`} class="group block rounded-2xl border border-white/45 bg-white/30 p-3 transition hover:bg-white/55 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
+                <div class="mb-2 flex items-center justify-between gap-3 text-sm">
+                  <span class="min-w-0 truncate font-bold section-copy group-hover:text-[var(--text-primary)]">{index + 1}. {source.label}</span>
+                  <span class="shrink-0 text-xs section-kicker">{source.count}件</span>
+                </div>
+                <div class="h-2 overflow-hidden rounded-full bg-white/55 dark:bg-white/10">
+                  <div class="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={`width: ${Math.max(3, source.percentage)}%`}></div>
+                </div>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+  </div>
+</section>

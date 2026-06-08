@@ -1,10 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { genreColors, genreLabels, genres, loadSiteData, type Genre } from "../../lib/articles";
+import { buildSiteStats, hasTagPage, tagPathSegment } from "../../lib/stats";
 import { buildTrendsData } from "../../lib/trends";
 
 const siteData = loadSiteData();
 const trends = buildTrendsData(siteData.articles, siteData.generated_at);
+const stats = buildSiteStats(siteData.articles, siteData.generated_at, { dailyDays: 30, tagLimit: 10, sourceLimit: 10 });
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const feedPath = `${base}/feed/`;
 
@@ -204,7 +206,7 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
     </section>
   </div>
 
-  <div class="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+  <div class="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
     <section class="glass-panel p-5">
       <div class="mb-5">
         <h2 class="section-title text-xl">source 別 Top 10</h2>
@@ -240,25 +242,70 @@ function stackedSegments(day: (typeof trends.dailyCounts)[number], index: number
       }
     </section>
 
-    <section class="glass-panel p-5">
-      <div class="mb-5">
-        <h2 class="section-title text-xl">直近の活発な時間帯</h2>
-        <p class="mt-1 text-sm section-copy">過去7日分を4時間ごとに集計し、濃淡で活動量を示します。</p>
-      </div>
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-2">
+    <div class="grid gap-8">
+      <section class="glass-panel p-5">
+        <div class="mb-5">
+          <h2 class="section-title text-xl">急上昇タグ</h2>
+          <p class="mt-1 text-sm section-copy">直近7日とその前7日を比べ、増加が大きいタグを表示します。</p>
+        </div>
         {
-          trends.activeHours.map((bucket) => (
-            <div
-              class="rounded-2xl border border-white/45 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] dark:border-white/10"
-              style={heatBackground(bucket.intensity)}
-            >
-              <p class="text-xs font-bold section-copy">{bucket.label}</p>
-              <p class="mt-2 text-2xl font-black text-[var(--text-primary)]">{bucket.count}</p>
-              <p class="mt-1 text-xs section-kicker">件</p>
-            </div>
-          ))
+          stats.risingTags.length > 0 ? (
+            <ol class="space-y-3">
+              {stats.risingTags.slice(0, 8).map((tag, index) => {
+                const content = (
+                  <>
+                    <span class="min-w-0 truncate text-sm font-bold section-copy group-hover:text-[var(--text-primary)]">
+                      {index + 1}. #{tag.tag}
+                    </span>
+                    <span class="shrink-0 rounded-full bg-cyan-500 px-2.5 py-1 text-xs font-black text-white">
+                      +{tag.delta}
+                    </span>
+                  </>
+                );
+                return (
+                  <li>
+                    {hasTagPage(tag.tag) ? (
+                      <a
+                        href={`${base}/tags/${tagPathSegment(tag.tag)}/`}
+                        class="group flex items-center justify-between gap-3 rounded-2xl border border-white/45 bg-white/34 p-3 transition hover:border-cyan-300/60 hover:bg-white/55 dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-300/35 dark:hover:bg-white/10"
+                      >
+                        {content}
+                      </a>
+                    ) : (
+                      <div class="flex items-center justify-between gap-3 rounded-2xl border border-white/45 bg-white/34 p-3 dark:border-white/10 dark:bg-white/5">
+                        {content}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ol>
+          ) : (
+            <p class="glass-empty p-6 text-sm">急上昇タグはまだありません。</p>
+          )
         }
-      </div>
-    </section>
+      </section>
+
+      <section class="glass-panel p-5">
+        <div class="mb-5">
+          <h2 class="section-title text-xl">直近の活発な時間帯</h2>
+          <p class="mt-1 text-sm section-copy">過去7日分を4時間ごとに集計し、濃淡で活動量を示します。</p>
+        </div>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-2">
+          {
+            trends.activeHours.map((bucket) => (
+              <div
+                class="rounded-2xl border border-white/45 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] dark:border-white/10"
+                style={heatBackground(bucket.intensity)}
+              >
+                <p class="text-xs font-bold section-copy">{bucket.label}</p>
+                <p class="mt-2 text-2xl font-black text-[var(--text-primary)]">{bucket.count}</p>
+                <p class="mt-1 text-xs section-kicker">件</p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+    </div>
   </div>
 </BaseLayout>

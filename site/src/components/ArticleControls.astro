@@ -19,11 +19,18 @@ const { showRange = false } = Astro.props;
       <span class="text-sm font-bold section-kicker">期間</span>
       <select class="article-control-field h-10 pr-8" data-period-select>
         <option value="all">全期間</option>
-        <option value="24h">過去24h</option>
-        <option value="7d">7d</option>
-        <option value="30d">30d</option>
+        <option value="today">今日</option>
+        <option value="week">今週</option>
+        <option value="30d">過去30日</option>
       </select>
     </label>
+    <details class="relative" data-priority-filter>
+      <summary class="article-control-field flex h-10 cursor-pointer list-none items-center gap-2">
+        重要度
+        <span class="glass-chip px-1.5 py-0.5 text-xs" data-priority-count>0</span>
+      </summary>
+      <div class="article-filter-panel" data-priority-options></div>
+    </details>
     <details class="relative" data-tag-filter>
       <summary class="article-control-field flex h-10 cursor-pointer list-none items-center gap-2">
         タグ

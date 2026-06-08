@@ -1,10 +1,32 @@
 ---
+import { genreLabels, type Article } from "../../lib/articles";
+
 interface Props {
   feedPath: string;
+  articles?: Article[];
+  todayCount?: number;
+  weekCount?: number;
 }
 
-const { feedPath } = Astro.props;
-const examples = [
+const { feedPath, articles = [], todayCount = 0, weekCount = 0 } = Astro.props;
+const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const toneByGenre = {
+  games: "from-blue-600 to-cyan-500",
+  anime: "from-violet-500 to-pink-500",
+  disney: "from-amber-500 to-yellow-400",
+};
+const badgeByPriority = {
+  S: "bg-rose-100 text-rose-700",
+  A: "bg-orange-100 text-orange-700",
+  B: "bg-slate-100 text-slate-700",
+  C: "bg-slate-100 text-slate-600",
+};
+const fallbackExamples = [
   {
     source: "RSS",
     category: "ゲーム",
@@ -39,6 +61,20 @@ const examples = [
     badge: "bg-slate-100 text-slate-700",
   },
 ];
+const examples =
+  articles.length > 0
+    ? articles.slice(0, 3).map((article) => ({
+        source: (article.source_platform || article.domain || "RSS").slice(0, 3).toUpperCase(),
+        category: genreLabels[article.genre],
+        priority: article.final_priority,
+        title: article.category_name || article.title_tags[0] || "最新トピック",
+        summary: article.summary || "概要はまだありません。",
+        tags: [...article.entity_tags, ...article.title_tags].filter(Boolean).slice(0, 3),
+        date: dateFormatter.format(new Date(article.timestamp)),
+        tone: toneByGenre[article.genre],
+        badge: badgeByPriority[article.final_priority],
+      }))
+    : fallbackExamples;
 ---
 
 <section class="px-4 pb-20 pt-14 sm:px-6 sm:pt-20 lg:px-8 lg:pb-24">
@@ -60,9 +96,15 @@ const examples = [
         </a>
       </div>
       <div class="mt-8 grid max-w-xl gap-3 text-sm text-slate-600 sm:grid-cols-3">
+        <div class="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-slate-200">
+          <span class="block text-2xl font-black text-slate-950">{todayCount}</span>
+          今日の新着
+        </div>
+        <div class="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-slate-200">
+          <span class="block text-2xl font-black text-slate-950">{weekCount}</span>
+          今週の新着
+        </div>
         <div class="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-slate-200">AI要約で、読む前に要点が分かる。</div>
-        <div class="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-slate-200">タグとカテゴリで、情報が迷子にならない。</div>
-        <div class="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-slate-200">ライブ更新と PWA で毎日確認しやすい。</div>
       </div>
     </div>
 

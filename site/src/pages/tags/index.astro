@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadSiteData } from "../../lib/articles";
+import { MIN_TAG_PAGE_COUNT, allTagEntries, tagPageEntries, tagPathSegment } from "../../lib/stats";
+
+const siteData = loadSiteData();
+const allTags = allTagEntries(siteData.articles);
+const tags = tagPageEntries(siteData.articles);
+const omittedTagCount = allTags.length - tags.length;
+const omittedOccurrenceCount = allTags.filter((tag) => tag.count < MIN_TAG_PAGE_COUNT).reduce((sum, tag) => sum + tag.count, 0);
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title="タグ一覧" description="記事に自動付与されたタグを件数順に一覧します。">
+  <section class="mb-8">
+    <p class="section-kicker text-sm font-black">Tags</p>
+    <h1 class="section-title mt-2 text-3xl sm:text-4xl">タグ一覧</h1>
+    <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
+      title_tags と entity_tags を集計し、{MIN_TAG_PAGE_COUNT}件以上の記事があるタグだけを人気順に並べています。タグを選ぶと、その話題を含む記事だけを読めます。
+    </p>
+  </section>
+
+  {
+    tags.length > 0 ? (
+      <section class="glass-panel p-4 sm:p-5">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {tags.map((tag) => (
+            <a
+              href={`${base}/tags/${tag.slug || tagPathSegment(tag.tag)}/`}
+              class="group rounded-2xl border border-white/45 bg-white/36 p-4 transition hover:border-cyan-300/60 hover:bg-white/58 dark:border-white/10 dark:bg-white/5 dark:hover:border-cyan-300/35 dark:hover:bg-white/10"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <span class="min-w-0 truncate text-sm font-black text-[var(--text-primary)]">#{tag.tag}</span>
+                <span class="shrink-0 rounded-full bg-white/60 px-2.5 py-1 text-xs font-bold section-kicker dark:bg-white/10">{tag.count}</span>
+              </div>
+              <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/55 dark:bg-white/10">
+                <div class="h-full rounded-full bg-gradient-to-r from-blue-600 to-cyan-400" style={`width: ${Math.max(3, tag.percentage)}%`}></div>
+              </div>
+            </a>
+          ))}
+        </div>
+        {
+          omittedTagCount > 0 && (
+            <p class="mt-5 rounded-2xl border border-white/45 bg-white/28 px-4 py-3 text-sm section-copy dark:border-white/10 dark:bg-white/5">
+              その他 {omittedTagCount} 個の少数タグ（合計 {omittedOccurrenceCount} 回）はページ化していません。
+            </p>
+          )
+        }
+      </section>
+    ) : (
+      <p class="glass-empty p-6 text-sm">集計できるタグはまだありません。</p>
+    )
+  }
+</BaseLayout>

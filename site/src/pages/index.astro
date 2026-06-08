@@ -8,9 +8,14 @@ import SolutionItem from "../components/landing/SolutionItem.astro";
 import StepCard from "../components/landing/StepCard.astro";
 import UseCaseCard from "../components/landing/UseCaseCard.astro";
 import LandingLayout from "../layouts/LandingLayout.astro";
+import { loadSiteData, sortArticlesByTimestamp } from "../lib/articles";
+import { buildSiteStats } from "../lib/stats";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const feedPath = `${base}/feed/`;
+const siteData = loadSiteData();
+const stats = buildSiteStats(siteData.articles, siteData.generated_at, { dailyDays: 14, tagLimit: 10, sourceLimit: 10 });
+const latestArticles = sortArticlesByTimestamp(siteData.articles).slice(0, 3);
 
 const problems = [
   {
@@ -132,7 +137,7 @@ const features = [
   title="追いかけなくても、最新情報は集まる"
   description="X・YouTube・Twitch・RSS からゲーム/アニメ/Disney の話題を AI が24時間自動で収集・要約・分類するニュースリーダー。"
 >
-  <Hero feedPath={feedPath} />
+  <Hero feedPath={feedPath} articles={latestArticles} todayCount={stats.todayArticles} weekCount={stats.weekArticles} />
 
   <section class="px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
@@ -206,6 +211,6 @@ const features = [
     </div>
   </section>
 
-  <DashboardMock />
+  <DashboardMock stats={stats} articles={latestArticles} />
   <FinalCta feedPath={feedPath} />
 </LandingLayout>

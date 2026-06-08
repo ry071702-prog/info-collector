@@ -20,6 +20,7 @@ const defaultState = {
   sortMode: "new",
   period: "all",
   searchText: "",
+  priorities: [],
   tags: [],
   sources: [],
 };
@@ -55,6 +56,17 @@ function cutoffTime() {
   if (state.period === "all") {
     return null;
   }
+  if (state.period === "today" || state.period === "week") {
+    const now = new Date();
+    const jstDay = new Intl.DateTimeFormat("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now).replaceAll("/", "-");
+    const todayStart = new Date(`${jstDay}T00:00:00+09:00`).getTime();
+    return state.period === "today" ? todayStart : todayStart - 6 * 24 * 60 * 60 * 1000;
+  }
   const hours = periodHours[state.period];
   return hours ? Date.now() - hours * 60 * 60 * 1000 : null;
 }
@@ -75,6 +87,9 @@ function matchesFilters(card, cutoff) {
     if (!searchBlob.includes(state.searchText.toLowerCase())) {
       return false;
     }
+  }
+  if (state.priorities.length > 0 && !state.priorities.includes((card.dataset.priority ?? "").toLowerCase())) {
+    return false;
   }
   if (state.tags.length > 0) {
     const tags = articleTags(card);
@@ -163,8 +178,15 @@ function setFieldValues() {
   document.querySelectorAll("[data-filter-checkbox]").forEach((checkbox) => {
     const group = checkbox.dataset.filterCheckbox;
     const value = (checkbox.value ?? "").toLowerCase();
-    checkbox.checked = group === "tag" ? state.tags.includes(value) : state.sources.includes(value);
+    if (group === "tag") {
+      checkbox.checked = state.tags.includes(value);
+    } else if (group === "priority") {
+      checkbox.checked = state.priorities.includes(value);
+    } else {
+      checkbox.checked = state.sources.includes(value);
+    }
   });
+  selectedCount("[data-priority-count]", state.priorities.length);
   selectedCount("[data-tag-count]", state.tags.length);
   selectedCount("[data-source-count]", state.sources.length);
 }
@@ -292,11 +314,12 @@ function valuesFromParam(params, key) {
 function stateFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const sortMode = params.get("sort") === "importance" ? "importance" : "new";
-  const period = ["24h", "7d", "30d"].includes(params.get("period") ?? "") ? params.get("period") : "all";
+  const period = ["today", "week", "24h", "7d", "30d"].includes(params.get("period") ?? "") ? params.get("period") : "all";
   return {
     sortMode,
     period,
     searchText: params.get("q")?.trim() ?? "",
+    priorities: valuesFromParam(params, "priority").filter((priority) => ["s", "a", "b", "c"].includes(priority)),
     tags: valuesFromParam(params, "tag"),
     sources: valuesFromParam(params, "source"),
   };
@@ -306,6 +329,8 @@ function writeUrl(mode = "push") {
   const params = new URLSearchParams(window.location.search);
   if (state.searchText) params.set("q", state.searchText);
   else params.delete("q");
+  if (state.priorities.length > 0) params.set("priority", state.priorities.join(","));
+  else params.delete("priority");
   if (state.tags.length > 0) params.set("tag", state.tags.join(","));
   else params.delete("tag");
   if (state.sources.length > 0) params.set("source", state.sources.join(","));
@@ -371,7 +396,7 @@ function renderCheckboxOptions(containerSelector, options, group, emptyText) {
       checkbox.dataset.filterCheckbox = group;
       checkbox.className = "h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900";
       checkbox.addEventListener("change", () => {
-        const key = group === "tag" ? "tags" : "sources";
+        const key = group === "tag" ? "tags" : group === "priority" ? "priorities" : "sources";
         const selected = new Set(state[key]);
         if (checkbox.checked) selected.add(value);
         else selected.delete(value);
@@ -392,6 +417,7 @@ function renderCheckboxOptions(containerSelector, options, group, emptyText) {
 
 function buildFilterOptions() {
   const options = uniqueOptions();
+  renderCheckboxOptions("[data-priority-options]", [["s", "重要度 S"], ["a", "重要度 A"], ["b", "重要度 B"], ["c", "重要度 C"]], "priority", "重要度候補がありません");
   renderCheckboxOptions("[data-tag-options]", options.tags, "tag", "タグ候補がありません");
   renderCheckboxOptions("[data-source-options]", options.sources, "source", "Source 候補がありません");
 }
@@ -582,7 +608,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.querySelectorAll("[data-period-select]").forEach((select) => {
     select.addEventListener("change", () => {
-      state = { ...state, period: ["24h", "7d", "30d"].includes(select.value) ? select.value : "all" };
+      state = { ...state, period: ["today", "week", "24h", "7d", "30d"].includes(select.value) ? select.value : "all" };
       resetVisibleLimits();
       writeUrl();
       applyArticleControls();

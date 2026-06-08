@@ -1,0 +1,22 @@
+---
+import StatsDashboard from "../../components/StatsDashboard.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadSiteData } from "../../lib/articles";
+import { buildSiteStats } from "../../lib/stats";
+
+const siteData = loadSiteData();
+const stats = buildSiteStats(siteData.articles, siteData.generated_at, { dailyDays: 14, tagLimit: 10, sourceLimit: 10 });
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title="ダッシュボード" description="記事数、ジャンル、重要度、人気タグ、ソース別件数を集計したダッシュボード。">
+  <section class="mb-8">
+    <p class="section-kicker text-sm font-black">Product Dashboard</p>
+    <h1 class="section-title mt-2 text-3xl sm:text-4xl">読む前に、全体像をつかむ。</h1>
+    <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
+      articles.json をビルド時に集計し、今日・今週・ジャンル・重要度・タグ・ソースの動きをまとめています。
+    </p>
+  </section>
+
+  <StatsDashboard stats={stats} basePath={base} />
+</BaseLayout>

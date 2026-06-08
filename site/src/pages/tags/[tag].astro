@@ -1,0 +1,59 @@
+---
+import ArticleControls from "../../components/ArticleControls.astro";
+import NewsCard from "../../components/NewsCard.astro";
+import NewsCardSkeleton from "../../components/NewsCardSkeleton.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { loadSiteData } from "../../lib/articles";
+import { articlesForTag, tagPageEntries, tagPathSegment } from "../../lib/stats";
+
+export function getStaticPaths() {
+  const siteData = loadSiteData();
+  return tagPageEntries(siteData.articles).map((tag) => ({
+    params: { tag: tagPathSegment(tag.tag) },
+    props: { tag: tag.tag, count: tag.count },
+  }));
+}
+
+interface Props {
+  tag: string;
+  count: number;
+}
+
+const { tag, count } = Astro.props;
+const siteData = loadSiteData();
+const articles = articlesForTag(siteData.articles, tag);
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+---
+
+<BaseLayout title={`#${tag}`} description={`#${tag} を含む記事一覧。`}>
+  <section class="mb-8">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="section-kicker text-sm font-black">Tag</p>
+        <h1 class="section-title mt-2 text-3xl sm:text-4xl">#{tag}</h1>
+        <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
+          このタグを含む記事 {count} 件を新着順に表示します。
+        </p>
+      </div>
+      <a href={`${base}/tags/`} class="glass-control inline-flex items-center justify-center px-4 text-sm font-bold">
+        タグ一覧へ
+      </a>
+    </div>
+  </section>
+
+  <ArticleControls />
+  {
+    articles.length > 0 ? (
+      <>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-skeletons>
+          <NewsCardSkeleton count={8} />
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list>
+          {articles.map((article) => <NewsCard article={article} />)}
+        </div>
+      </>
+    ) : (
+      <p class="glass-empty p-6 text-sm">このタグの記事はまだありません。</p>
+    )
+  }
+</BaseLayout>

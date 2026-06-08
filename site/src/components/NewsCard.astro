@@ -1,6 +1,7 @@
 ---
 import PriorityBadge from "./PriorityBadge.astro";
 import { genreLabels, sourceKey, sourceLabel, type Article, type Genre } from "../lib/articles";
+import { hasTagPage, tagPathSegment } from "../lib/stats";
 
 interface Props {
   article: Article;
@@ -17,7 +18,6 @@ const relativeTime =
     : Math.abs(diffHours) < 24
       ? relativeFormatter.format(diffHours, "hour")
       : relativeFormatter.format(Math.round(diffHours / 24), "day");
-const entities = article.entity_tags.slice(0, 3);
 const searchBlob = [
   article.category_name,
   ...article.entity_tags,
@@ -29,6 +29,10 @@ const searchBlob = [
   .join(" ")
   .toLowerCase();
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const entities = article.entity_tags.slice(0, 3).map((tag) => ({
+  tag,
+  href: hasTagPage(tag) ? `${base}/tags/${tagPathSegment(tag)}/` : null,
+}));
 const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
 const isUrgent = article.final_priority === "S" || article.final_priority === "A";
 const source = { key: sourceKey(article), label: sourceLabel(article) };
@@ -156,15 +160,17 @@ const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,2
     {
       entities.length > 0 && (
         <div class="flex flex-wrap gap-1.5">
-          {entities.map((tag) => (
-            <button
-              type="button"
-              class="entity-tag rounded-full px-2.5 py-1 text-xs font-medium"
-              data-search-tag={tag}
-            >
-              {tag}
-            </button>
-          ))}
+          {entities.map((item) =>
+            item.href ? (
+              <a href={item.href} class="entity-tag rounded-full px-2.5 py-1 text-xs font-medium">
+                {item.tag}
+              </a>
+            ) : (
+              <span class="entity-tag rounded-full px-2.5 py-1 text-xs font-medium">
+                {item.tag}
+              </span>
+            ),
+          )}
         </div>
       )
     }
