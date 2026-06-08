@@ -68,13 +68,37 @@ def purge_processed(source_ids: set[str]) -> list[str]:
     return uniq
 
 
+def collect_urls_from_raw(source_ids: set[str]) -> list[str]:
+    """raw (60日保持) から該当ソースの URL を回収。processed 削除後でも使える。"""
+    base = ROOT / "data" / "raw"
+    urls: list[str] = []
+    for sid in source_ids:
+        for p in base.glob(f"*/{sid}.jsonl"):
+            for line in p.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                try:
+                    o = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if o.get("url"):
+                    urls.append(o["url"])
+    seen: set[str] = set()
+    return [u for u in urls if not (u in seen or seen.add(u))]
+
+
 def main(argv: list[str]) -> int:
     source_ids = set(argv or DEFAULT_SOURCES)
     log.info(f"purge 対象 source_id: {sorted(source_ids)}")
 
+    # processed から除去しつつ URL 収集 + raw からも回収 (processed 削除済みでも消せる)
     urls = purge_processed(source_ids)
+    raw_urls = collect_urls_from_raw(source_ids)
+    merged = list(dict.fromkeys(urls + raw_urls))
+    log.info(f"削除対象 URL: processed={len(urls)} raw={len(raw_urls)} merged={len(merged)}")
+    urls = merged
     if not urls:
-        log.info("削除対象 URL なし (processed のみクリーン済み)")
+        log.info("削除対象 URL なし")
         return 0
 
     try:
