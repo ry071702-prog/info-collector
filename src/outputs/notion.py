@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
+import httpx
+
 from .. import logger
 from ..config import env, is_dry_run
 from ..models import ProcessedItem
@@ -226,33 +228,55 @@ def archive_by_urls(urls: list[str]) -> int:
         log.warning("Notion DB IDs not set; skipping archive")
         return 0
 
-    try:
-        client = _client()
-    except Exception as e:  # noqa: BLE001
-        log.error(f"Notion auth failed: {e}")
+    token = env("NOTION_TOKEN")
+    if not token:
+        log.warning("NOTION_TOKEN not set; skipping archive")
         return 0
+    # notion-client 2.x は databases.query / pages.update(archived=) を廃止
+    # (data source モデル化) したため、raw httpx + Notion-Version 固定で
+    # 旧来の /databases/{id}/query と /pages/{id} を直接叩く。
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Notion-Version": NOTION_API_VERSION,
+        "Content-Type": "application/json",
+    }
+    target = list(dict.fromkeys(urls))  # dedup preserving order
+
+    page_ids: set[str] = set()
+    for db_id in db_ids:
+        for i in range(0, len(target), 100):
+            batch = target[i : i + 100]
+            body = {
+                "filter": {"or": [{"property": "URL", "url": {"equals": u}} for u in batch]},
+                "page_size": 100,
+            }
+            try:
+                r = httpx.post(
+                    f"https://api.notion.com/v1/databases/{db_id}/query",
+                    headers=headers, json=body, timeout=30.0,
+                )
+                if r.status_code != 200:
+                    log.error(f"Notion query failed (db={db_id}): {r.status_code} {r.text[:160]}")
+                    continue
+                for page in r.json().get("results", []):
+                    if page.get("id"):
+                        page_ids.add(page["id"])
+            except Exception as e:  # noqa: BLE001
+                log.error(f"Notion query error (db={db_id}): {e}")
 
     archived = 0
-    for url in urls:
-        for db_id in db_ids:
-            try:
-                resp = client.databases.query(
-                    database_id=db_id,
-                    filter={"property": "URL", "url": {"equals": url}},
-                    page_size=10,
-                )
-            except Exception as e:  # noqa: BLE001
-                log.error(f"Notion query failed (db={db_id}, url={url}): {e}")
-                continue
-            for page in resp.get("results", []):
-                page_id = page.get("id")
-                if not page_id:
-                    continue
-                try:
-                    client.pages.update(page_id=page_id, archived=True)
-                    archived += 1
-                except Exception as e:  # noqa: BLE001
-                    log.error(f"Notion archive failed (page={page_id}): {e}")
+    for page_id in page_ids:
+        try:
+            r = httpx.patch(
+                f"https://api.notion.com/v1/pages/{page_id}",
+                headers=headers, json={"archived": True}, timeout=30.0,
+            )
+            if r.status_code == 200:
+                archived += 1
+            else:
+                log.error(f"Notion archive failed (page={page_id}): {r.status_code} {r.text[:120]}")
+        except Exception as e:  # noqa: BLE001
+            log.error(f"Notion archive error (page={page_id}): {e}")
     return archived
 
 
