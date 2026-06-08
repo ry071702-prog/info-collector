@@ -51,10 +51,16 @@ def cleanup() -> dict[str, int]:
     cfg = settings().get("retention", {})
     raw_days = int(cfg.get("raw_days", 60))
     logs_days = int(cfg.get("logs_days", 30))
+    processed_days = int(cfg.get("processed_days", 60))
     raw_pruned = _prune_dated_subdirs(DATA_DIR / "raw", raw_days)
     logs_pruned = _prune_logs(DATA_DIR / "logs", logs_days)
-    log.info(f"cleanup: raw_pruned={raw_pruned} (>{raw_days}d), logs_pruned={logs_pruned} (>{logs_days}d)")
-    return {"raw_pruned": raw_pruned, "logs_pruned": logs_pruned}
+    processed_pruned = _prune_dated_subdirs(DATA_DIR / "processed", processed_days)
+    log.info(
+        f"cleanup: raw_pruned={raw_pruned} (>{raw_days}d), "
+        f"logs_pruned={logs_pruned} (>{logs_days}d), "
+        f"processed_pruned={processed_pruned} (>{processed_days}d)"
+    )
+    return {"raw_pruned": raw_pruned, "logs_pruned": logs_pruned, "processed_pruned": processed_pruned}
 
 
 def _aggregate_stats(items):
@@ -123,6 +129,7 @@ def main() -> None:
 
 ## クリーンアップ実績
 - data/raw/ から削除: {pruned['raw_pruned']} 日分
+- data/processed/ から削除: {pruned['processed_pruned']} 日分
 - data/logs/ から削除: {pruned['logs_pruned']} ファイル
 
 ## AI分析

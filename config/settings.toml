@@ -83,9 +83,9 @@ results_per_query = 30
 # データ保持期間（maintenance_monthly が古い分を削除）
 # ============================================================
 [retention]
-raw_days = 60     # data/raw/<date>/ を超過分削除
-logs_days = 30    # data/logs/ 配下のファイルを超過分削除
-# data/processed/ は archive 扱いで削除しない
+raw_days = 60        # data/raw/<date>/ を超過分削除
+logs_days = 30       # data/logs/ 配下のファイルを超過分削除
+processed_days = 60  # data/processed/<date>/ を超過分削除 (60日超は使わない方針)
 # data/cache/ は dedup や api_usage が自己プルーニングするので対象外
 
 # ============================================================
