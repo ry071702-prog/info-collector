@@ -29,14 +29,14 @@ const dates = [...dateMap.entries()]
   </section>
 
   {dates.length === 0 ? (
-    <p class="glass-empty p-6 text-sm">まだ新聞が発行されていません。</p>
+    <p class="empty-state p-6 text-sm">まだ新聞が発行されていません。</p>
   ) : (
-    <ul class="glass-panel divide-y divide-white/45 overflow-hidden dark:divide-white/10">
+    <ul class="surface-panel divide-y divide-[var(--border-color)] overflow-hidden">
       {dates.map(([date, count]) => (
         <li>
-          <a href={`${base}/newspaper/${date}/`} class="group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-white/42 dark:hover:bg-white/8">
+          <a href={`${base}/newspaper/${date}/`} class="group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-[var(--surface-subtle)]">
             <div>
-              <h2 class="text-lg font-black text-[var(--text-primary)]">
+              <h2 class="text-lg font-semibold text-[var(--text-primary)]">
                 {formatJapaneseDate(`${date}T12:00:00+09:00`)}
               </h2>
               <p class="text-xs section-kicker">{count} 件の記事を収録</p>

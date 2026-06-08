@@ -35,7 +35,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
           このタグを含む記事 {count} 件を新着順に表示します。
         </p>
       </div>
-      <a href={`${base}/tags/`} class="glass-control inline-flex items-center justify-center px-4 text-sm font-bold">
+      <a href={`${base}/tags/`} class="ui-control inline-flex items-center justify-center px-4 text-sm font-bold">
         タグ一覧へ
       </a>
     </div>
@@ -53,7 +53,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
         </div>
       </>
     ) : (
-      <p class="glass-empty p-6 text-sm">このタグの記事はまだありません。</p>
+      <p class="empty-state p-6 text-sm">このタグの記事はまだありません。</p>
     )
   }
 </BaseLayout>

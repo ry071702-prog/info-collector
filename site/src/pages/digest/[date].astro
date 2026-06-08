@@ -116,7 +116,7 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
         <div class="mb-4 flex justify-end">
           <button
             type="button"
-            class="glass-control px-4 text-sm font-bold"
+            class="ui-control px-4 text-sm font-medium"
             data-export-newspaper
             data-export-filename={exportFilename}
           >
@@ -126,37 +126,37 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
 
         <article
           data-newspaper-page
-          class="glass-panel grid gap-0 overflow-hidden text-[var(--text-primary)] lg:grid-cols-[minmax(0,1fr)_96px]"
+          class="surface-panel grid gap-0 overflow-hidden text-[var(--text-primary)] lg:grid-cols-[minmax(0,1fr)_96px]"
         >
-          <aside class="newspaper-sidebar order-first border-b border-[var(--glass-hairline)] bg-white/36 p-4 dark:bg-white/5 lg:order-last lg:border-b-0 lg:border-l">
+          <aside class="newspaper-sidebar order-first border-b border-[var(--border-color)] bg-[var(--surface-subtle)] p-4 lg:order-last lg:border-b-0 lg:border-l">
             <div class="flex flex-wrap items-center justify-between gap-3 text-sm font-bold lg:h-full lg:flex-col lg:justify-start lg:[writing-mode:vertical-rl]">
-              <span class="text-2xl font-black tracking-normal">{publication.name}</span>
-              <span class="text-xl font-black">{issueLabel}</span>
-              <time class="text-sm tracking-normal section-kicker" datetime={exportDate}>{publication.dateLabel}</time>
+              <span class="text-2xl font-semibold tracking-[-0.014em]">{publication.name}</span>
+              <span class="text-xl font-semibold">{issueLabel}</span>
+              <time class="text-sm section-kicker" datetime={exportDate}>{publication.dateLabel}</time>
             </div>
           </aside>
 
           <div class="p-5 sm:p-8 lg:p-10">
-            <div class="mb-6 flex flex-col gap-2 border-b border-[var(--glass-hairline)] pb-3 text-xs font-bold section-kicker sm:flex-row sm:items-center sm:justify-between">
+            <div class="mb-6 flex flex-col gap-2 border-b border-[var(--border-color)] pb-3 text-xs font-bold section-kicker sm:flex-row sm:items-center sm:justify-between">
               <span>著者: 自動生成 (Gemini)</span>
               <time class="text-sm" datetime={exportDate}>{fullDateLabel}</time>
             </div>
 
-            <header class="border-b border-[var(--glass-hairline)] pb-6">
-              <p class="mb-2 text-sm font-black tracking-normal text-cyan-700 dark:text-cyan-200">{issueLabel}</p>
-              <h1 class="text-4xl font-black leading-tight tracking-normal sm:text-5xl lg:text-6xl">{title}</h1>
+            <header class="border-b border-[var(--border-color)] pb-6">
+              <p class="mb-2 text-sm font-bold text-[var(--brand-blue)]">{issueLabel}</p>
+              <h1 class="text-4xl font-bold leading-tight tracking-[-0.018em] sm:text-5xl lg:text-6xl">{title}</h1>
               <p class="mt-5 text-lg font-bold leading-8 section-copy">{subtitle}</p>
             </header>
 
-            <section class="mt-7 flow-root border-b border-[var(--glass-hairline)] pb-7">
-              <figure class="mb-4 overflow-hidden rounded-3xl border border-white/50 bg-white/35 shadow-lg dark:border-white/10 dark:bg-white/5 sm:float-left sm:mb-3 sm:mr-6 sm:w-[42%] lg:w-[38%]">
+            <section class="mt-7 flow-root border-b border-[var(--border-color)] pb-7">
+              <figure class="surface-card mb-4 overflow-hidden sm:float-left sm:mb-3 sm:mr-6 sm:w-[42%] lg:w-[38%]">
                 <img
                   src={leadImage ?? placeholderSvg}
                   alt=""
                   class="aspect-[4/3] w-full object-cover"
                   loading="eager"
                 />
-                <figcaption class="border-t border-[var(--glass-hairline)] px-3 py-2 text-xs section-kicker">
+                <figcaption class="border-t border-[var(--border-color)] px-3 py-2 text-xs section-kicker">
                   source: {leadArticle?.category_name ?? leadArticle?.author ?? "情報収集"}
                 </figcaption>
               </figure>
@@ -166,13 +166,13 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
             </section>
 
             <section class="mt-7">
-              <h2 class="border-y border-[var(--glass-hairline)] py-3 text-2xl font-black">
+              <h2 class="border-y border-[var(--border-color)] py-3 text-2xl font-bold tracking-[-0.014em]">
                 {sections[0]?.title ?? "なぜいま注目なのか"}
               </h2>
               <div class="mt-5 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {columnSections.map((section) => (
-                  <section class="rounded-3xl border border-white/45 bg-white/35 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.52)] dark:border-white/10 dark:bg-white/5">
-                    <h3 class="mb-3 text-xl font-black leading-snug">
+                  <section class="soft-card p-4">
+                    <h3 class="mb-3 text-xl font-semibold leading-snug">
                       （{section.title.replace(/^速報・重要\s*\(S\/A\)$/, "速報・重要")}）
                     </h3>
                     <div class="space-y-3 text-sm leading-7 section-copy">
@@ -188,7 +188,7 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
         </article>
       </>
     ) : (
-      <p class="glass-empty p-6 text-sm">
+      <p class="empty-state p-6 text-sm">
         指定されたまとめは見つかりません。
       </p>
     )

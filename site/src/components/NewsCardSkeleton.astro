@@ -9,25 +9,25 @@ const { count = 8 } = Astro.props;
 <>
   {
     Array.from({ length: count }).map(() => (
-      <div class="glass-card h-full overflow-hidden">
-        <div class="aspect-[16/9] animate-pulse bg-white/42 dark:bg-white/8"></div>
+      <div class="surface-card h-full overflow-hidden">
+        <div class="skeleton-block aspect-[16/9] animate-pulse"></div>
         <div class="space-y-3 p-4">
           <div class="flex gap-2">
-            <div class="h-6 w-10 animate-pulse rounded-full bg-white/60 dark:bg-white/10"></div>
-            <div class="h-6 w-16 animate-pulse rounded-full bg-white/60 dark:bg-white/10"></div>
+            <div class="skeleton-block h-6 w-10 animate-pulse rounded-full"></div>
+            <div class="skeleton-block h-6 w-16 animate-pulse rounded-full"></div>
           </div>
-          <div class="h-5 w-4/5 animate-pulse rounded-full bg-white/60 dark:bg-white/10"></div>
+          <div class="skeleton-block h-5 w-4/5 animate-pulse rounded-full"></div>
           <div class="space-y-2">
-            <div class="h-4 animate-pulse rounded-full bg-white/50 dark:bg-white/10"></div>
-            <div class="h-4 w-2/3 animate-pulse rounded-full bg-white/50 dark:bg-white/10"></div>
+            <div class="skeleton-block h-4 animate-pulse rounded-full"></div>
+            <div class="skeleton-block h-4 w-2/3 animate-pulse rounded-full"></div>
           </div>
           <div class="flex gap-1.5">
-            <div class="h-6 w-14 animate-pulse rounded-full bg-white/50 dark:bg-white/10"></div>
-            <div class="h-6 w-20 animate-pulse rounded-full bg-white/50 dark:bg-white/10"></div>
+            <div class="skeleton-block h-6 w-14 animate-pulse rounded-full"></div>
+            <div class="skeleton-block h-6 w-20 animate-pulse rounded-full"></div>
           </div>
           <div class="flex justify-between pt-1">
-            <div class="h-4 w-24 animate-pulse rounded-full bg-white/45 dark:bg-white/10"></div>
-            <div class="h-4 w-14 animate-pulse rounded-full bg-white/45 dark:bg-white/10"></div>
+            <div class="skeleton-block h-4 w-24 animate-pulse rounded-full"></div>
+            <div class="skeleton-block h-4 w-14 animate-pulse rounded-full"></div>
           </div>
         </div>
       </div>

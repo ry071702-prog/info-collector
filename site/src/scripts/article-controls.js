@@ -394,7 +394,7 @@ function renderCheckboxOptions(containerSelector, options, group, emptyText) {
       checkbox.type = "checkbox";
       checkbox.value = value;
       checkbox.dataset.filterCheckbox = group;
-      checkbox.className = "h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-900";
+      checkbox.className = "h-4 w-4 rounded border-slate-300 accent-[var(--brand-blue)] dark:border-slate-700 dark:bg-slate-900";
       checkbox.addEventListener("change", () => {
         const key = group === "tag" ? "tags" : group === "priority" ? "priorities" : "sources";
         const selected = new Set(state[key]);

@@ -16,14 +16,14 @@ const cycleLabel = suffix === "AM" ? "AM" : suffix === "PM" ? "PM" : "DAILY";
 
 <a
   href={`${base}/digest/${digest.slug}/`}
-  class="glass-card block p-4"
-  style="--card-accent: var(--color-games-start); --card-accent-end: var(--color-games-end); --card-glow: var(--glow-neutral); --card-border-hover: rgba(148, 163, 184, 0.42);"
+  class="surface-card block p-4"
+  style="--card-accent: var(--brand-blue); --card-border-hover: var(--border-strong);"
 >
   <p class="section-kicker flex items-center gap-2 text-xs font-semibold">
-    <span class="rounded-full border border-white/50 bg-white/55 px-2 py-0.5 text-[10px] font-black text-[var(--text-primary)] dark:border-white/15 dark:bg-white/10">{cycleLabel}</span>
+    <span class="status-chip px-2 py-0.5 text-[10px] font-bold text-[var(--text-primary)]">{cycleLabel}</span>
     {digest.label}
   </p>
-  <h3 class="news-card-title mt-2 text-lg font-black leading-snug">{document?.title ?? `Digest ${digest.label}`}</h3>
+  <h3 class="news-card-title mt-2 text-lg font-semibold leading-snug">{document?.title ?? `Digest ${digest.label}`}</h3>
   {
     document?.excerpt && (
       <p class="mt-2 line-clamp-2 text-sm leading-6 section-copy">{document.excerpt}</p>

@@ -7,22 +7,22 @@ const { currentPath } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const pathWithBase = (path: string) => `${base}${path}`;
 const links = [
-  { href: pathWithBase("/feed/"), label: "最新フィード", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
-  { href: pathWithBase("/games/"), label: "ゲーム", tone: "games", glow: "var(--glow-games)", gradient: "linear-gradient(135deg, var(--color-games-start), var(--color-games-end))" },
-  { href: pathWithBase("/anime/"), label: "アニメ", tone: "anime", glow: "var(--glow-anime)", gradient: "linear-gradient(135deg, var(--color-anime-start), var(--color-anime-end))" },
-  { href: pathWithBase("/disney/"), label: "Disney", tone: "disney", glow: "var(--glow-disney)", gradient: "linear-gradient(135deg, var(--color-disney-start), var(--color-disney-end))" },
-  { href: pathWithBase("/dashboard/"), label: "ダッシュボード", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
-  { href: pathWithBase("/collection/"), label: "コレクション", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
-  { href: pathWithBase("/trends/"), label: "トレンド", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
-  { href: pathWithBase("/tags/"), label: "タグ", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
-  { href: pathWithBase("/favorites/"), label: "お気に入り", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
-  { href: pathWithBase("/newspaper/"), label: "新聞", tone: "neutral", glow: "var(--glow-neutral)", gradient: "linear-gradient(135deg, rgba(255,255,255,0.82), rgba(226,232,240,0.72))" },
+  { href: pathWithBase("/feed/"), label: "最新フィード" },
+  { href: pathWithBase("/games/"), label: "ゲーム" },
+  { href: pathWithBase("/anime/"), label: "アニメ" },
+  { href: pathWithBase("/disney/"), label: "Disney" },
+  { href: pathWithBase("/dashboard/"), label: "ダッシュボード" },
+  { href: pathWithBase("/collection/"), label: "コレクション" },
+  { href: pathWithBase("/trends/"), label: "トレンド" },
+  { href: pathWithBase("/tags/"), label: "タグ" },
+  { href: pathWithBase("/favorites/"), label: "お気に入り" },
+  { href: pathWithBase("/newspaper/"), label: "新聞" },
 ];
 
 const normalize = (value: string) => (value.endsWith("/") ? value : `${value}/`);
 ---
 
-<nav class="glass-panel flex gap-1.5 overflow-x-auto p-1.5" aria-label="カテゴリ">
+<nav class="surface-panel flex gap-1.5 overflow-x-auto rounded-full p-1.5 shadow-none" aria-label="カテゴリ">
   {
     links.map((link) => {
       const active = normalize(currentPath) === normalize(link.href);
@@ -30,13 +30,10 @@ const normalize = (value: string) => (value.endsWith("/") ? value : `${value}/`)
         <a
           href={link.href}
           aria-current={active ? "page" : undefined}
-          style={`--nav-glow: ${link.glow}; --nav-gradient: ${link.gradient};`}
           class:list={[
-            "whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-bold transition",
-            active && "nav-active shadow-lg",
-            active && link.tone !== "neutral" && "text-white",
-            active && link.tone === "neutral" && "text-slate-900 dark:text-white",
-            !active && "text-[var(--text-secondary)] hover:bg-white/45 hover:text-[var(--text-primary)] dark:hover:bg-white/10",
+            "whitespace-nowrap rounded-full border border-transparent px-3.5 py-2 text-sm font-medium transition",
+            active && "nav-active",
+            !active && "text-[var(--text-secondary)] hover:bg-[var(--surface-subtle)] hover:text-[var(--text-primary)]",
           ]}
         >
           {link.label}
@@ -48,11 +45,8 @@ const normalize = (value: string) => (value.endsWith("/") ? value : `${value}/`)
 
 <style>
   .nav-active {
-    background: var(--nav-gradient);
-    box-shadow: var(--nav-glow);
-  }
-
-  :global(.dark) .nav-active {
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-color: transparent;
+    background: var(--brand-blue);
+    color: #ffffff;
   }
 </style>

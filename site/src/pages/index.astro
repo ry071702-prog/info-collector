@@ -3,12 +3,13 @@ import DashboardMock from "../components/landing/DashboardMock.astro";
 import FeatureCard from "../components/landing/FeatureCard.astro";
 import FinalCta from "../components/landing/FinalCta.astro";
 import Hero from "../components/landing/Hero.astro";
+import LatestNews from "../components/landing/LatestNews.astro";
 import ProblemCard from "../components/landing/ProblemCard.astro";
 import SolutionItem from "../components/landing/SolutionItem.astro";
 import StepCard from "../components/landing/StepCard.astro";
 import UseCaseCard from "../components/landing/UseCaseCard.astro";
 import LandingLayout from "../layouts/LandingLayout.astro";
-import { loadSiteData, sortArticlesByTimestamp } from "../lib/articles";
+import { loadSiteData, sortArticlesByTimestamp, type Genre } from "../lib/articles";
 import { buildSiteStats } from "../lib/stats";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -17,6 +18,13 @@ const collectionPath = `${base}/collection/`;
 const siteData = loadSiteData();
 const stats = buildSiteStats(siteData.articles, siteData.generated_at, { dailyDays: 14, tagLimit: 10, sourceLimit: 10 });
 const latestArticles = sortArticlesByTimestamp(siteData.articles).slice(0, 3);
+const latestNews = (["games", "anime", "disney"] as Genre[]).reduce(
+  (result, genre) => {
+    result[genre] = sortArticlesByTimestamp(siteData.articles.filter((article) => article.genre === genre)).slice(0, 4);
+    return result;
+  },
+  { games: [], anime: [], disney: [] } as Record<Genre, typeof siteData.articles>,
+);
 
 const problems = [
   {
@@ -140,13 +148,14 @@ const features = [
   description="X・YouTube・Twitch・RSS からゲーム/アニメ/Disney の話題を AI が24時間自動で収集・要約・分類するニュースリーダー。"
 >
   <Hero feedPath={feedPath} articles={latestArticles} todayCount={stats.todayArticles} weekCount={stats.weekArticles} />
+  <LatestNews articles={latestNews} feedPath={feedPath} basePath={base} />
 
   <section class="px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
       <div class="max-w-3xl" data-reveal>
-        <p class="text-sm font-black uppercase text-blue-700">Problem</p>
-        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">情報は、追うだけで時間が溶ける。</h2>
-        <p class="mt-4 text-base leading-7 text-slate-600">
+        <p class="lp-eyebrow">Problem</p>
+        <h2 class="lp-title mt-4 text-3xl font-bold sm:text-4xl">情報は、追うだけで時間が溶ける。</h2>
+        <p class="lp-copy mt-4 text-base leading-7">
           速報、動画、配信、公式発表。多すぎる情報を人力で追い続けるほど、読む前の整理に時間を取られます。
         </p>
       </div>
@@ -156,12 +165,12 @@ const features = [
     </div>
   </section>
 
-  <section class="bg-white/62 px-4 py-20 sm:px-6 lg:px-8">
+  <section class="lp-muted-band px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
       <div class="mx-auto max-w-3xl text-center" data-reveal>
-        <p class="text-sm font-black uppercase text-emerald-700">Solution</p>
-        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">集めるのをやめて、“届く”に変える。</h2>
-        <p class="mt-4 text-base leading-7 text-slate-600">
+        <p class="lp-eyebrow">Solution</p>
+        <h2 class="lp-title mt-4 text-3xl font-bold sm:text-4xl">集めるのをやめて、“届く”に変える。</h2>
+        <p class="lp-copy mt-4 text-base leading-7">
           気になる情報を、AIが整理する。収集、要約、分類、重要度づけまで自動化し、毎日の確認を短くします。
         </p>
       </div>
@@ -174,8 +183,8 @@ const features = [
   <section id="usecases" class="px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
       <div class="mx-auto max-w-3xl text-center" data-reveal>
-        <p class="text-sm font-black uppercase text-blue-700">Use Case</p>
-        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">情報感度を、保ちたいすべての人へ。</h2>
+        <p class="lp-eyebrow">Use Case</p>
+        <h2 class="lp-title mt-4 text-3xl font-bold sm:text-4xl">情報感度を、保ちたいすべての人へ。</h2>
       </div>
       <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-5">
         {useCases.map((useCase) => <UseCaseCard {...useCase} />)}
@@ -183,12 +192,12 @@ const features = [
     </div>
   </section>
 
-  <section id="how" class="bg-slate-950 px-4 py-20 text-white sm:px-6 lg:px-8">
+  <section id="how" class="lp-muted-band px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
       <div class="mx-auto max-w-3xl text-center" data-reveal>
-        <p class="text-sm font-black uppercase text-cyan-200">How It Works</p>
-        <h2 class="mt-4 text-3xl font-black sm:text-4xl">仕組みは、たった3ステップ。</h2>
-        <p class="mt-4 text-base leading-7 text-slate-300">
+        <p class="lp-eyebrow">How It Works</p>
+        <h2 class="lp-title mt-4 text-3xl font-bold sm:text-4xl">仕組みは、たった3ステップ。</h2>
+        <p class="lp-copy mt-4 text-base leading-7">
           集めた情報を、使える知識に。公開情報の収集から、読むための整理までを毎日回します。
         </p>
       </div>
@@ -201,9 +210,9 @@ const features = [
   <section id="features" class="px-4 py-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-7xl">
       <div class="mx-auto max-w-3xl text-center" data-reveal>
-        <p class="text-sm font-black uppercase text-blue-700">Features</p>
-        <h2 class="mt-4 text-3xl font-black text-slate-950 sm:text-4xl">使える機能。</h2>
-        <p class="mt-4 text-base leading-7 text-slate-600">
+        <p class="lp-eyebrow">Features</p>
+        <h2 class="lp-title mt-4 text-3xl font-bold sm:text-4xl">使える機能。</h2>
+        <p class="lp-copy mt-4 text-base leading-7">
           AI要約で、読む前に要点が分かる。タグとカテゴリで、情報が迷子にならない。
         </p>
       </div>

@@ -37,30 +37,27 @@ const imageSrc = article.image_url ? `${base}${article.image_url}` : null;
 const isUrgent = article.final_priority === "S" || article.final_priority === "A";
 const source = { key: sourceKey(article), label: sourceLabel(article) };
 const articleId = article.url;
-const genreAccent: Record<Genre, { start: string; end: string; glow: string; border: string }> = {
+const genreAccent: Record<Genre, { start: string; end: string; border: string }> = {
   games: {
     start: "var(--color-games-start)",
     end: "var(--color-games-end)",
-    glow: "var(--glow-games)",
-    border: "rgba(6, 182, 212, 0.42)",
+    border: "color-mix(in srgb, var(--color-games-start) 38%, var(--border-color))",
   },
   anime: {
     start: "var(--color-anime-start)",
     end: "var(--color-anime-end)",
-    glow: "var(--glow-anime)",
-    border: "rgba(236, 72, 153, 0.42)",
+    border: "color-mix(in srgb, var(--color-anime-start) 34%, var(--border-color))",
   },
   disney: {
     start: "var(--color-disney-start)",
     end: "var(--color-disney-end)",
-    glow: "var(--glow-disney)",
-    border: "rgba(251, 191, 36, 0.52)",
+    border: "color-mix(in srgb, var(--color-disney-start) 38%, var(--border-color))",
   },
 };
 const accent = genreAccent[article.genre];
-const cardStyle = `--card-accent: ${accent.start}; --card-accent-end: ${accent.end}; --card-glow: ${accent.glow}; --card-border-hover: ${accent.border};`;
-const genreBadgeStyle = `background: linear-gradient(135deg, ${accent.start}, ${accent.end});`;
-const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,255,255,0.38), transparent 10rem), linear-gradient(135deg, ${accent.start}, ${accent.end});`;
+const cardStyle = `--card-accent: ${accent.start}; --card-accent-end: ${accent.end}; --card-border-hover: ${accent.border};`;
+const genreBadgeStyle = `border-color: color-mix(in srgb, ${accent.start} 32%, var(--border-color)); background: color-mix(in srgb, ${accent.start} 8%, var(--surface)); color: ${accent.start};`;
+const fallbackStyle = `background: linear-gradient(180deg, color-mix(in srgb, ${accent.start} 9%, var(--surface-subtle)), var(--surface-subtle)); color: ${accent.start};`;
 ---
 
 <article
@@ -74,10 +71,10 @@ const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,2
   data-source-label={source.label}
   tabindex="-1"
   style={cardStyle}
-  class="glass-card group relative flex h-full flex-col overflow-hidden transition-opacity"
+  class="surface-card group relative flex h-full flex-col overflow-hidden transition-opacity"
 >
   <span
-    class="pointer-events-none absolute left-3 top-3 z-10 hidden rounded-full bg-slate-950/80 px-2.5 py-1 text-xs font-bold text-white shadow-sm backdrop-blur-md dark:bg-white/90 dark:text-slate-950"
+    class="pointer-events-none absolute left-3 top-3 z-10 hidden rounded-full bg-[var(--surface-inverse)] px-2.5 py-1 text-xs font-bold text-[var(--page-bg)] shadow-sm"
     data-read-label
   >
     既読
@@ -85,17 +82,17 @@ const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,2
   <div class="absolute right-3 top-3 z-20 flex items-center gap-1.5">
     <button
       type="button"
-      class="glass-icon-button h-9 w-9 text-base leading-none hover:text-rose-500"
+      class="icon-button h-9 w-9 text-base leading-none hover:text-rose-500"
       data-hide-toggle
       aria-label="この記事を不要として隠す"
       aria-pressed="false"
       title="不要としてマーク"
     >
-      🚫
+      ×
     </button>
     <button
       type="button"
-      class="glass-icon-button h-9 w-9 text-lg leading-none hover:text-[var(--card-accent)]"
+      class="icon-button h-9 w-9 text-lg leading-none hover:text-[var(--card-accent)]"
       data-favorite-toggle
       aria-label="お気に入りに追加"
       aria-pressed="false"
@@ -103,7 +100,7 @@ const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,2
       ☆
     </button>
   </div>
-  <div class="aspect-[4/3] overflow-hidden bg-slate-200/70 dark:bg-slate-900/70">
+  <div class="aspect-[4/3] overflow-hidden bg-[var(--surface-subtle)]">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="block h-full">
       {
         imageSrc ? (
@@ -123,30 +120,30 @@ const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,2
                 loading="lazy"
               />
             )}
-            <span class="text-sm font-semibold text-white/90">{genreLabels[article.genre]}</span>
+            <span class="text-sm font-semibold">{genreLabels[article.genre]}</span>
             {article.domain && (
-              <span class="text-xs text-white/70">{article.domain}</span>
+              <span class="text-xs text-[var(--text-secondary)]">{article.domain}</span>
             )}
           </div>
         )
       }
     </a>
   </div>
-  <div class="flex flex-1 flex-col gap-3 border-t border-[var(--glass-hairline)] bg-white/48 p-4 dark:bg-slate-950/28">
+  <div class="flex flex-1 flex-col gap-3 border-t border-[var(--border-color)] bg-[var(--surface)] p-4">
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="contents">
       <div class="flex flex-wrap items-center gap-2">
         <PriorityBadge priority={article.final_priority} />
-        <span class="rounded-full px-2.5 py-1 text-xs font-bold text-white shadow-sm" style={genreBadgeStyle}>
+        <span class="rounded-full border px-2.5 py-1 text-xs font-bold" style={genreBadgeStyle}>
           {genreLabels[article.genre]}
         </span>
         {
           article.flags.speed === "速報" && (
-            <span class="rounded-full bg-cyan-500 px-2.5 py-1 text-xs font-bold text-white shadow-sm">速報</span>
+            <span class="rounded-full bg-[var(--brand-blue)] px-2.5 py-1 text-xs font-bold text-white shadow-sm">速報</span>
           )
         }
         {
           article.flags.spoiler !== "なし" && (
-            <span class="rounded-full bg-slate-950 px-2.5 py-1 text-xs font-bold text-white shadow-sm dark:bg-white dark:text-slate-950">ネタバレ注意</span>
+            <span class="rounded-full bg-[var(--surface-inverse)] px-2.5 py-1 text-xs font-bold text-[var(--page-bg)] shadow-sm">ネタバレ注意</span>
           )
         }
       </div>
@@ -175,7 +172,7 @@ const fallbackStyle = `background: radial-gradient(circle at 28% 18%, rgba(255,2
       )
     }
     <a href={article.url} target="_blank" rel="noreferrer" data-article-link class="mt-auto block">
-      <div class="flex items-center justify-between gap-3 border-t border-[var(--glass-hairline)] pt-3 text-xs section-kicker">
+      <div class="flex items-center justify-between gap-3 border-t border-[var(--border-color)] pt-3 text-xs section-kicker">
         <span class="min-w-0 truncate">{article.author || "unknown"}</span>
         <time
           datetime={article.timestamp}

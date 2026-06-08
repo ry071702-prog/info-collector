@@ -18,13 +18,13 @@ const feedPath = `${base}/feed/`;
           気になったURLやメモを保存し、AI要約・タグ・重要度つきでひとつのコレクションにまとめます。
         </p>
       </div>
-      <a href={feedPath} class="glass-control inline-flex items-center justify-center px-4 text-sm font-bold">
+      <a href={feedPath} class="ui-control inline-flex items-center justify-center px-4 text-sm font-bold">
         最新フィードへ
       </a>
     </div>
   </section>
 
-  <section class="glass-panel mb-8 p-4 sm:p-6" aria-labelledby="collection-save-title">
+  <section class="surface-panel mb-8 p-4 sm:p-6" aria-labelledby="collection-save-title">
     <div class="mb-5">
       <h2 id="collection-save-title" class="section-title text-xl">保存する</h2>
       <p class="mt-1 text-sm section-copy">URL、またはメモだけでも保存できます。要約に失敗した場合も保存は継続します。</p>
@@ -66,7 +66,7 @@ const feedPath = `${base}/feed/`;
             required
           />
         </div>
-        <button type="submit" class="glass-control min-h-12 px-5 text-sm font-black" data-collection-submit>
+        <button type="submit" class="ui-control min-h-12 px-5 text-sm font-black" data-collection-submit>
           保存
         </button>
       </div>
@@ -84,12 +84,12 @@ const feedPath = `${base}/feed/`;
         <h2 id="collection-list-title" class="section-title text-2xl">保存済み</h2>
         <p class="mt-1 text-sm section-copy">新しい順に最大200件を表示します。</p>
       </div>
-      <button type="button" class="glass-control min-h-10 px-4 text-sm font-bold" data-collection-refresh>
+      <button type="button" class="ui-control min-h-10 px-4 text-sm font-bold" data-collection-refresh>
         再読み込み
       </button>
     </div>
-    <p class="glass-empty p-6 text-sm" data-collection-loading>読み込み中...</p>
-    <p class="glass-empty hidden p-6 text-sm" data-collection-empty>まだ保存はありません。</p>
+    <p class="empty-state p-6 text-sm" data-collection-loading>読み込み中...</p>
+    <p class="empty-state hidden p-6 text-sm" data-collection-empty>まだ保存はありません。</p>
     <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-collection-list></div>
   </section>
 
@@ -113,8 +113,7 @@ const feedPath = `${base}/feed/`;
         status.textContent = message;
         status.classList.toggle("text-rose-600", tone === "error");
         status.classList.toggle("dark:text-rose-300", tone === "error");
-        status.classList.toggle("text-emerald-700", tone === "success");
-        status.classList.toggle("dark:text-emerald-300", tone === "success");
+        status.classList.toggle("text-[var(--brand-blue)]", tone === "success");
       };
 
       const escapeHtml = (value) =>
@@ -142,8 +141,8 @@ const feedPath = `${base}/feed/`;
       const priorityClass = (importance) => {
         if (importance === "S") return "bg-rose-500 text-white";
         if (importance === "A") return "bg-orange-500 text-white";
-        if (importance === "B") return "bg-slate-600 text-white dark:bg-slate-300 dark:text-slate-950";
-        return "bg-white/70 text-slate-600 dark:bg-white/10 dark:text-slate-300";
+        if (importance === "B") return "status-chip text-[var(--text-secondary)]";
+        return "status-chip text-[var(--text-muted)]";
       };
 
       const renderItem = (item) => {
@@ -152,28 +151,28 @@ const feedPath = `${base}/feed/`;
         const href = item.url ? escapeHtml(item.url) : "";
         const favicon = item.favicon_url ? `<img src="${escapeHtml(item.favicon_url)}" alt="" class="h-5 w-5 rounded bg-white/80" loading="lazy" />` : "";
         const titleNode = href
-          ? `<a href="${href}" target="_blank" rel="noreferrer" class="news-card-title block text-lg font-black leading-snug" data-article-link>${escapeHtml(title)}</a>`
-          : `<h3 class="news-card-title text-lg font-black leading-snug">${escapeHtml(title)}</h3>`;
+          ? `<a href="${href}" target="_blank" rel="noreferrer" class="news-card-title block text-lg font-semibold leading-snug" data-article-link>${escapeHtml(title)}</a>`
+          : `<h3 class="news-card-title text-lg font-semibold leading-snug">${escapeHtml(title)}</h3>`;
         return `
-          <article class="glass-card group flex h-full flex-col overflow-hidden p-4" data-collection-card data-id="${escapeHtml(item.id)}">
+          <article class="surface-card group flex h-full flex-col overflow-hidden p-4" data-collection-card data-id="${escapeHtml(item.id)}">
             <div class="mb-3 flex flex-wrap items-center gap-2">
-              <span class="rounded-full px-2.5 py-1 text-xs font-black ${priorityClass(item.importance)}">重要度${escapeHtml(item.importance || "C")}</span>
-              <span class="rounded-full bg-white/54 px-2.5 py-1 text-xs font-bold section-kicker dark:bg-white/10">${escapeHtml(item.category || "other")}</span>
+              <span class="rounded-full px-2.5 py-1 text-xs font-bold ${priorityClass(item.importance)}">重要度${escapeHtml(item.importance || "C")}</span>
+              <span class="status-chip px-2.5 py-1 text-xs font-bold">${escapeHtml(item.category || "other")}</span>
             </div>
             ${titleNode}
             <p class="mt-3 line-clamp-3 text-sm leading-6 section-copy">${escapeHtml(item.summary || "要約はまだありません。")}</p>
-            ${item.note ? `<p class="mt-3 rounded-2xl border border-white/45 bg-white/30 p-3 text-xs leading-5 section-copy dark:border-white/10 dark:bg-white/5">${escapeHtml(item.note)}</p>` : ""}
+            ${item.note ? `<p class="soft-card mt-3 p-3 text-xs leading-5 section-copy">${escapeHtml(item.note)}</p>` : ""}
             <div class="mt-4 flex flex-wrap gap-1.5">
               ${tags.map((tag) => `<span class="entity-tag rounded-full px-2.5 py-1 text-xs font-medium">#${escapeHtml(tag)}</span>`).join("")}
             </div>
-            <div class="mt-auto flex items-center justify-between gap-3 border-t border-[var(--glass-hairline)] pt-4 text-xs section-kicker">
+            <div class="mt-auto flex items-center justify-between gap-3 border-t border-[var(--border-color)] pt-4 text-xs section-kicker">
               <span class="inline-flex min-w-0 items-center gap-1.5">
                 ${favicon}
                 <span class="truncate">${escapeHtml(item.domain || "manual")}</span>
               </span>
               <time class="shrink-0" datetime="${escapeHtml(item.created_at)}">${escapeHtml(formatDate(item.created_at))}</time>
             </div>
-            <button type="button" class="glass-control mt-4 min-h-10 px-3 text-sm font-bold hover:text-rose-600 dark:hover:text-rose-300" data-collection-delete="${escapeHtml(item.id)}">
+            <button type="button" class="ui-control mt-4 min-h-10 px-3 text-sm font-bold hover:text-rose-600 dark:hover:text-rose-300" data-collection-delete="${escapeHtml(item.id)}">
               削除
             </button>
           </article>
