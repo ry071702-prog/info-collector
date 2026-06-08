@@ -186,3 +186,6 @@ DSY053,Dpost (ディズニーメディア),,https://dpost.jp/feed,RSS,disney,メ
 SRD001,YT検索 東京ディズニーリゾート 新グッズ,,東京ディズニーリゾート 新グッズ,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,A: TDRグッズ
 SRD002,YT検索 ディズニーストア 新商品,,ディズニーストア 新商品,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,B: ストア新商品
 SRD003,YT検索 ディズニー 新作映画 公開,,ディズニー 新作映画 公開日,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,新作映画 公開情報
+DSY054,Googleニュース 東京ディズニー グッズ,,https://news.google.com/rss/search?q=%E6%9D%B1%E4%BA%AC%E3%83%87%E3%82%A3%E3%82%BA%E3%83%8B%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%20%E3%82%B0%E3%83%83%E3%82%BA&hl=ja&gl=JP&ceid=JP:ja,RSS,disney,メディア,,medium,TRUE,daily,ja,A: TDRグッズ (web横断集約)
+DSY055,Googleニュース ディズニーストア 新商品,,https://news.google.com/rss/search?q=%E3%83%87%E3%82%A3%E3%82%BA%E3%83%8B%E3%83%BC%E3%82%B9%E3%83%88%E3%82%A2%20%E6%96%B0%E5%95%86%E5%93%81&hl=ja&gl=JP&ceid=JP:ja,RSS,disney,メディア,,medium,TRUE,daily,ja,B: ストア新商品 (web横断集約)
+DSY056,Googleニュース ディズニー 新作映画,,https://news.google.com/rss/search?q=%E3%83%87%E3%82%A3%E3%82%BA%E3%83%8B%E3%83%BC%20%E6%96%B0%E4%BD%9C%E6%98%A0%E7%94%BB%20%E5%85%AC%E9%96%8B&hl=ja&gl=JP&ceid=JP:ja,RSS,disney,メディア,,medium,TRUE,daily,ja,新作映画 公開情報 (web横断集約)
