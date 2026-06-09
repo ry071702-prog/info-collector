@@ -39,6 +39,9 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MAIL_TO: ${{ secrets.MAIL_TO || '' }}
           SITE_URL: ${{ vars.SITE_URL || 'https://info-collector-a5y.pages.dev' }}
+          # 任意: 設定されたチャネルにのみ展開される
+          SLACK_WEBHOOK_CATCHUP: ${{ secrets.SLACK_WEBHOOK_CATCHUP || '' }}
+          DISCORD_WEBHOOK_CATCHUP: ${{ secrets.DISCORD_WEBHOOK_CATCHUP || '' }}
         run: python -m src.jobs.send_catchup ${{ inputs.slot }}
       - name: Commit dedup state
         if: ${{ inputs.dry_run != true }}

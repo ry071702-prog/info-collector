@@ -72,6 +72,63 @@ def notify_priority(items: list[ProcessedItem]) -> int:
     return count
 
 
+_GENRE_COLOR = {
+    "games": 0x2997FF,
+    "anime": 0xBF5AF2,
+    "disney": 0xD6A11F,
+    "both": 0x2997FF,
+    "neither": 0x8E8E93,
+}
+_GENRE_LABEL = {"games": "ゲーム", "anime": "アニメ", "disney": "Disney", "both": "ゲーム/アニメ", "neither": "その他"}
+
+
+def post_digest(
+    items: list[ProcessedItem],
+    *,
+    slot_label: str,
+    date_label: str,
+    webhook_env_key: str = "DISCORD_WEBHOOK_CATCHUP",
+    audio_url: str | None = None,
+    site_url: str | None = None,
+) -> bool:
+    """キャッチアップ便を rich embed で投稿する。webhook 未設定なら False。"""
+    webhook = env(webhook_env_key)
+    if not webhook:
+        log.info(f"{webhook_env_key} 未設定; Discord 投稿スキップ")
+        return False
+
+    embeds = []
+    for it in items:
+        badge = "🔴" if it.final_priority == "S" else "🟠" if it.final_priority == "A" else "🟢"
+        embeds.append({
+            "title": (it.category_name or "(無題)")[:240],
+            "url": it.url,
+            "description": (it.summary or "")[:300],
+            "color": _GENRE_COLOR.get(it.genre, 0x8E8E93),
+            "footer": {"text": f"{badge} {_GENRE_LABEL.get(it.genre, '')} ・ {it.author}"[:100]},
+        })
+
+    links = []
+    if site_url:
+        links.append(f"[📰 サイトで全部見る]({site_url}/feed/)")
+    if audio_url:
+        links.append(f"[▶ 1分で聴く]({audio_url})")
+    header = f"# ☀ {slot_label}\n{date_label} ・ 重要 {len(items)} 件"
+    if links:
+        header += "\n" + " ・ ".join(links)
+
+    if is_dry_run():
+        log.info(f"[DRY_RUN] Discord digest 投稿スキップ ({len(items)}件)")
+        return False
+    try:
+        httpx.post(webhook, json={"content": header, "embeds": embeds[:10]}, timeout=15.0).raise_for_status()
+    except Exception as e:  # noqa: BLE001
+        log.error(f"Discord digest 投稿失敗: {e}")
+        return False
+    log.info(f"Discord digest 投稿: {slot_label} {len(items)}件")
+    return True
+
+
 def post_message(webhook_env_key: str, content: str) -> None:
     """Generic helper for ops/alerts channels."""
     webhook = env(webhook_env_key)

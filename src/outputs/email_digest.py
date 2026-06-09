@@ -81,9 +81,17 @@ def build_html(
     date_label: str,
     hero_image_url: str | None = None,
     newspaper_url: str | None = None,
+    audio_url: str | None = None,
 ) -> str:
     site = _site_url()
     cards = "".join(_card(it) for it in items)
+    audio_btn = ""
+    if audio_url:
+        audio_btn = f"""
+        <tr><td style="padding:0 0 10px 0" align="center">
+          <a href="{escape(audio_url)}" style="display:inline-block;background:#1d1d1f;color:#fff;text-decoration:none;
+                    font-size:14px;font-weight:700;padding:11px 24px;border-radius:999px">▶ 1分で聴く</a>
+        </td></tr>"""
     hero = ""
     if hero_image_url:
         inner = f"""
@@ -108,6 +116,7 @@ def build_html(
         </td></tr>
         {hero}
         {cards}
+        {audio_btn}
         <tr><td style="padding:8px 0 6px 0" align="center">
           <a href="{site}/feed/" style="display:inline-block;background:#0071e3;color:#fff;text-decoration:none;
                     font-size:15px;font-weight:700;padding:13px 28px;border-radius:999px">サイトで全部見る</a>
@@ -143,6 +152,7 @@ def send_digest(
     date_label: str,
     hero_image_url: str | None = None,
     newspaper_url: str | None = None,
+    audio_url: str | None = None,
 ) -> bool:
     """HTMLメールを1通送る。送信したら True。DRY_RUN/未設定なら False。"""
     html = build_html(
@@ -151,6 +161,7 @@ def send_digest(
         date_label=date_label,
         hero_image_url=hero_image_url,
         newspaper_url=newspaper_url,
+        audio_url=audio_url,
     )
     subject = f"☀ {slot_label} — 重要{len(items)}件 ({date_label})"
 

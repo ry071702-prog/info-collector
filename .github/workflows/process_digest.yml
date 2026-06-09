@@ -59,12 +59,22 @@ jobs:
           # コスト抑制したい場合は repo variable で gemini-2.5-flash-image を指定。1日1枚=月¥600〜1,100目安。
           NEWSPAPER_IMAGE_MODEL: ${{ vars.NEWSPAPER_IMAGE_MODEL || 'gemini-3-pro-image-preview' }}
         run: python scripts/generate_newspaper_image.py
+      - name: Generate digest audio
+        # 当日の digest から約1分の音声ダイジェスト (site/public/audio/<date>.wav) を生成。
+        # キャッチアップ便の「▶ 1分で聴く」用。失敗しても commit は止めない。当日分があればスキップ。
+        if: ${{ inputs.dry_run != true }}
+        continue-on-error: true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DIGEST_AUDIO_MODEL: ${{ vars.DIGEST_AUDIO_MODEL || 'gemini-2.5-flash-preview-tts' }}
+          DIGEST_AUDIO_VOICE: ${{ vars.DIGEST_AUDIO_VOICE || 'Kore' }}
+        run: python scripts/generate_digest_audio.py
       - name: Commit
         if: ${{ inputs.dry_run != true }}
         run: |
           git config user.email "actions@github.com"
           git config user.name "github-actions"
-          git add data/processed docs/digests data/cache data/logs site/public/newspaper-img || true
+          git add data/processed docs/digests data/cache data/logs site/public/newspaper-img site/public/audio || true
           git diff --quiet --staged || git commit -m "digest $(date -u +%F)"
           for i in 1 2 3; do
             git pull --rebase --autostash -X theirs && git push && break

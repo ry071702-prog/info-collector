@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 from .. import logger
 from ..config import DATA_DIR, cache_dir
 from ..models import ProcessedItem
-from ..outputs import email_digest
+from ..outputs import discord, email_digest, slack_digest
 from ..storage import read_processed
 
 log = logger.get(__name__)
@@ -129,6 +129,15 @@ def _hero(date_jst: str) -> tuple[str | None, str | None]:
     return None, None
 
 
+def _audio(date_jst: str) -> str | None:
+    """当日の1分音声ダイジェスト (process_digest が生成) があればURLを返す。"""
+    base = DATA_DIR.parent / "site" / "public" / "audio"
+    for ext in ("mp3", "wav"):
+        if (base / f"{date_jst}.{ext}").exists():
+            return f"{email_digest._site_url()}/audio/{date_jst}.{ext}"
+    return None
+
+
 def main() -> None:
     now = datetime.now(timezone.utc)
     now_jst = now.astimezone(JST)
@@ -148,20 +157,38 @@ def main() -> None:
         return
 
     hero_url, newspaper_url = _hero(date_jst)
-    ok = email_digest.send_digest(
-        picked,
-        slot_label=slot_label,
-        date_label=date_label,
-        hero_image_url=hero_url,
-        newspaper_url=newspaper_url,
-    )
+    audio_url = _audio(date_jst)
+    site_url = email_digest._site_url()
 
-    if ok:
+    # 各チャネルへ展開 (設定されているものだけ送られる)。1つでも届けば既送扱い。
+    results = {
+        "email": email_digest.send_digest(
+            picked,
+            slot_label=slot_label,
+            date_label=date_label,
+            hero_image_url=hero_url,
+            newspaper_url=newspaper_url,
+            audio_url=audio_url,
+        ),
+        "slack": slack_digest.send_digest(
+            picked, slot_label=slot_label, date_label=date_label, audio_url=audio_url
+        ),
+        "discord": discord.post_digest(
+            picked, slot_label=slot_label, date_label=date_label,
+            audio_url=audio_url, site_url=site_url,
+        ),
+    }
+    delivered = [ch for ch, ok in results.items() if ok]
+    log.info(f"配信結果: {results}")
+
+    if delivered:
         now_iso = now.isoformat()
         for it in picked:
             sent[it.dedup_key] = now_iso
         _save_sent(sent)
-        log.info(f"送信完了 + 既送マーク {len(picked)}件")
+        log.info(f"配信完了 ({'/'.join(delivered)}) + 既送マーク {len(picked)}件")
+    else:
+        log.info("どのチャネルにも配信されず (既送マークしない)")
 
 
 if __name__ == "__main__":
