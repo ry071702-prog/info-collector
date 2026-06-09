@@ -41,7 +41,8 @@ jobs:
           SITE_URL: ${{ vars.SITE_URL || 'https://info-collector-a5y.pages.dev' }}
           # 任意: 設定されたチャネルにのみ展開される
           SLACK_WEBHOOK_CATCHUP: ${{ secrets.SLACK_WEBHOOK_CATCHUP || '' }}
-          DISCORD_WEBHOOK_CATCHUP: ${{ secrets.DISCORD_WEBHOOK_CATCHUP || '' }}
+          # 専用 webhook が無ければ OPS チャンネルに流用
+          DISCORD_WEBHOOK_CATCHUP: ${{ secrets.DISCORD_WEBHOOK_CATCHUP || secrets.DISCORD_WEBHOOK_OPS || '' }}
         run: python -m src.jobs.send_catchup ${{ inputs.slot }}
       - name: Commit dedup state
         if: ${{ inputs.dry_run != true }}
