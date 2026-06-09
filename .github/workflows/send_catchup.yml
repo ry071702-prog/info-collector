@@ -1,0 +1,54 @@
+name: Send Catchup Mail
+
+on:
+  schedule:
+    - cron: '0 23 * * *'   # JST 08:00 朝便
+    - cron: '0 3 * * *'    # JST 12:00 昼便
+    - cron: '0 9 * * *'    # JST 18:00 夕方便
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: '便 (morning/noon/evening)。空なら現在時刻から推定'
+        type: choice
+        options: ['', morning, noon, evening]
+        default: ''
+      dry_run:
+        description: 'メールを送らずプレビューのみ'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: send-catchup
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Send
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS || 'ry071702@gmail.com' }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO || '' }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://info-collector-a5y.pages.dev' }}
+        run: python -m src.jobs.send_catchup ${{ inputs.slot }}
+      - name: Commit dedup state
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add data/cache/catchup_sent.json || true
+          git diff --quiet --staged || git commit -m "catchup sent $(date -u +%FT%TZ)"
+          for i in 1 2 3; do
+            git pull --rebase --autostash -X theirs && git push && break
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
