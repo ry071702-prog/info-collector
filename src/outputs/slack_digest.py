@@ -78,19 +78,39 @@ def send_digest(
     date_label: str,
     audio_url: str | None = None,
 ) -> bool:
+    # 宛先は 2 方式に対応 (優先: webhook)。
+    #  - SLACK_WEBHOOK_CATCHUP: Incoming Webhook (紐づく1チャンネルへ)
+    #  - SLACK_BOT_TOKEN + SLACK_USER_ID: Bot Token で chat.postMessage (DM 可)
+    #    日報自動生成 と同じ Bot を流用する想定。
     webhook = env("SLACK_WEBHOOK_CATCHUP")
-    if not webhook:
-        log.info("SLACK_WEBHOOK_CATCHUP 未設定; Slack 投稿スキップ")
+    bot_token = env("SLACK_BOT_TOKEN")
+    user_id = env("SLACK_USER_ID")
+    if not webhook and not (bot_token and user_id):
+        log.info("Slack 宛先未設定 (SLACK_WEBHOOK_CATCHUP または SLACK_BOT_TOKEN+SLACK_USER_ID); スキップ")
         return False
+
     blocks = build_blocks(items, slot_label=slot_label, date_label=date_label, audio_url=audio_url)
-    payload = {"text": f"☀ {slot_label} — 重要{len(items)}件", "blocks": blocks}
+    text = f"☀ {slot_label} — 重要{len(items)}件"
     if is_dry_run():
         log.info(f"[DRY_RUN] Slack 投稿スキップ ({len(items)}件)")
         return False
+
     try:
-        httpx.post(webhook, json=payload, timeout=15.0).raise_for_status()
+        if webhook:
+            httpx.post(webhook, json={"text": text, "blocks": blocks}, timeout=15.0).raise_for_status()
+        else:
+            resp = httpx.post(
+                "https://slack.com/api/chat.postMessage",
+                headers={"Authorization": f"Bearer {bot_token}"},
+                json={"channel": user_id, "text": text, "blocks": blocks},
+                timeout=15.0,
+            )
+            data = resp.json()
+            if not data.get("ok"):
+                log.error(f"Slack chat.postMessage 失敗: {data.get('error')}")
+                return False
     except Exception as e:  # noqa: BLE001
         log.error(f"Slack 投稿失敗: {e}")
         return False
-    log.info(f"Slack 投稿: {slot_label} {len(items)}件")
+    log.info(f"Slack 投稿: {slot_label} {len(items)}件 ({'webhook' if webhook else 'bot-token DM'})")
     return True
