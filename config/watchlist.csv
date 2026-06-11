@@ -56,6 +56,7 @@ W311,Steam (Valve) YouTube,UChmZ6QbxgHlmX3ISIHxIpQQ,https://www.youtube.com/chan
 W401,電ファミニコゲーマー RSS,denfaminicogamer-rss,https://news.denfaminicogamer.jp/feed,RSS,games,メディア,"E,F,L",high,TRUE,daily,ja,電ファミニコゲーマー（50件/feed）
 W402,AUTOMATON RSS,automaton-rss,https://automaton-media.com/feed/,RSS,games,メディア,"E,F,L",high,TRUE,daily,ja,AUTOMATON（30件/feed）
 W403,IGN RSS,ign-rss,https://feeds.ign.com/ign/all,RSS,games,メディア,"E,F,L",medium,TRUE,daily,en,IGN 公式 RSS
+W404,IGN Japan RSS,ign-jp-rss,https://jp.ign.com/feed.xml,RSS,games,メディア,"E,F,L",high,TRUE,daily,ja,IGN Japan 公式 RSS (make_slack_plan 由来)
 W701,TOHO animation YouTube,UC14Yc2Qv92DMuyNRlHvpo2Q,https://www.youtube.com/channel/UC14Yc2Qv92DMuyNRlHvpo2Q,YouTube,anime,公式,"M,EE,U",high,TRUE,daily,ja,東宝アニメーション 公式
 W702,KADOKAWAanime YouTube,UCY5fcqgSrQItPAX_Z5Frmwg,https://www.youtube.com/channel/UCY5fcqgSrQItPAX_Z5Frmwg,YouTube,anime,公式,"M,EE,U",high,TRUE,daily,ja,KADOKAWAanime 公式
 W703,WIT STUDIO YouTube,UCJDm9unHHbpgApjyf_aX2mQ,https://www.youtube.com/channel/UCJDm9unHHbpgApjyf_aX2mQ,YouTube,anime,公式,"M,EE,P",medium,TRUE,daily,ja,WIT STUDIO 公式 (@witstudio)
@@ -158,8 +159,7 @@ W742,Dualshockers,,https://www.dualshockers.com/feed/,RSS,games,メディア,,me
 W743,The Verge,,https://www.theverge.com/rss/index.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
 W745,Yahoo IT,,https://news.yahoo.co.jp/rss/topics/it.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
 W746,Yahoo エンタメ,,https://news.yahoo.co.jp/rss/topics/entertainment.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
-W751,Disney 公式 RSS,,https://thewaltdisneycompany.com/feed/,RSS,disney,公式,,high,TRUE,daily,ja,restored from raw 2026-05
-W752,MyAnimeList News,,https://myanimelist.net/rss/news.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
+W752,MyAnimeList News,,https://myanimelist.net/rss/news.xml,RSS,anime,メディア,,medium,TRUE,daily,en,MyAnimeList News RSS (英語アニメニュース)
 SRQ001,検索: VTuber 切り抜き,,VTuber 切り抜き,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
 SRQ002,検索: VTuber 同時接続,,VTuber 同時接続,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
 SRQ003,検索: VTuber 新作ゲーム,,VTuber 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
