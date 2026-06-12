@@ -20,7 +20,7 @@ async def _ensure_pool():
     if not accounts:
         raise RuntimeError("X_ACCOUNTS not configured")
     # Idempotent: only add accounts not already in pool
-    existing = {a.username async for a in api.pool.accounts_info()}
+    existing = {a["username"] for a in await api.pool.accounts_info()}
     for acc in accounts:
         if acc["username"] not in existing:
             await api.pool.add_account(
