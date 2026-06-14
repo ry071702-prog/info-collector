@@ -43,8 +43,8 @@ def test_video_trend_score_zero_for_low_views():
 
 
 def test_video_trend_score_growing_with_rate():
-    # 10h で 100k views → 10k/hour → 70
-    ts = datetime.now(timezone.utc) - timedelta(hours=10)
+    # 9h で 100k views → ~11k/hour → 70 (境界値 10k/h を避けて安定させる)
+    ts = datetime.now(timezone.utc) - timedelta(hours=9)
     assert _video_trend_score(100_000, ts) == 70
 
 
@@ -140,7 +140,7 @@ def test_cross_source_trends_skips_high_risk():
 
 def test_cross_source_trends_top_n_limit():
     items = []
-    for tag in ("A", "B", "C", "D", "E"):
+    for tag in ("AA", "BB", "CC", "DD", "EE"):  # len>=2 を満たす (1文字タグは内部でスキップ)
         for _ in range(4):
             items.append(_make_item([tag]))
     trends = digest.cross_source_trends(items, min_count=3, top_n=3)
