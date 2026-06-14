@@ -25,7 +25,7 @@ async def _ensure_pool():
     accounts = env_json("X_ACCOUNTS", default=[])
     if not accounts:
         raise RuntimeError("X_ACCOUNTS not configured")
-    existing = {a.username async for a in api.pool.accounts_info()}
+    existing = {a["username"] for a in await api.pool.accounts_info()}
     for acc in accounts:
         if acc["username"] not in existing:
             await api.pool.add_account(
