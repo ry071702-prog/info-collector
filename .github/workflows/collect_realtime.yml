@@ -1,7 +1,7 @@
 name: Collect Realtime
 on:
   schedule:
-    - cron: '*/30 * * * *'  # every 30 min
+    - cron: '0 * * * *'  # 毎時(元30分毎)
   workflow_dispatch:
 
 permissions:
