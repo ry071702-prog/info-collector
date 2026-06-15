@@ -33,16 +33,23 @@ async def ensure_pool():
     # 0.18.x: accounts_info() はコルーチン → await し dict でアクセス
     existing = {a["username"] for a in await api.pool.accounts_info()}
     for acc in accounts:
+        cookies = acc.get("cookies") or None
         if acc["username"] in existing:
-            continue
+            if not cookies:
+                continue  # id/pass 方式は既存のログイン状態を再利用
+            # cookie 方式は .env を正とし毎回作り直す。これをしないと twscrape が
+            # 「既存アカウントはスキップ」するため、cookie 失効後に .env を更新しても
+            # 古い cookie が使われ続ける。delete→add で新 cookie を確実に反映。
+            await api.pool.delete_accounts(acc["username"])
         await api.pool.add_account(
             acc["username"],
             acc.get("password", ""),
             acc.get("email", ""),
             acc.get("email_password", ""),
-            cookies=acc.get("cookies") or None,
+            cookies=cookies,
         )
-    # cookie 勢 (ct0 入り) は active=true なので login_all() の対象外。
-    # password 運用の垢だけがここでログインを試みる (居住者IP 前提)。
+    # cookie 勢 (ct0 入り) は active=true なので login_all() の対象外
+    # (= X の Cloudflare 保護がかかったログインフローを踏まない)。
+    # password 運用の垢だけがここでログインを試みる。
     await api.pool.login_all()
     return api

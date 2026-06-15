@@ -8,6 +8,10 @@ __pycache__/
 .venv-x/
 venv/
 env/
+
+# twscrape ローカルアカウントキャッシュ (.env を正とする。commit 禁止)
+accounts.db
+accounts.db-*
 *.egg-info/
 
 # Environment
