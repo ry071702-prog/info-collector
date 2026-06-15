@@ -24,7 +24,8 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 || '' }}
-          X_ACCOUNTS: ${{ secrets.X_ACCOUNTS }}
+          # X_ACCOUNTS は意図的に渡さない: X 収集は居住者IPのローカル Mac で実行
+          # (scripts/run_x_local.sh)。データセンターIPは403のため Actions では graceful skip。
           TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
           TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}

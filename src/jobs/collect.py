@@ -6,6 +6,7 @@ Usage:
     python -m src.jobs.collect daily
 """
 from __future__ import annotations
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 
@@ -43,6 +44,13 @@ def main(tier: str) -> None:
     since = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK[tier])
     date_str = datetime.utcnow().strftime("%Y-%m-%d")
 
+    # COLLECTORS でこの実行が回す collector を絞れる (カンマ区切り)。
+    # 例: ローカル Mac (居住者IP) で X だけ回す → COLLECTORS=x,x_search
+    # 未設定なら全 collector を実行 (従来どおり)。
+    allow = {c.strip() for c in os.getenv("COLLECTORS", "").split(",") if c.strip()} or None
+    if allow:
+        log.info(f"[{tier}] COLLECTORS restricted to: {sorted(allow)}")
+
     all_items = []
     for collector_name, collector in [
         ("youtube_rss", youtube_rss),
@@ -53,6 +61,8 @@ def main(tier: str) -> None:
         ("x", x_twscrape),
         ("x_search", x_search),
     ]:
+        if allow and collector_name not in allow:
+            continue
         try:
             items = collector.collect(sources, since)
             log.info(f"[{tier}] {collector_name}: {len(items)} items")

@@ -12,30 +12,10 @@ from datetime import datetime, timedelta, timezone
 from .. import circuit_breaker, logger
 from ..config import env_json, settings
 from ..models import RawItem, WatchSource
+from ._x_pool import ensure_pool
 
 log = logger.get(__name__)
 BREAKER = "x_search"
-
-
-async def _ensure_pool():
-    """Initialize twscrape API pool with accounts from env."""
-    from twscrape import API
-
-    api = API()
-    accounts = env_json("X_ACCOUNTS", default=[])
-    if not accounts:
-        raise RuntimeError("X_ACCOUNTS not configured")
-    existing = {a.username async for a in api.pool.accounts_info()}
-    for acc in accounts:
-        if acc["username"] not in existing:
-            await api.pool.add_account(
-                acc["username"],
-                acc["password"],
-                acc["email"],
-                acc["email_password"],
-            )
-    await api.pool.login_all()
-    return api
 
 
 async def _collect_query(api, source: WatchSource, since: datetime) -> list[RawItem]:
@@ -77,7 +57,7 @@ async def _collect_query(api, source: WatchSource, since: datetime) -> list[RawI
 
 
 async def _collect_async(sources: list[WatchSource], since: datetime) -> list[RawItem]:
-    api = await _ensure_pool()
+    api = await ensure_pool()
     out: list[RawItem] = []
     for s in sources:
         try:
