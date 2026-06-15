@@ -2,9 +2,13 @@ name: Send Catchup Mail
 
 on:
   schedule:
-    - cron: '0 23 * * *'   # JST 08:00 朝便
-    - cron: '0 3 * * *'    # JST 12:00 昼便
-    - cron: '0 9 * * *'    # JST 18:00 夕方便
+    # :40 起動で毎時00分のスタンピード遅延を回避。便名は時刻でなく
+    # github.event.schedule (起動した cron 文字列) から確定するため、
+    # 遅延しても正しいラベルで届く。cron 文字列は下の Resolve slot の
+    # case パターンと1文字も違わず一致させること (不一致だと時刻推定に戻る)。
+    - cron: '40 22 * * *'   # JST 07:40 朝便
+    - cron: '40 2 * * *'    # JST 11:40 昼便
+    - cron: '40 8 * * *'    # JST 17:40 夕方便
   workflow_dispatch:
     inputs:
       slot:
@@ -32,6 +36,15 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12', cache: 'pip' }
       - run: pip install -r requirements.txt
+      - name: Resolve slot
+        id: slot
+        run: |
+          case "${{ github.event.schedule }}" in
+            "40 22 * * *") echo "slot=morning" >> "$GITHUB_OUTPUT" ;;
+            "40 2 * * *")  echo "slot=noon"    >> "$GITHUB_OUTPUT" ;;
+            "40 8 * * *")  echo "slot=evening" >> "$GITHUB_OUTPUT" ;;
+            *)             echo "slot=${{ inputs.slot }}" >> "$GITHUB_OUTPUT" ;;
+          esac
       - name: Send
         env:
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
@@ -46,7 +59,7 @@ jobs:
           SLACK_USER_ID: ${{ secrets.SLACK_USER_ID || '' }}
           # 専用 webhook が無ければ OPS チャンネルに流用
           DISCORD_WEBHOOK_CATCHUP: ${{ secrets.DISCORD_WEBHOOK_CATCHUP || secrets.DISCORD_WEBHOOK_OPS || '' }}
-        run: python -m src.jobs.send_catchup ${{ inputs.slot }}
+        run: python -m src.jobs.send_catchup ${{ steps.slot.outputs.slot }}
       - name: Commit dedup state
         if: ${{ inputs.dry_run != true }}
         run: |
