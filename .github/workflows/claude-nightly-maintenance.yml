@@ -39,6 +39,9 @@ jobs:
           git config user.email "claude-bot@users.noreply.github.com"
 
       - name: Run maintenance
+        # ベストエフォートの自動メンテ。エージェントが制限ターン内に PR を
+        # 作れず exit 1 で終わってもワークフローを失敗扱いにせず通知を出さない。
+        continue-on-error: true
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
