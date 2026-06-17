@@ -148,6 +148,13 @@ def main() -> None:
     date_jst = now_jst.strftime("%Y-%m-%d")
 
     sent = _load_sent()
+    # 便×日付マーカー: 同じ便(slot)をその日のうちに二度送らない。
+    # 保険トリガー(GitHub純正cronの大幅遅延・cron-job.org)が後から発火しても、
+    # 新着が増えていても再送しない (item単位dedupとは別の冪等ガード)。
+    slot_marker = f"__slot__:{slot}:{date_jst}"
+    if slot_marker in sent:
+        log.info(f"catchup[{slot}]: {date_jst} はこの便を配信済みのためスキップ (便×日付の重複防止)")
+        return
     candidates = _recent_candidates(now)
     picked = _select(candidates, sent)
     log.info(f"catchup[{slot}]: 候補{len(candidates)}件 → 選定{len(picked)}件")
@@ -185,6 +192,7 @@ def main() -> None:
         now_iso = now.isoformat()
         for it in picked:
             sent[it.dedup_key] = now_iso
+        sent[slot_marker] = now_iso  # 便×日付マーカー: 後発の保険トリガーによる再送を防ぐ
         _save_sent(sent)
         log.info(f"配信完了 ({'/'.join(delivered)}) + 既送マーク {len(picked)}件")
     else:
