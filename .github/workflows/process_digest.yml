@@ -51,7 +51,8 @@ jobs:
       - name: Generate newspaper image
         # 当日の digest から新聞風 1 枚画像を生成 (site/public/newspaper-img/<date>.png)。
         # 失敗してもダイジェスト本体の commit は止めない。当日分が既にあればスクリプト側でスキップ。
-        if: ${{ inputs.dry_run != true }}
+        # 新聞画像は既定OFF (Gemini課金抑制)。生成したいときだけ repo variable NEWSPAPER_IMAGE_ENABLED=true。
+        if: ${{ inputs.dry_run != true && vars.NEWSPAPER_IMAGE_ENABLED == 'true' }}
         continue-on-error: true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
