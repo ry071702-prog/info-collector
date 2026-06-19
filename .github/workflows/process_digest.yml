@@ -1,7 +1,13 @@
 name: Process & Daily Digest
 on:
   schedule:
-    - cron: '0 10,22 * * *'  # JST 19:00 / 07:00
+    - cron: '0 10 * * *'  # JST 19:00 夕方ダイジェスト
+  workflow_run:
+    # 朝便は「Collect Daily」完了後に走らせる。旧 '0 22' cron は collect_daily と
+    # 同じ 22:00 UTC スロットで競合し、digest が collect より先に走ると raw 0 件で
+    # 空振り (Read 0 raw items → skipping) していた。収集完了をトリガにして解消する。
+    workflows: ["Collect Daily (low priority)"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -23,6 +29,9 @@ concurrency:
 jobs:
   process:
     runs-on: ubuntu-latest
+    # workflow_run 起動時は Collect Daily が成功したときだけ処理する
+    # (schedule / 手動実行は常に処理する)。
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4

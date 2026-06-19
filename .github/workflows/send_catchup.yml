@@ -52,11 +52,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           MAIL_TO: ${{ secrets.MAIL_TO || '' }}
           SITE_URL: ${{ vars.SITE_URL || 'https://info-collector-a5y.pages.dev' }}
-          # 任意: 設定されたチャネルにのみ展開される
-          SLACK_WEBHOOK_CATCHUP: ${{ secrets.SLACK_WEBHOOK_CATCHUP || '' }}
-          # 日報自動生成 と同じ Bot を流用して DM 送信 (webhook 未設定時に使用)
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN || '' }}
-          SLACK_USER_ID: ${{ secrets.SLACK_USER_ID || '' }}
+          # 通知は Discord + Mail のみ (Slack へは送らない方針, 2026-06-19)。
           # 専用 webhook が無ければ OPS チャンネルに流用
           DISCORD_WEBHOOK_CATCHUP: ${{ secrets.DISCORD_WEBHOOK_CATCHUP || secrets.DISCORD_WEBHOOK_OPS || '' }}
         run: python -m src.jobs.send_catchup ${{ steps.slot.outputs.slot }}
