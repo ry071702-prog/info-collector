@@ -33,3 +33,18 @@ def sample_dedup_cache(tmp_cache_dir: Path) -> Path:
     }
     cache_file.write_text(json.dumps(data), encoding="utf-8")
     return cache_file
+
+
+@pytest.fixture
+def tmp_data_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Provide a temporary data directory and patch storage functions."""
+    raw = tmp_path / "raw"
+    processed = tmp_path / "processed"
+    raw.mkdir()
+    processed.mkdir()
+    monkeypatch.setenv("DATA_DIR", str(tmp_path.parent))
+
+    import src.config
+    monkeypatch.setattr(src.config, "raw_dir", lambda date_str: raw / date_str)
+    monkeypatch.setattr(src.config, "processed_dir", lambda date_str: processed / date_str)
+    return tmp_path
