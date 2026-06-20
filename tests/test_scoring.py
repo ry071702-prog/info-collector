@@ -43,8 +43,8 @@ def test_video_trend_score_zero_for_low_views():
 
 
 def test_video_trend_score_growing_with_rate():
-    # 10h で 100k views → 10k/hour → 70
-    ts = datetime.now(timezone.utc) - timedelta(hours=10)
+    # 9h で 100k views → ~11.1k/hour → 70 (10hだと rate=10000 丁度で境界が不安定)
+    ts = datetime.now(timezone.utc) - timedelta(hours=9)
     assert _video_trend_score(100_000, ts) == 70
 
 
@@ -78,8 +78,9 @@ def test_freshness_old_low():
 
 # ---- final_priority composition ----
 def test_final_priority_S_threshold():
-    # S importance + 24h freshness → composite > 80
-    assert _final_priority("S", 100, 0, 0, 0) == "S"
+    # S importance + 高freshness + streamer=100 → composite=85 > 80 → "S"
+    # (S importance のみだと composite=70 でA止まり。S枠には streamer 等の追加スコアが必要)
+    assert _final_priority("S", 100, 100, 0, 0) == "S"
 
 
 def test_final_priority_C_only_when_all_low():
@@ -139,8 +140,9 @@ def test_cross_source_trends_skips_high_risk():
 
 
 def test_cross_source_trends_top_n_limit():
+    # 1文字タグは cross_source_trends 内部で len(tag)<2 フィルタにかかるため2文字以上を使う
     items = []
-    for tag in ("A", "B", "C", "D", "E"):
+    for tag in ("AA", "BB", "CC", "DD", "EE"):
         for _ in range(4):
             items.append(_make_item([tag]))
     trends = digest.cross_source_trends(items, min_count=3, top_n=3)
