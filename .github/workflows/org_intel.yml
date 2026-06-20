@@ -1,0 +1,57 @@
+name: Org Intelligence Brief
+# 組織インテリジェンス(★6/§4)。watchlist_org.csv を監視し前回からの差分を
+# LLM が出典付きで要約 → Slack #intel へブリーフ配信。差分 baseline を commit。
+# 安全策: SLACK_WEBHOOK_INTEL 未設定なら org_intel 側で投稿スキップ(誤爆防止)。
+on:
+  schedule:
+    - cron: '0 23 * * *'   # JST 08:00
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Slack投稿/baseline更新をスキップ(ブリーフ生成のみ)'
+        type: boolean
+        default: false
+      lookback_hours:
+        description: '差分検知の遡り時間'
+        type: string
+        default: '24'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: org-intel
+
+jobs:
+  brief:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12', cache: 'pip' }
+      - run: pip install -r requirements.txt
+      - name: Org intelligence brief
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2 || '' }}
+          # 投稿先は #intel 専用 webhook のみ(未設定なら投稿スキップ=誤爆防止)。
+          SLACK_WEBHOOK_INTEL: ${{ secrets.SLACK_WEBHOOK_INTEL || '' }}
+          # 非APIサイト(platform=Web)を使う場合のみ。未設定なら Web 源はスキップ。
+          BROWSER_USE_URL: ${{ secrets.BROWSER_USE_URL || '' }}
+          BU_SERVER_TOKEN: ${{ secrets.BU_SERVER_TOKEN || '' }}
+        run: python -m src.jobs.org_intel --lookback-hours ${{ inputs.lookback_hours || '24' }}
+      - name: Commit baseline
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add data/cache/org_baseline.json || true
+          git diff --quiet --staged || git commit -m "org-intel baseline $(date -u +%F)"
+          for i in 1 2 3; do
+            git pull --rebase --autostash -X theirs && git push && break
+            echo "push attempt $i failed; retrying..."
+            git rebase --abort 2>/dev/null || true
+            sleep $((i * 5))
+          done
