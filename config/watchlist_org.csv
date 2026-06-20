@@ -1,0 +1,7 @@
+id,name,handle,url,platform,genre,source_type,subcategory_hints,priority,enabled,check_frequency,language,notes
+org_itmedia_ai,ITmedia AI＋,,https://rss.itmedia.co.jp/rss/2.0/aiplus.xml,RSS,neither,メディア,"AI,業界トレンド",high,TRUE,daily,ja,AI業界の動向(組織intel)
+org_4gamer,4Gamer,,https://www.4gamer.net/rss/index.xml,RSS,neither,メディア,"ゲーム,業界",high,TRUE,daily,ja,ゲーム業界(組織intel)
+org_ann,Anime News Network,,https://www.animenewsnetwork.com/all/rss.xml,RSS,neither,メディア,"アニメ,業界",medium,TRUE,daily,en,アニメ業界(組織intel)
+org_techcrunch,TechCrunch,,https://techcrunch.com/feed/,RSS,neither,メディア,"スタートアップ,AI",medium,TRUE,daily,en,テック/競合(組織intel)
+org_thebridge,THE BRIDGE,,https://thebridge.jp/feed,RSS,neither,メディア,"スタートアップ,採用市場",medium,TRUE,daily,ja,国内スタートアップ/採用(組織intel)
+org_competitor_web_sample,競合サイト(Browser Use用サンプル),,https://www.example.com/news,Web,neither,公式,"競合,お知らせ",low,FALSE,daily,ja,非APIサイト=Browser Use経由。既定OFF。BUサーバ起動後にTRUE
