@@ -43,9 +43,10 @@ def test_video_trend_score_zero_for_low_views():
 
 
 def test_video_trend_score_growing_with_rate():
-    # 10h で 100k views → 10k/hour → 70
-    ts = datetime.now(timezone.utc) - timedelta(hours=10)
-    assert _video_trend_score(100_000, ts) == 70
+    # 9h で 200k views → ~22k/hour → 70 (10k–50k bucket)
+    # 100k/10h was exactly on the 10k/h boundary so tiny elapsed time made rate < 10k.
+    ts = datetime.now(timezone.utc) - timedelta(hours=9)
+    assert _video_trend_score(200_000, ts) == 70
 
 
 def test_video_trend_score_caps_at_100():
@@ -78,8 +79,9 @@ def test_freshness_old_low():
 
 # ---- final_priority composition ----
 def test_final_priority_S_threshold():
-    # S importance + 24h freshness → composite > 80
-    assert _final_priority("S", 100, 0, 0, 0) == "S"
+    # S importance + freshness=100 + streamer=100:
+    # 100*0.5 + 100*0.2 + 100*0.15 = 50+20+15 = 85 >= final_S_threshold(80)
+    assert _final_priority("S", 100, 100, 0, 0) == "S"
 
 
 def test_final_priority_C_only_when_all_low():
@@ -140,7 +142,8 @@ def test_cross_source_trends_skips_high_risk():
 
 def test_cross_source_trends_top_n_limit():
     items = []
-    for tag in ("A", "B", "C", "D", "E"):
+    # cross_source_trends skips tags with len < 2, so use 2-char tags
+    for tag in ("FF", "BB", "CC", "DD", "EE"):
         for _ in range(4):
             items.append(_make_item([tag]))
     trends = digest.cross_source_trends(items, min_count=3, top_n=3)
