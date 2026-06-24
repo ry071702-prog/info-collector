@@ -12,7 +12,7 @@ log = logger.get(__name__)
 STATE_FILE = cache_dir() / "circuit_breakers.json"
 
 
-def _load() -> dict:
+def _load() -> dict[str, dict[str, str | None]]:
     if not STATE_FILE.exists():
         return {}
     try:
@@ -21,7 +21,7 @@ def _load() -> dict:
         return {}
 
 
-def _save(state: dict) -> None:
+def _save(state: dict[str, dict[str, str | None]]) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
 

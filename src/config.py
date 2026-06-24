@@ -4,6 +4,7 @@ import json
 import os
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
 import tomli
 from dotenv import load_dotenv
@@ -17,7 +18,7 @@ DOCS_DIR = ROOT / "docs"
 
 
 @lru_cache(maxsize=1)
-def settings() -> dict:
+def settings() -> dict[str, Any]:
     """Load settings.toml."""
     path = CONFIG_DIR / "settings.toml"
     with path.open("rb") as f:
@@ -31,7 +32,7 @@ def env(key: str, default: str | None = None, required: bool = False) -> str | N
     return val
 
 
-def env_json(key: str, default=None, required: bool = False):
+def env_json(key: str, default: Any = None, required: bool = False) -> Any:
     raw = env(key, required=required)
     if not raw:
         return default

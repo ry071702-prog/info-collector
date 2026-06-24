@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from loguru import logger
 
@@ -32,6 +33,6 @@ def setup() -> None:
     _initialized = True
 
 
-def get(name: str):
+def get(name: str) -> Any:
     setup()
     return logger.bind(module=name)
