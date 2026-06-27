@@ -78,8 +78,14 @@ def test_freshness_old_low():
 
 # ---- final_priority composition ----
 def test_final_priority_S_threshold():
-    # S importance + 24h freshness → composite > 80
-    assert _final_priority("S", 100, 0, 0, 0) == "S"
+    # 重み: importance 0.5 / freshness 0.2 / streamer 0.15 / virality 0.10
+    #       / trend 0.05 / live 0.10 / video 0.10
+    # importance=S + freshness=100 だけでは composite = 50 + 20 = 70 で A 止まり。
+    # S (>=80) には二次シグナルも必要、という重み設計を確認する。
+    assert _final_priority("S", 100, 0, 0, 0) == "A"
+    # S importance + 満点 freshness + 強い streamer/live があれば S に到達する。
+    # composite = 50 + 20 + 100*0.15 + 100*0.10 = 95
+    assert _final_priority("S", 100, 100, 0, 0, live=100) == "S"
 
 
 def test_final_priority_C_only_when_all_low():
@@ -139,8 +145,10 @@ def test_cross_source_trends_skips_high_risk():
 
 
 def test_cross_source_trends_top_n_limit():
+    # 単一文字 tag は意図的なノイズ除去 (len < 2) で集計対象外になるため、
+    # top_n の制限ロジックを検証する目的では 2 文字以上の tag を使う。
     items = []
-    for tag in ("A", "B", "C", "D", "E"):
+    for tag in ("AA", "BB", "CC", "DD", "EE"):
         for _ in range(4):
             items.append(_make_item([tag]))
     trends = digest.cross_source_trends(items, min_count=3, top_n=3)
