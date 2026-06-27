@@ -68,7 +68,11 @@ def _video_trend_score(view_count: int | None, timestamp: datetime) -> int:
     if timestamp.tzinfo is None:
         timestamp = timestamp.replace(tzinfo=timezone.utc)
     age_hours = max(1.0, (datetime.now(timezone.utc) - timestamp).total_seconds() / 3600.0)
-    rate = n / age_hours
+    # バケット境界 (100/1k/10k/50k/200k) が経過時間の微小なドリフトで
+    # 揺れないよう、丸めてから判定する。例: 100k views / 10h はちょうど
+    # 10k/hour = 70 バケットに乗せたいが、実経過が 10h+ε だと rate が
+    # 9999.99... になり 50 バケットへ落ちてしまうため。
+    rate = round(n / age_hours)
     if rate < 100:
         return 0
     if rate < 1000:
