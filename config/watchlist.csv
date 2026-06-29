@@ -160,26 +160,68 @@ W743,The Verge,,https://www.theverge.com/rss/index.xml,RSS,games,メディア,,m
 W745,Yahoo IT,,https://news.yahoo.co.jp/rss/topics/it.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
 W746,Yahoo エンタメ,,https://news.yahoo.co.jp/rss/topics/entertainment.xml,RSS,games,メディア,,medium,TRUE,daily,ja,restored from raw 2026-05
 W752,MyAnimeList News,,https://myanimelist.net/rss/news.xml,RSS,anime,メディア,,medium,TRUE,daily,en,MyAnimeList News RSS (英語アニメニュース)
-SRQ001,検索: VTuber 切り抜き,,VTuber 切り抜き,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ002,検索: VTuber 同時接続,,VTuber 同時接続,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ003,検索: VTuber 新作ゲーム,,VTuber 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ004,検索: k4sen 新作ゲーム,,k4sen 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ005,検索: ありさか 新作ゲーム,,ありさか 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ006,検索: だるまいずごっど 新作ゲーム,,だるまいずごっど 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ007,検索: ぶいすぽ 新作ゲーム,,ぶいすぽ 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ008,検索: もこう 新作ゲーム,,もこう 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ009,検索: アニメ 新作 PV,,アニメ 新作 PV,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ010,検索: ストリーマー 流行りゲーム,,ストリーマー 流行りゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ011,検索: 加藤純一 新作ゲーム,,加藤純一 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ012,検索: 新作ゲーム 実況,,新作ゲーム 実況,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ013,検索: 漫画 アニメ化,,漫画 アニメ化,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ014,検索: 配信者 切り抜き 話題,,配信者 切り抜き 話題,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ015,検索: 配信者 流行りゲーム,,配信者 流行りゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
-SRQ016,検索: 関優太 新作ゲーム,,関優太 新作ゲーム,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ001,検索: VTuber 切り抜き,VTuber 切り抜き,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ002,検索: VTuber 同時接続,VTuber 同時接続,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ003,検索: VTuber 新作ゲーム,VTuber 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ004,検索: k4sen 新作ゲーム,k4sen 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ005,検索: ありさか 新作ゲーム,ありさか 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ006,検索: だるまいずごっど 新作ゲーム,だるまいずごっど 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ007,検索: ぶいすぽ 新作ゲーム,ぶいすぽ 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ008,検索: もこう 新作ゲーム,もこう 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ009,検索: アニメ 新作 PV,アニメ 新作 PV,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ010,検索: ストリーマー 流行りゲーム,ストリーマー 流行りゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ011,検索: 加藤純一 新作ゲーム,加藤純一 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ012,検索: 新作ゲーム 実況,新作ゲーム 実況,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ013,検索: 漫画 アニメ化,漫画 アニメ化,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ014,検索: 配信者 切り抜き 話題,配信者 切り抜き 話題,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ015,検索: 配信者 流行りゲーム,配信者 流行りゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
+SRQ016,検索: 関優太 新作ゲーム,関優太 新作ゲーム,,YouTubeSearch,games,メディア,,medium,TRUE,daily,ja,restored query from raw 2026-05
 DSY053,Dpost (ディズニーメディア),,https://dpost.jp/feed,RSS,disney,メディア,,medium,TRUE,daily,ja,restored/added: JPディズニー総合 (パーク/グッズ/映画)
-SRD001,YT検索 東京ディズニーリゾート 新グッズ,,東京ディズニーリゾート 新グッズ,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,A: TDRグッズ
-SRD002,YT検索 ディズニーストア 新商品,,ディズニーストア 新商品,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,B: ストア新商品
-SRD003,YT検索 ディズニー 新作映画 公開,,ディズニー 新作映画 公開日,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,新作映画 公開情報
+SRD001,YT検索 東京ディズニーリゾート 新グッズ,,東京ディズニーリゾート 新グッズ,YouTubeSearch,disney,メディア,,medium,FALSE,daily,ja,A: TDRグッズ
+SRD002,YT検索 ディズニーストア 新商品,,ディズニーストア 新商品,YouTubeSearch,disney,メディア,,medium,FALSE,daily,ja,B: ストア新商品
+SRD003,YT検索 ディズニー 新作映画 公開,ディズニー 新作映画 公開日,,YouTubeSearch,disney,メディア,,medium,TRUE,daily,ja,新作映画 公開情報
 DSY054,Googleニュース 東京ディズニー グッズ,,https://news.google.com/rss/search?q=%E6%9D%B1%E4%BA%AC%E3%83%87%E3%82%A3%E3%82%BA%E3%83%8B%E3%83%BC%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88%20%E3%82%B0%E3%83%83%E3%82%BA&hl=ja&gl=JP&ceid=JP:ja,RSS,disney,メディア,,medium,TRUE,daily,ja,A: TDRグッズ (web横断集約)
 DSY055,Googleニュース ディズニーストア 新商品,,https://news.google.com/rss/search?q=%E3%83%87%E3%82%A3%E3%82%BA%E3%83%8B%E3%83%BC%E3%82%B9%E3%83%88%E3%82%A2%20%E6%96%B0%E5%95%86%E5%93%81&hl=ja&gl=JP&ceid=JP:ja,RSS,disney,メディア,,medium,TRUE,daily,ja,B: ストア新商品 (web横断集約)
 DSY056,Googleニュース ディズニー 新作映画,,https://news.google.com/rss/search?q=%E3%83%87%E3%82%A3%E3%82%BA%E3%83%8B%E3%83%BC%20%E6%96%B0%E4%BD%9C%E6%98%A0%E7%94%BB%20%E5%85%AC%E9%96%8B&hl=ja&gl=JP&ceid=JP:ja,RSS,disney,メディア,,medium,TRUE,daily,ja,新作映画 公開情報 (web横断集約)
+YSG01,YT検索 原神 アップデート,原神 アップデート,,YouTubeSearch,games,メディア,"GG,B,L",medium,TRUE,daily,ja,2026-06-28 追加: 原神 強化
+YSG02,YT検索 Genshin update,Genshin Impact update,,YouTubeSearch,games,メディア,"GG,B,L",medium,TRUE,daily,en,2026-06-28 追加: 原神 海外
+YSG03,YT検索 原神 新キャラ,原神 新キャラ 実装,,YouTubeSearch,games,メディア,"GG,B",medium,TRUE,daily,ja,2026-06-28 追加: 原神 新キャラ
+YSG04,YT検索 崩壊スターレイル アップデート,崩壊スターレイル アップデート,,YouTubeSearch,games,メディア,"GG,B,L",medium,TRUE,daily,ja,2026-06-28 追加: スターレイル 強化
+YSG05,YT検索 Honkai Star Rail update,Honkai Star Rail update,,YouTubeSearch,games,メディア,"GG,B,L",medium,TRUE,daily,en,2026-06-28 追加: スターレイル 海外
+YSG06,YT検索 崩壊スターレイル 新キャラ,崩壊スターレイル 新キャラ,,YouTubeSearch,games,メディア,"GG,B",medium,TRUE,daily,ja,2026-06-28 追加: スターレイル 新キャラ
+YSG07,YT検索 ゼンレスゾーンゼロ アップデート,ゼンレスゾーンゼロ アップデート,,YouTubeSearch,games,メディア,"GG,B,L",medium,TRUE,daily,ja,2026-06-28 追加: ZZZ 強化
+YSG08,YT検索 Zenless Zone Zero update,Zenless Zone Zero update,,YouTubeSearch,games,メディア,"GG,B,L",medium,TRUE,daily,en,2026-06-28 追加: ZZZ 海外
+YSG09,YT検索 ゼンレスゾーンゼロ 新エージェント,ゼンレスゾーンゼロ 新エージェント,,YouTubeSearch,games,メディア,"GG,B",medium,TRUE,daily,ja,2026-06-28 追加: ZZZ 新キャラ
+YSG10,YT検索 VALORANT アップデート,VALORANT アップデート,,YouTubeSearch,games,メディア,"B,C,L",medium,TRUE,daily,ja,2026-06-28 追加: Valorant 強化
+YSG11,YT検索 VALORANT patch,VALORANT patch notes,,YouTubeSearch,games,メディア,"B,C",medium,TRUE,daily,en,2026-06-28 追加: Valorant 海外
+YSG12,YT検索 VALORANT 新エージェント,VALORANT 新エージェント,,YouTubeSearch,games,メディア,"B,C",medium,TRUE,daily,ja,2026-06-28 追加: Valorant 新要素
+YSG13,YT検索 エーペックス アップデート,エーペックスレジェンズ アップデート,,YouTubeSearch,games,メディア,"B,C,L",medium,TRUE,daily,ja,2026-06-28 追加: Apex 強化
+YSG14,YT検索 Apex Legends patch,Apex Legends patch notes,,YouTubeSearch,games,メディア,"B,C",medium,TRUE,daily,en,2026-06-28 追加: Apex 海外
+YSG15,YT検索 エーペックス 新シーズン,エーペックスレジェンズ 新シーズン,,YouTubeSearch,games,メディア,"B,C",medium,TRUE,daily,ja,2026-06-28 追加: Apex 新シーズン
+YSG16,YT検索 オーバーウォッチ2 アップデート,オーバーウォッチ2 アップデート,,YouTubeSearch,games,メディア,"B,C,L",medium,TRUE,daily,ja,2026-06-28 追加: Overwatch 強化
+YSG17,YT検索 Overwatch 2 patch,Overwatch 2 patch notes,,YouTubeSearch,games,メディア,"B,C",medium,TRUE,daily,en,2026-06-28 追加: Overwatch 海外
+YSG18,YT検索 オーバーウォッチ2 新ヒーロー,オーバーウォッチ2 新ヒーロー,,YouTubeSearch,games,メディア,"B,C",medium,TRUE,daily,ja,2026-06-28 追加: Overwatch 新ヒーロー
+YSD01,YT検索 スターウォーズ 最新,スター・ウォーズ 最新情報,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,ja,2026-06-28 追加: STAR WARS 強化
+YSD02,YT検索 Star Wars trailer,Star Wars trailer,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,en,2026-06-28 追加: STAR WARS 海外
+YSD03,YT検索 マーベル MCU 最新,マーベル MCU 最新,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,ja,2026-06-28 追加: Marvel 強化
+YSD04,YT検索 Marvel Studios trailer,Marvel Studios trailer,,YouTubeSearch,disney,メディア,"DB,DC,DO",medium,TRUE,daily,en,2026-06-28 追加: Marvel 海外
+YSD05,YT検索 マンダロリアン 最新,マンダロリアン 最新,,YouTubeSearch,disney,メディア,"DC,DB,DO",medium,TRUE,daily,ja,2026-06-28 追加: マンダロリアン 強化
+YSD06,YT検索 The Mandalorian news,The Mandalorian news,,YouTubeSearch,disney,メディア,"DC,DB,DO",medium,TRUE,daily,en,2026-06-28 追加: マンダロリアン 海外
+YSD07,YT検索 TDR 新グッズ,東京ディズニーリゾート 新グッズ,,YouTubeSearch,disney,メディア,"DF,DE",medium,TRUE,daily,ja,2026-06-28 追加: リゾート新グッズ
+YSD08,YT検索 ディズニーストア 新商品,ディズニーストア 新商品,,YouTubeSearch,disney,メディア,"DF",medium,TRUE,daily,ja,2026-06-28 追加: ストア新商品
+YSD09,YT検索 グローグー グッズ,グローグー グッズ,,YouTubeSearch,disney,メディア,"DF,DG",medium,TRUE,daily,ja,2026-06-28 追加: グローグー 強化
+YSD10,YT検索 Grogu Star Wars,Grogu Star Wars,,YouTubeSearch,disney,メディア,"DG,DO",medium,TRUE,daily,en,2026-06-28 追加: グローグー 海外
+YSD11,YT検索 ミッキーマウス グッズ,ミッキーマウス グッズ 新作,,YouTubeSearch,disney,メディア,"DF,DG",medium,TRUE,daily,ja,2026-06-28 追加: ミッキー グッズ
+YSD12,YT検索 ミッキーマウス 最新,ミッキーマウス ディズニー 最新,,YouTubeSearch,disney,メディア,"DG,DF",medium,TRUE,daily,ja,2026-06-28 追加: ミッキー 最新
+XSG01,X検索 原神 アップデート,原神 アップデート,,XSearch,games,メディア,"GG,B",medium,TRUE,daily,ja,2026-06-28 追加: 原神 X速報
+XSG02,X検索 崩壊スターレイル 新キャラ,崩壊スターレイル 新キャラ,,XSearch,games,メディア,"GG,B",medium,TRUE,daily,ja,2026-06-28 追加: スターレイル X速報
+XSG03,X検索 ゼンレスゾーンゼロ,ゼンレスゾーンゼロ アップデート,,XSearch,games,メディア,"GG,B",medium,TRUE,daily,ja,2026-06-28 追加: ZZZ X速報
+XSG04,X検索 VALORANT,VALORANT アップデート,,XSearch,games,メディア,"B,C",medium,TRUE,daily,ja,2026-06-28 追加: Valorant X速報
+XSG05,X検索 エーペックス 新シーズン,エーペックスレジェンズ 新シーズン,,XSearch,games,メディア,"B,C",medium,TRUE,daily,ja,2026-06-28 追加: Apex X速報
+XSG06,X検索 オーバーウォッチ2,オーバーウォッチ2 アップデート,,XSearch,games,メディア,"B,C",medium,TRUE,daily,ja,2026-06-28 追加: Overwatch X速報
+XSD01,X検索 スターウォーズ 最新,スターウォーズ 最新,,XSearch,disney,メディア,"DB,DC",medium,TRUE,daily,ja,2026-06-28 追加: STAR WARS X速報
+XSD02,X検索 マーベル 新作,マーベル 新作,,XSearch,disney,メディア,"DB,DC",medium,TRUE,daily,ja,2026-06-28 追加: Marvel X速報
+XSD03,X検索 マンダロリアン,マンダロリアン,,XSearch,disney,メディア,"DC,DB",medium,TRUE,daily,ja,2026-06-28 追加: マンダロリアン X速報
+XSD04,X検索 ディズニー 新グッズ,ディズニー 新グッズ,,XSearch,disney,メディア,"DF,DE",medium,TRUE,daily,ja,2026-06-28 追加: リゾートグッズ X速報
+XSD05,X検索 グローグー,グローグー,,XSearch,disney,メディア,"DG,DF",medium,TRUE,daily,ja,2026-06-28 追加: グローグー X速報
+XSD06,X検索 ミッキーマウス グッズ,ミッキーマウス グッズ,,XSearch,disney,メディア,"DF,DG",medium,TRUE,daily,ja,2026-06-28 追加: ミッキー X速報
