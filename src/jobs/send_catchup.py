@@ -1,6 +1,6 @@
 """キャッチアップ便: 直近の重要記事を厳選して1通のメールで送る。
 
-朝(8時)/昼(12時)/夕方(18時) の3便を想定。各便は「前回便以降の重要上位5件」を
+朝(8時)/昼(12時)/夕方(18時) の3便を想定。各便は「前回便以降の重要上位20件」を
 選び、便をまたいだ重複は catchup_sent.json で抑止する (溜めずに流す設計)。
 
 使い方:
@@ -25,8 +25,8 @@ JST = timezone(timedelta(hours=9))
 SENT_FILE = cache_dir() / "catchup_sent.json"
 SENT_RETAIN_DAYS = 3
 LOOKBACK_HOURS = 16          # 便間の最大ギャップ(14h)+ 余裕
-MAX_ITEMS = 5
-MAX_PER_GENRE = 3           # 1便あたり同一ジャンルの上限 (偏り防止)
+MAX_ITEMS = 20
+MAX_PER_GENRE = 8           # 1便あたり同一ジャンルの上限 (偏り防止)
 _RANK = {"S": 0, "A": 1, "B": 2, "C": 3}
 
 SLOTS = {
