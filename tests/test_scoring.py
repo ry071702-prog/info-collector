@@ -56,7 +56,7 @@ def test_video_trend_score_caps_at_100():
 
 def test_video_trend_score_naive_timestamp_handled():
     # tzinfo=None でも落ちないこと
-    ts = datetime.utcnow() - timedelta(hours=5)
+    ts = (datetime.now(timezone.utc) - timedelta(hours=5)).replace(tzinfo=None)
     assert _video_trend_score(50_000, ts) >= 30
 
 
