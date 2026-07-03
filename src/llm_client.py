@@ -4,11 +4,13 @@ import json
 import re
 import time
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
-import google.generativeai as genai
 from google.api_core import exceptions as gx
+from google import genai
+from google.genai import errors as genai_errors
+from google.genai import types
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -39,6 +41,10 @@ _TRANSIENT_EXC: tuple[type[Exception], ...] = (
     gx.DeadlineExceeded,
     gx.TooManyRequests,
 )
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
 
 
 def quota_exhausted(model: str) -> bool:
@@ -112,8 +118,19 @@ def _next_api_key(model: str) -> tuple[int, str]:
 def _configure_key(key_idx: int, api_key: str) -> None:
     global _CONFIGURED_KEY_IDX
     if _CONFIGURED_KEY_IDX != key_idx:
-        genai.configure(api_key=api_key)
         _CONFIGURED_KEY_IDX = key_idx
+
+
+def _client(api_key: str) -> genai.Client:
+    return genai.Client(api_key=api_key)
+
+
+def _is_quota_exhausted(exc: Exception) -> bool:
+    return isinstance(exc, genai_errors.APIError) and exc.status == 429
+
+
+def _is_transient_genai_error(exc: BaseException) -> bool:
+    return isinstance(exc, genai_errors.APIError) and exc.status >= 500
 
 
 def _mark_key_exhausted(model: str, key_idx: int, exc: Exception) -> None:
@@ -163,19 +180,27 @@ def call_json(
         key_idx, api_key = _next_api_key(model)
         _configure_key(key_idx, api_key)
         _throttle(model, key_idx)
-        m = genai.GenerativeModel(model, system_instruction=system)
         try:
-            resp = m.generate_content(
-                user,
-                generation_config={
-                    "max_output_tokens": max_tokens,
-                    "temperature": temperature,
-                    "response_mime_type": "application/json",
-                },
+            resp = _client(api_key).models.generate_content(
+                model=model,
+                contents=user,
+                config=types.GenerateContentConfig(
+                    system_instruction=system,
+                    max_output_tokens=max_tokens,
+                    temperature=temperature,
+                    response_mime_type="application/json",
+                ),
             )
             break
         except gx.ResourceExhausted as e:
             _mark_key_exhausted(model, key_idx, e)
+        except genai_errors.APIError as e:
+            if _is_quota_exhausted(e):
+                _mark_key_exhausted(model, key_idx, e)
+                continue
+            if _is_transient_genai_error(e):
+                raise gx.ServiceUnavailable(str(e)) from e
+            raise
     text = (resp.text or "").strip()
     _track_usage(model, key_idx)
     return _parse_json(text)
@@ -201,18 +226,26 @@ def call_text(
         key_idx, api_key = _next_api_key(model)
         _configure_key(key_idx, api_key)
         _throttle(model, key_idx)
-        m = genai.GenerativeModel(model, system_instruction=system)
         try:
-            resp = m.generate_content(
-                user,
-                generation_config={
-                    "max_output_tokens": max_tokens,
-                    "temperature": temperature,
-                },
+            resp = _client(api_key).models.generate_content(
+                model=model,
+                contents=user,
+                config=types.GenerateContentConfig(
+                    system_instruction=system,
+                    max_output_tokens=max_tokens,
+                    temperature=temperature,
+                ),
             )
             break
         except gx.ResourceExhausted as e:
             _mark_key_exhausted(model, key_idx, e)
+        except genai_errors.APIError as e:
+            if _is_quota_exhausted(e):
+                _mark_key_exhausted(model, key_idx, e)
+                continue
+            if _is_transient_genai_error(e):
+                raise gx.ServiceUnavailable(str(e)) from e
+            raise
     _track_usage(model, key_idx)
     return resp.text or ""
 
@@ -235,7 +268,7 @@ def _track_usage(model: str, key_idx: int) -> None:
     record = {
         "model": model,
         "key_index": key_idx + 1,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": _utc_now().isoformat(),
     }
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
@@ -246,7 +279,7 @@ def daily_request_count() -> dict[str, int]:
     path = cache_dir() / "api_usage.jsonl"
     if not path.exists():
         return {}
-    today = datetime.utcnow().strftime("%Y-%m-%d")
+    today = _utc_now().strftime("%Y-%m-%d")
     counts: dict[str, int] = {}
     with path.open(encoding="utf-8") as f:
         for line in f:

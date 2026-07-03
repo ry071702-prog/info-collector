@@ -1,6 +1,6 @@
 """Tests for deduplication logic."""
 from __future__ import annotations
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import json
 import pytest
@@ -16,7 +16,7 @@ def test_filter_new_empty_cache(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyP
     item = ProcessedItem(
         source_id="src1",
         raw_fingerprint="fp1",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         url="https://example.com/1",
         author="user1",
         genre="games",
@@ -40,7 +40,7 @@ def test_filter_new_with_duplicates(tmp_cache_dir: Path, monkeypatch: pytest.Mon
     """filter_new should skip items with keys already in cache."""
     cache_file = tmp_cache_dir / "dedup_keys.json"
     initial_data = {
-        "existing_key": datetime.utcnow().isoformat(),
+        "existing_key": datetime.now(timezone.utc).isoformat(),
     }
     cache_file.write_text(json.dumps(initial_data), encoding="utf-8")
     monkeypatch.setattr(dedup, "CACHE_FILE", cache_file)
@@ -49,7 +49,7 @@ def test_filter_new_with_duplicates(tmp_cache_dir: Path, monkeypatch: pytest.Mon
     item1 = ProcessedItem(
         source_id="src1",
         raw_fingerprint="fp1",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         url="https://example.com/1",
         author="user1",
         genre="games",
@@ -63,7 +63,7 @@ def test_filter_new_with_duplicates(tmp_cache_dir: Path, monkeypatch: pytest.Mon
     item2 = ProcessedItem(
         source_id="src2",
         raw_fingerprint="fp2",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         url="https://example.com/2",
         author="user2",
         genre="anime",
@@ -86,7 +86,7 @@ def test_filter_new_with_duplicates(tmp_cache_dir: Path, monkeypatch: pytest.Mon
 def test_load_recent_keys_respects_window(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyPatch):
     """load_recent_keys should only keep keys within WINDOW_DAYS."""
     cache_file = tmp_cache_dir / "dedup_keys.json"
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     old_date = (now - timedelta(days=10)).isoformat()
     recent_date = (now - timedelta(days=3)).isoformat()
 
@@ -109,8 +109,8 @@ def test_save_and_load_keys(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(dedup, "CACHE_FILE", cache_file)
 
     test_keys = {
-        "key1": datetime.utcnow().isoformat(),
-        "key2": datetime.utcnow().isoformat(),
+        "key1": datetime.now(timezone.utc).isoformat(),
+        "key2": datetime.now(timezone.utc).isoformat(),
     }
 
     dedup.save_keys(test_keys)

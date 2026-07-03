@@ -1,7 +1,7 @@
 """Deduplication logic: dedup_key cache + cross-day awareness."""
 from __future__ import annotations
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import logger
@@ -13,6 +13,17 @@ CACHE_FILE = cache_dir() / "dedup_keys.json"
 WINDOW_DAYS = 7
 
 
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _parse_cached_timestamp(value: str) -> datetime:
+    timestamp = datetime.fromisoformat(value)
+    if timestamp.tzinfo is None:
+        return timestamp.replace(tzinfo=timezone.utc)
+    return timestamp
+
+
 def load_recent_keys() -> dict[str, str]:
     """{dedup_key: ISO timestamp} of recent items."""
     if not CACHE_FILE.exists():
@@ -22,8 +33,8 @@ def load_recent_keys() -> dict[str, str]:
     except json.JSONDecodeError:
         log.warning("dedup cache corrupted; starting fresh")
         return {}
-    cutoff = datetime.utcnow() - timedelta(days=WINDOW_DAYS)
-    return {k: v for k, v in data.items() if datetime.fromisoformat(v) >= cutoff}
+    cutoff = _utc_now() - timedelta(days=WINDOW_DAYS)
+    return {k: v for k, v in data.items() if _parse_cached_timestamp(v) >= cutoff}
 
 
 def save_keys(keys: dict[str, str]) -> None:
@@ -35,7 +46,7 @@ def filter_new(items: list[ProcessedItem]) -> tuple[list[ProcessedItem], int]:
     """Drop items whose dedup_key is already known. Returns (kept, dropped_count)."""
     keys = load_recent_keys()
     kept: list[ProcessedItem] = []
-    now_iso = datetime.utcnow().isoformat()
+    now_iso = _utc_now().isoformat()
     for it in items:
         if it.dedup_key in keys:
             continue
@@ -51,7 +62,7 @@ def recent_raw_fingerprints(days: int = 30) -> set[str]:
     if not base.exists():
         return set()
 
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = _utc_now() - timedelta(days=days)
     fingerprints: set[str] = set()
     paths = list(base.glob("*/items.jsonl")) + list(base.glob("*.jsonl"))
     for path in paths:
