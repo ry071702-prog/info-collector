@@ -54,7 +54,26 @@
 - **v0.1（ローンチ）**: 自分の強み領域＝ゲーム/アニメ/Disney の 20〜25 ジャンル + スポーツ(サッカー中心) 6 + テック(生成AI) 3 ≒ **約30ジャンル**。
 - 需要（購読数）を見て、反応の良いカテゴリから追加。curated ソースは人気ジャンルだけ後付け。
 
-出典: [Google News RSS 検索パラメータ](https://www.newscatcherapi.com/blog-posts/google-news-rss-search-parameters-the-missing-documentaiton) / [Google News RSS 無料URL 2026](https://www.wprssaggregator.com/google-news-rss-feed/)
+### A.4 収集の「安い前処理層」（Gemini前・実測で確定）
+
+2026-07-04 の収集PoC（要約なし・代表7ジャンル・実データ482件）で、**Gemini に渡す前の安い前処理だけでノイズを約31%除去**できることを確認した。要約件数が減る＝**Geminiコストが直接下がる**ため、この層を正式な設計要素にする。
+
+適用順（すべてルールベース・LLM不使用）:
+1. **グローバル・ブロックリスト**: SEOスパム/無関係の常連ソースを除外（PoCで観測: `Mshale`, `richardajkeys`, `fanpiece` 等）。運用で追記していく。
+2. **YouTube個人配信の除外**: 動画主体でないジャンルは source が YouTube のものを落とす。
+3. **同一ドメイン上限**（既定 5件/ジャンル）: **最も効く単一ルール**。1アグリゲータの寡占を防ぐ（PoC: 原神で GameWith 等 51件をカット、100→39）。
+
+実測（raw→有効 / 除去率）: 原神 100→39(61%) / Jリーグ 100→67(33%) / 生成AI 100→79(21%) / 新作アニメ 100→80(20%) / プレミア 35→25 / VALORANT 38→32 / **合計 482→331（31%除去）**。
+
+**クエリ設計の教訓**（PoCで判明）:
+- キーワード衝突は `-除外` で潰す（例: `プレミアリーグ -U-11 -少年 -ユース`）。
+- **精緻化は絞りすぎ注意**（`国内ニュース` を `intitle:速報 when:6h` にしたら9件まで枯れた）。
+- **広域ジャンル（国内ニュース/世界ニュース等）はキーワードでなく curated ソース（NHK等の固定RSS）で持つ**方が安定。
+- 更新の速いジャンルは `when:12h〜1d`、遅いジャンルは `when:3d`。
+
+> この前処理は既存 `dedup` / `classify` の**前段**に薄いフィルタとして差し込む。PoCスクリプト: `scratchpad/gnews_poc2.py`（依存なし・xml.etree）。
+
+出典: [Google News RSS 検索パラメータ](https://www.newscatcherapi.com/blog-posts/google-news-rss-search-parameters-the-missing-documentaiton) / [Google News RSS 無料URL 2026](https://www.wprssaggregator.com/google-news-rss-feed/) / 自前PoC実測（2026-07-04）
 
 ---
 
