@@ -126,11 +126,13 @@ def _client(api_key: str) -> genai.Client:
 
 
 def _is_quota_exhausted(exc: Exception) -> bool:
-    return isinstance(exc, genai_errors.APIError) and exc.status == 429
+    # In google-genai 2.x, APIError.status is a string (e.g. "RESOURCE_EXHAUSTED");
+    # the integer HTTP status code is in APIError.code.
+    return isinstance(exc, genai_errors.APIError) and exc.code == 429
 
 
 def _is_transient_genai_error(exc: BaseException) -> bool:
-    return isinstance(exc, genai_errors.APIError) and exc.status >= 500
+    return isinstance(exc, genai_errors.APIError) and exc.code >= 500
 
 
 def _mark_key_exhausted(model: str, key_idx: int, exc: Exception) -> None:
