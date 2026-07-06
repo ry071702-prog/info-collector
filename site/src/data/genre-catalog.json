@@ -1,0 +1,103 @@
+{
+  "version": "phase0-v0.1",
+  "categories": [
+    {
+      "id": "games",
+      "label": "ゲーム",
+      "tone": "var(--color-games-start)",
+      "genres": [
+        { "slug": "games-nintendo", "name": "任天堂" },
+        { "slug": "games-playstation", "name": "PlayStation" },
+        { "slug": "games-xbox", "name": "Xbox" },
+        { "slug": "games-pc", "name": "PC / Steam" },
+        { "slug": "games-valorant", "name": "VALORANT" },
+        { "slug": "games-genshin", "name": "原神・ホヨバ" },
+        { "slug": "games-pokemon", "name": "ポケモン" },
+        { "slug": "games-esports", "name": "eスポーツ" }
+      ]
+    },
+    {
+      "id": "anime",
+      "label": "アニメ・漫画",
+      "tone": "var(--color-anime-start)",
+      "genres": [
+        { "slug": "anime-new", "name": "新作アニメ" },
+        { "slug": "anime-sequel", "name": "続編・2期情報" },
+        { "slug": "anime-seiyuu", "name": "声優" },
+        { "slug": "anime-jump", "name": "少年ジャンプ" },
+        { "slug": "anime-manga", "name": "漫画新刊" },
+        { "slug": "anime-vtuber", "name": "VTuber" },
+        { "slug": "anime-goods", "name": "フィギュア・グッズ" }
+      ]
+    },
+    {
+      "id": "movie",
+      "label": "映画・Disney",
+      "tone": "var(--color-disney-start)",
+      "genres": [
+        { "slug": "disney-marvel", "name": "Marvel" },
+        { "slug": "disney-starwars", "name": "Star Wars" },
+        { "slug": "disney-pixar", "name": "Pixar" },
+        { "slug": "disney-plus", "name": "Disney+" },
+        { "slug": "movie-netflix", "name": "Netflix" },
+        { "slug": "movie-foreign", "name": "洋画" },
+        { "slug": "movie-japan", "name": "邦画" }
+      ]
+    },
+    {
+      "id": "sports",
+      "label": "スポーツ",
+      "tone": "var(--brand-green)",
+      "genres": [
+        { "slug": "sports-soccer", "name": "サッカー全般" },
+        { "slug": "sports-jleague", "name": "Jリーグ" },
+        { "slug": "sports-premier", "name": "プレミアリーグ" },
+        { "slug": "sports-ucl", "name": "チャンピオンズリーグ" },
+        { "slug": "sports-jpn-national", "name": "サッカー日本代表" },
+        { "slug": "sports-npb", "name": "プロ野球" },
+        { "slug": "sports-mlb", "name": "MLB" },
+        { "slug": "sports-nba", "name": "NBA" },
+        { "slug": "sports-f1", "name": "F1" },
+        { "slug": "sports-mma", "name": "格闘技・ボクシング" }
+      ]
+    },
+    {
+      "id": "tech",
+      "label": "テクノロジー・AI",
+      "tone": "var(--brand-blue)",
+      "genres": [
+        { "slug": "tech-genai", "name": "生成AI" },
+        { "slug": "tech-openai", "name": "ChatGPT・OpenAI" },
+        { "slug": "tech-gadget", "name": "スマホ・ガジェット" },
+        { "slug": "tech-apple", "name": "iPhone・Apple" },
+        { "slug": "tech-dev", "name": "プログラミング" },
+        { "slug": "tech-startup", "name": "スタートアップ" }
+      ]
+    },
+    {
+      "id": "music",
+      "label": "音楽・エンタメ",
+      "tone": "var(--color-anime-start)",
+      "genres": [
+        { "slug": "music-jpop", "name": "J-POP" },
+        { "slug": "music-kpop", "name": "K-POP" },
+        { "slug": "music-western", "name": "洋楽" },
+        { "slug": "ent-comedy", "name": "お笑い" },
+        { "slug": "ent-youtuber", "name": "YouTuber" }
+      ]
+    },
+    {
+      "id": "general",
+      "label": "一般・生活",
+      "tone": "var(--text-secondary)",
+      "genres": [
+        { "slug": "news-japan", "name": "国内ニュース" },
+        { "slug": "news-world", "name": "世界ニュース" },
+        { "slug": "news-economy", "name": "経済・マーケット" },
+        { "slug": "life-deals", "name": "ガジェットセール" },
+        { "slug": "life-gourmet", "name": "グルメ" },
+        { "slug": "life-travel", "name": "旅行" }
+      ]
+    }
+  ]
+}

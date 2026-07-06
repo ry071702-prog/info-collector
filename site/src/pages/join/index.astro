@@ -1,0 +1,249 @@
+---
+import LandingLayout from "../../layouts/LandingLayout.astro";
+import catalog from "../../data/genre-catalog.json";
+
+const totalGenres = catalog.categories.reduce((n, c) => n + c.genres.length, 0);
+---
+
+<LandingLayout
+  title="はじめる"
+  description="興味のあるジャンルを選ぶだけ。AIが集めて要約した最新情報が、毎朝あなたのメールに届きます。"
+>
+  <section class="px-4 pb-24 pt-14 sm:px-6 sm:pt-20 lg:px-8">
+    <div class="mx-auto max-w-4xl">
+      <!-- ヘッダー -->
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="lp-eyebrow">パーソナル情報配信（先行登録）</p>
+        <h1 class="lp-hero-title mx-auto mt-4">
+          好きなジャンルを選ぶだけ。<br />最新情報が毎朝メールに届く。
+        </h1>
+        <p class="lp-copy mx-auto mt-5 max-w-xl text-base leading-8">
+          ゲーム・アニメ・スポーツ・AIなど、{totalGenres}以上のジャンルから興味のあるものを選択。
+          AIが自動で集めて要約し、重要なものだけを毎朝ダイジェストでお届けします。
+        </p>
+      </div>
+
+      <!-- 登録フォーム -->
+      <form id="join-form" class="lp-floating mt-10 p-5 sm:p-8" novalidate>
+        <!-- ステップ1: ジャンル選択 -->
+        <div class="mb-2 flex items-baseline justify-between gap-3">
+          <h2 class="lp-title text-lg font-bold">
+            <span class="mr-2 text-[var(--brand-blue)]">01</span>興味のあるジャンルを選ぶ
+          </h2>
+          <span id="selected-count" class="text-sm font-bold text-[var(--text-muted)]">0 件選択中</span>
+        </div>
+
+        <div class="mt-4 space-y-6">
+          {
+            catalog.categories.map((cat) => (
+              <div>
+                <h3
+                  class="mb-2 text-xs font-bold tracking-wide"
+                  style={`color: ${cat.tone};`}
+                >
+                  {cat.label}
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  {cat.genres.map((g) => (
+                    <button
+                      type="button"
+                      class="genre-chip"
+                      data-genre={g.slug}
+                      style={`--chip-tone: ${cat.tone};`}
+                      aria-pressed="false"
+                    >
+                      {g.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- ステップ2: メール -->
+        <div class="mt-8 border-t border-[var(--border-color)] pt-6">
+          <h2 class="lp-title mb-3 text-lg font-bold">
+            <span class="mr-2 text-[var(--brand-blue)]">02</span>メールアドレスを登録
+          </h2>
+          <div class="flex flex-col gap-3 sm:flex-row">
+            <input
+              id="join-email"
+              type="email"
+              inputmode="email"
+              autocomplete="email"
+              required
+              placeholder="you@example.com"
+              class="join-input flex-1"
+            />
+            <button
+              type="submit"
+              id="join-submit"
+              class="lp-button lp-primary inline-flex items-center justify-center px-6 py-3 text-sm font-bold"
+            >
+              先行登録する
+            </button>
+          </div>
+          <p id="join-error" class="mt-3 hidden text-sm font-bold text-rose-600" role="alert"></p>
+          <p class="lp-copy mt-3 text-xs leading-6 text-[var(--text-muted)]">
+            登録は無料です。確認メールをお送りします。配信はいつでも停止できます。
+            まだ開発中のため、配信開始まで少しお待ちいただく場合があります。
+          </p>
+        </div>
+      </form>
+
+      <!-- 成功状態 -->
+      <div id="join-success" class="lp-floating mt-10 hidden p-8 text-center">
+        <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-blue)]">
+          <svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </div>
+        <h2 class="lp-title text-xl font-bold">先行登録が完了しました</h2>
+        <p class="lp-copy mx-auto mt-3 max-w-md text-sm leading-7">
+          選んだジャンルの最新情報を、準備が整い次第お届けします。
+          ご登録ありがとうございます！
+        </p>
+      </div>
+
+      <!-- ソーシャルプルーフ -->
+      <p id="join-proof" class="mt-6 text-center text-sm font-bold text-[var(--text-muted)]" hidden></p>
+    </div>
+  </section>
+
+  <style>
+    .genre-chip {
+      border: 1px solid var(--border-color);
+      background: var(--control-bg);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s, transform 0.05s;
+      user-select: none;
+    }
+    .genre-chip:hover {
+      border-color: color-mix(in srgb, var(--chip-tone) 45%, var(--border-color));
+      color: var(--text-primary);
+    }
+    .genre-chip:active {
+      transform: scale(0.97);
+    }
+    .genre-chip[aria-pressed="true"] {
+      border-color: var(--chip-tone);
+      background: color-mix(in srgb, var(--chip-tone) 12%, var(--surface));
+      color: var(--chip-tone);
+    }
+    .genre-chip[aria-pressed="true"]::before {
+      content: "✓ ";
+      font-weight: 900;
+    }
+    .join-input {
+      border: 1px solid var(--border-color);
+      background: var(--control-bg);
+      color: var(--text-primary);
+      border-radius: 0.85rem;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      outline: none;
+    }
+    .join-input:focus {
+      border-color: var(--focus-ring);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus-ring) 25%, transparent);
+    }
+  </style>
+
+  <script>
+    const form = document.getElementById("join-form") as HTMLFormElement | null;
+    const emailInput = document.getElementById("join-email") as HTMLInputElement | null;
+    const submitBtn = document.getElementById("join-submit") as HTMLButtonElement | null;
+    const errorEl = document.getElementById("join-error");
+    const countEl = document.getElementById("selected-count");
+    const successEl = document.getElementById("join-success");
+    const proofEl = document.getElementById("join-proof");
+    const chips = Array.from(document.querySelectorAll<HTMLButtonElement>(".genre-chip"));
+    const selected = new Set<string>();
+
+    const updateCount = () => {
+      if (countEl) countEl.textContent = `${selected.size} 件選択中`;
+    };
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const slug = chip.dataset.genre;
+        if (!slug) return;
+        const pressed = chip.getAttribute("aria-pressed") === "true";
+        chip.setAttribute("aria-pressed", String(!pressed));
+        if (pressed) selected.delete(slug);
+        else selected.add(slug);
+        updateCount();
+      });
+    });
+
+    const showError = (msg: string) => {
+      if (!errorEl) return;
+      errorEl.textContent = msg;
+      errorEl.classList.remove("hidden");
+    };
+    const clearError = () => errorEl?.classList.add("hidden");
+
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearError();
+      const email = emailInput?.value.trim().toLowerCase() ?? "";
+      if (selected.size === 0) {
+        showError("興味のあるジャンルを1つ以上選んでください。");
+        return;
+      }
+      if (!EMAIL_RE.test(email)) {
+        showError("メールアドレスの形式が正しくありません。");
+        emailInput?.focus();
+        return;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "登録中…";
+      }
+      try {
+        const res = await fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            genres: [...selected],
+            referrer: document.referrer || null,
+          }),
+        });
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(data.error || "登録に失敗しました。時間をおいて再度お試しください。");
+        }
+        form.classList.add("hidden");
+        successEl?.classList.remove("hidden");
+        successEl?.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch (err) {
+        showError(err instanceof Error ? err.message : "登録に失敗しました。");
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "先行登録する";
+        }
+      }
+    });
+
+    // ソーシャルプルーフ（登録数）
+    fetch("/api/signup")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { count?: number } | null) => {
+        if (data && typeof data.count === "number" && data.count > 0 && proofEl) {
+          proofEl.textContent = `これまでに ${data.count} 人が先行登録しています`;
+          proofEl.hidden = false;
+        }
+      })
+      .catch(() => {});
+  </script>
+</LandingLayout>
