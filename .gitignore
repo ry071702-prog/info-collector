@@ -55,3 +55,4 @@ site/public/newspaper-img/*.preview.png
 
 # メンテスクリプトの一時レポート(再生成可能)
 _fix_report.txt
+site/.dev.vars
