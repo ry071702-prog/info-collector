@@ -73,6 +73,12 @@ def _is_off_topic(genre: str, summary: str, title_tags) -> bool:
         return True
     return False
 RECENT_DAYS = 30
+# サイトの各ページ (feed/favorites/games 等) は記事を HTML にサーバー描画するため、
+# 出力記事数が増えると 1 ページの HTML が肥大化する。Cloudflare Pages の
+# 「1 ファイル 25 MiB」上限を超えると publish_site のデプロイが失敗するため、
+# articles.json に含める記事数へハードキャップを設ける (新しい順に採用)。
+# 実測: 1 記事 ≒ 4.1 KiB/HTML カード → 3500 件で最悪ページ ≒ 14 MiB (上限に十分な余裕)。
+MAX_ARTICLES = 3500
 REQUEST_TIMEOUT_SECONDS = 8.0
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
 UTC = timezone.utc
@@ -312,6 +318,13 @@ def load_articles() -> list[dict[str, Any]]:
                 logger.warning("Failed to read processed file {}: {}", path, exc)
 
     articles.sort(key=timestamp_sort_key)
+    if len(articles) > MAX_ARTICLES:
+        logger.info(
+            "Capping site articles: {} -> {} (Cloudflare Pages 25 MiB/file 制限対策)",
+            len(articles),
+            MAX_ARTICLES,
+        )
+        articles = articles[:MAX_ARTICLES]
     return articles
 
 
