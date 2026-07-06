@@ -1,0 +1,318 @@
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --shell-bg:#0e0f12; --shell-panel:#16181d; --shell-line:rgba(255,255,255,.1);
+    --shell-tx:#f2f4f7; --shell-tx2:#9aa1ab; --shell-tx3:#666c76;
+  }
+  @media (prefers-color-scheme:light){:root{--shell-bg:#e9eaec;--shell-panel:#fff;--shell-line:rgba(0,0,0,.1);--shell-tx:#15171b;--shell-tx2:#5a616b;--shell-tx3:#8a919b}}
+  :root[data-theme="dark"]{--shell-bg:#0e0f12;--shell-panel:#16181d;--shell-line:rgba(255,255,255,.1);--shell-tx:#f2f4f7;--shell-tx2:#9aa1ab;--shell-tx3:#666c76}
+  :root[data-theme="light"]{--shell-bg:#e9eaec;--shell-panel:#fff;--shell-line:rgba(0,0,0,.1);--shell-tx:#15171b;--shell-tx2:#5a616b;--shell-tx3:#8a919b}
+  body{background:var(--shell-bg);color:var(--shell-tx);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.6}
+  .wrap{max-width:1120px;margin:0 auto;padding:40px 20px 80px}
+  .shell-head{margin-bottom:30px}
+  .shell-head .k{font-size:12px;letter-spacing:.22em;color:var(--shell-tx3);font-weight:700;text-transform:uppercase}
+  .shell-head h1{font-size:clamp(24px,4vw,36px);font-weight:900;letter-spacing:-.02em;margin-top:8px;text-wrap:balance}
+  .shell-head p{color:var(--shell-tx2);font-size:15px;margin-top:10px;max-width:60ch}
+  .world{border:1px solid var(--shell-line);border-radius:22px;overflow:hidden;margin-top:26px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .world-tag{display:flex;align-items:center;gap:12px;padding:12px 18px;background:var(--shell-panel);border-bottom:1px solid var(--shell-line);font-size:13px;color:var(--shell-tx2)}
+  .world-tag b{color:var(--shell-tx);font-size:14px}
+  .world-tag .dot{width:9px;height:9px;border-radius:50%}
+  .frame{padding:0}
+  /* feed card shared skeleton (each world restyles) */
+  .imp{font-family:"SF Mono",ui-monospace,monospace;font-weight:800;font-variant-numeric:tabular-nums}
+
+  /* ============ A: 編集部エディトリアル ============ */
+  .wa{--pa-bg:#efe9db;--pa-ink:#1c1b17;--pa-ink2:#5c584c;--pa-line:#d3cbb8;--pa-ac:#1f6f6b;--pa-red:#b23b2e;
+    background:var(--pa-bg);color:var(--pa-ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif}
+  .wa .serif{font-family:"Hiragino Mincho ProN","YuMincho","Yu Mincho",serif}
+  .wa .top{display:flex;align-items:center;justify-content:space-between;padding:16px 30px;border-bottom:2px solid var(--pa-ink)}
+  .wa .brand{font-weight:900;font-size:19px;letter-spacing:.02em}
+  .wa .brand i{font-style:normal;color:var(--pa-red)}
+  .wa .nav{display:flex;gap:20px;font-size:13px;color:var(--pa-ink2)}
+  .wa .date{font-family:"SF Mono",ui-monospace,monospace;font-size:12px;color:var(--pa-ink2);letter-spacing:.04em}
+  .wa .hero{padding:34px 30px 26px;border-bottom:1px solid var(--pa-line)}
+  .wa .kick{font-size:12px;letter-spacing:.14em;color:var(--pa-ac);font-weight:800;text-transform:uppercase}
+  .wa .hl{font-size:clamp(30px,5vw,52px);line-height:1.08;font-weight:900;letter-spacing:-.01em;margin-top:12px;text-wrap:balance}
+  .wa .sub{font-size:15px;color:var(--pa-ink2);margin-top:14px;max-width:56ch}
+  .wa .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .wa .tab{border:1px solid var(--pa-ink);border-radius:2px;padding:6px 13px;font-size:13px;font-weight:700;background:transparent;color:var(--pa-ink)}
+  .wa .tab.on{background:var(--pa-ink);color:var(--pa-bg)}
+  .wa .grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:0}
+  .wa .col{padding:22px 24px;border-right:1px solid var(--pa-line)}
+  .wa .col:last-child{border-right:0}
+  .wa .lead .badge,.wa .art .badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--pa-red)}
+  .wa .lead h3{font-size:26px;line-height:1.18;font-weight:900;margin:10px 0;letter-spacing:-.01em}
+  .wa .lead p{font-size:14px;color:var(--pa-ink2);line-height:1.7}
+  .wa .art{padding:14px 0;border-bottom:1px solid var(--pa-line)}
+  .wa .art:last-child{border-bottom:0}
+  .wa .art h4{font-size:16px;line-height:1.3;font-weight:800;margin:7px 0 6px}
+  .wa .art p{font-size:12.5px;color:var(--pa-ink2);line-height:1.55}
+  .wa .cat{font-size:11px;color:var(--pa-ac);font-weight:800}
+
+  /* ============ B: キネティック・ポップ ============ */
+  .wb{--pb-bg:#141110;--pb-panel:#1c1815;--pb-tx:#f6f0ea;--pb-tx2:#a99e93;--pb-line:rgba(255,255,255,.09);
+    --pb-pop:#ff4d8d;--g-games:#5b9dff;--g-anime:#c07bff;--g-sports:#37d29a;--g-tech:#ffb648;
+    position:relative;background:
+      radial-gradient(120% 80% at 85% -10%, rgba(255,77,141,.16), transparent 60%),
+      var(--pb-bg);
+    color:var(--pb-tx);overflow:hidden}
+  .wb::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>")}
+  .wb .in{position:relative;z-index:1}
+  .wb .top{display:flex;align-items:center;justify-content:space-between;padding:16px 28px}
+  .wb .brand{font-weight:900;font-size:20px;letter-spacing:-.02em}
+  .wb .brand i{font-style:normal;color:var(--pb-pop)}
+  .wb .cta{background:var(--pb-pop);color:#1a0510;border:0;border-radius:999px;padding:9px 18px;font-weight:800;font-size:13px}
+  .wb .hero{padding:26px 28px 8px}
+  .wb .kick{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.16em;color:var(--pb-pop);text-transform:uppercase}
+  .wb .hl{font-size:clamp(34px,6.4vw,72px);line-height:.98;font-weight:900;letter-spacing:-.035em;margin-top:10px;text-wrap:balance}
+  .wb .hl em{font-style:normal;color:var(--pb-pop)}
+  .wb .sub{font-size:15px;color:var(--pb-tx2);margin-top:16px;max-width:52ch}
+  .wb .tabs{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0 6px}
+  .wb .chip{border:1px solid var(--pb-line);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:800;color:var(--pb-tx);display:flex;align-items:center;gap:8px}
+  .wb .chip .d{width:8px;height:8px;border-radius:50%}
+  .wb .chip.on{background:var(--pb-tx);color:var(--pb-bg)}
+  .wb .feed{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:14px;padding:14px 28px 30px;align-items:start}
+  .wb .card{background:var(--pb-panel);border:1px solid var(--pb-line);border-radius:16px;padding:18px;position:relative;transition:transform .18s ease,border-color .18s}
+  .wb .card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,.22)}
+  .wb .card.big{grid-row:span 1;padding:22px}
+  .wb .row{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+  .wb .g{font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px}
+  .wb .s{font-size:11px;font-weight:900;padding:4px 8px;border-radius:6px;color:#1a0510}
+  .wb .card h3{font-size:17px;line-height:1.28;font-weight:800;letter-spacing:-.01em}
+  .wb .card.big h3{font-size:24px;line-height:1.2}
+  .wb .card p{font-size:13px;color:var(--pb-tx2);line-height:1.6;margin-top:9px}
+  .wb .meta{font-size:11px;color:var(--pb-tx3,#7d746b);margin-top:12px;font-family:"SF Mono",ui-monospace,monospace}
+
+  /* ============ C: ミニマル・データ ============ */
+  .wc{--pc-bg:#f3f1ec;--pc-panel:#fbfaf7;--pc-ink:#1a1917;--pc-ink2:#6b675f;--pc-line:#e0dcd2;--pc-ac:#4d5bce;
+    background:var(--pc-bg);color:var(--pc-ink);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif}
+  @media (prefers-color-scheme:dark){.wc{--pc-bg:#161513;--pc-panel:#1d1c19;--pc-ink:#efece6;--pc-ink2:#a29d93;--pc-line:#2c2a26;--pc-ac:#8f9bff}}
+  .wc .top{display:flex;align-items:center;justify-content:space-between;padding:20px 34px;border-bottom:1px solid var(--pc-line)}
+  .wc .brand{font-weight:800;font-size:16px;letter-spacing:.01em}
+  .wc .brand span{color:var(--pc-ink2);font-weight:500}
+  .wc .nav{display:flex;gap:22px;font-size:13px;color:var(--pc-ink2)}
+  .wc .hero{padding:56px 34px 40px;max-width:760px}
+  .wc .kick{font-size:11px;letter-spacing:.2em;color:var(--pc-ac);font-weight:700;text-transform:uppercase}
+  .wc .hl{font-size:clamp(28px,4.6vw,46px);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin-top:16px;text-wrap:balance}
+  .wc .sub{font-size:15px;color:var(--pc-ink2);margin-top:16px;max-width:60ch;line-height:1.75}
+  .wc .tabs{display:flex;gap:20px;padding:0 34px;border-bottom:1px solid var(--pc-line)}
+  .wc .tab{padding:14px 0;font-size:13.5px;font-weight:600;color:var(--pc-ink2);border-bottom:2px solid transparent;margin-bottom:-1px;display:flex;align-items:center;gap:7px}
+  .wc .tab .d{width:7px;height:7px;border-radius:50%}
+  .wc .tab.on{color:var(--pc-ink);border-color:var(--pc-ink)}
+  .wc .list{padding:8px 34px 34px}
+  .wc .item{display:grid;grid-template-columns:64px 1fr auto;gap:20px;align-items:baseline;padding:20px 0;border-bottom:1px solid var(--pc-line)}
+  .wc .item:last-child{border-bottom:0}
+  .wc .imp{font-size:22px;color:var(--pc-ink);opacity:.85}
+  .wc .item h3{font-size:17px;font-weight:700;line-height:1.4;letter-spacing:-.01em}
+  .wc .item p{font-size:13px;color:var(--pc-ink2);margin-top:5px;line-height:1.6;max-width:64ch}
+  .wc .item .cat{font-size:11px;color:var(--pc-ink2);font-weight:600;display:flex;align-items:center;gap:6px}
+  .wc .item time{font-family:"SF Mono",ui-monospace,monospace;font-size:11px;color:var(--pc-ink2);white-space:nowrap}
+
+  /* ============ D: ネオン・ゲーミングHUD ============ */
+  .wd{--d-bg:#080b13;--d-panel:#0d1220;--d-tx:#e6f0f5;--d-tx2:#7d8ba0;--d-line:rgba(90,220,220,.16);--d-ac:#2fe3d6;--d-pink:#ff5c8a;
+    background:radial-gradient(100% 70% at 50% -20%,rgba(47,227,214,.1),transparent 55%),var(--d-bg);color:var(--d-tx);
+    font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif}
+  .wd .grid-bg{background-image:linear-gradient(rgba(120,200,220,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(120,200,220,.045) 1px,transparent 1px);background-size:34px 34px}
+  .wd .top{display:flex;align-items:center;justify-content:space-between;padding:15px 28px;border-bottom:1px solid var(--d-line)}
+  .wd .brand{font-weight:900;font-size:18px;letter-spacing:.02em}
+  .wd .brand i{color:var(--d-ac);font-style:normal}
+  .wd .st{font-family:"SF Mono",ui-monospace,monospace;font-size:11px;color:var(--d-ac);letter-spacing:.1em;border:1px solid var(--d-line);border-radius:6px;padding:5px 10px}
+  .wd .hero{padding:30px 28px 12px}
+  .wd .kick{font-family:"SF Mono",ui-monospace,monospace;font-size:11px;letter-spacing:.2em;color:var(--d-ac);text-transform:uppercase}
+  .wd .hl{font-size:clamp(30px,5.4vw,60px);line-height:1.02;font-weight:900;letter-spacing:-.02em;margin-top:12px;text-wrap:balance}
+  .wd .hl em{font-style:normal;color:var(--d-ac);text-shadow:0 0 26px rgba(47,227,214,.45)}
+  .wd .sub{font-size:14px;color:var(--d-tx2);margin-top:14px;max-width:52ch}
+  .wd .tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .wd .chip{border:1px solid var(--d-line);border-radius:7px;padding:6px 13px;font-size:12.5px;font-weight:700;color:var(--d-tx);font-family:"SF Mono",ui-monospace,monospace}
+  .wd .chip.on{border-color:var(--d-ac);color:var(--d-ac);box-shadow:0 0 16px rgba(47,227,214,.2) inset}
+  .wd .feed{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px 28px 30px}
+  .wd .card{background:var(--d-panel);border:1px solid var(--d-line);border-radius:12px;padding:16px;position:relative}
+  .wd .card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;border-radius:2px;background:var(--d-ac)}
+  .wd .card.crit::before{background:var(--d-pink)}
+  .wd .crow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .wd .cat{font-size:11px;font-weight:700;color:var(--d-tx2);font-family:"SF Mono",ui-monospace,monospace;letter-spacing:.06em}
+  .wd .s{font-family:"SF Mono",ui-monospace,monospace;font-weight:900;font-size:13px;color:var(--d-ac)}
+  .wd .card.crit .s{color:var(--d-pink)}
+  .wd .card h3{font-size:15px;line-height:1.32;font-weight:800}
+  .wd .card p{font-size:12px;color:var(--d-tx2);margin-top:8px;line-height:1.55}
+  .wd .card time{font-family:"SF Mono",ui-monospace,monospace;font-size:10.5px;color:#5a6678;margin-top:10px;display:block}
+
+  /* ============ E: ソフト・ライトアプリ ============ */
+  .we{--e-bg:#f4efe9;--e-card:#fffdfb;--e-ink:#2a2622;--e-ink2:#8a8078;--e-line:#eae2d8;--e-ac:#ff7a5c;
+    background:var(--e-bg);color:var(--e-ink);font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif}
+  .we .top{display:flex;align-items:center;justify-content:space-between;padding:18px 30px}
+  .we .brand{font-weight:800;font-size:18px}
+  .we .brand i{font-style:normal;color:var(--e-ac)}
+  .we .cta{background:var(--e-ac);color:#fff;border:0;border-radius:14px;padding:10px 18px;font-weight:800;font-size:13px;box-shadow:0 8px 20px rgba(255,122,92,.28)}
+  .we .hero{padding:30px 30px 8px;text-align:center;max-width:640px;margin:0 auto}
+  .we .kick{font-size:12px;font-weight:800;color:var(--e-ac);letter-spacing:.04em}
+  .we .hl{font-size:clamp(30px,5vw,50px);line-height:1.1;font-weight:900;letter-spacing:-.02em;margin-top:12px;text-wrap:balance}
+  .we .sub{font-size:15px;color:var(--e-ink2);margin-top:14px;line-height:1.7}
+  .we .tabs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px}
+  .we .chip{background:var(--e-card);border:1px solid var(--e-line);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(0,0,0,.03)}
+  .we .chip .d{width:8px;height:8px;border-radius:50%}
+  .we .chip.on{background:var(--e-ink);color:#fff;border-color:var(--e-ink)}
+  .we .feed{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;padding:26px 30px 32px}
+  .we .card{background:var(--e-card);border-radius:20px;padding:20px;box-shadow:0 10px 24px rgba(60,50,40,.06);transition:transform .18s}
+  .we .card:hover{transform:translateY(-3px)}
+  .we .crow{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .we .g{font-size:11px;font-weight:800;padding:5px 11px;border-radius:999px}
+  .we .s{margin-left:auto;font-size:12px;font-weight:900;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
+  .we .card h3{font-size:16px;line-height:1.34;font-weight:800}
+  .we .card p{font-size:13px;color:var(--e-ink2);margin-top:9px;line-height:1.6}
+  .we .card time{font-size:11px;color:#a89e94;margin-top:12px;display:block}
+
+  /* ============ F: マンガ・雑誌 (bold zine) ============ */
+  .wf{--f-bg:#f6f1e3;--f-ink:#141210;--f-red:#ff2f2f;--f-ink2:#57514a;
+    background:var(--f-bg);color:var(--f-ink);font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans",sans-serif;
+    background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1px);background-size:7px 7px}
+  .wf .top{display:flex;align-items:center;justify-content:space-between;padding:14px 26px;border-bottom:3px solid var(--f-ink)}
+  .wf .brand{font-weight:900;font-size:20px;letter-spacing:-.02em;transform:skew(-6deg)}
+  .wf .brand i{font-style:normal;background:var(--f-red);color:#fff;padding:0 6px}
+  .wf .nav{display:flex;gap:16px;font-size:13px;font-weight:800}
+  .wf .hero{padding:28px 26px 14px}
+  .wf .kick{display:inline-block;background:var(--f-ink);color:var(--f-bg);font-weight:900;font-size:12px;padding:5px 12px;letter-spacing:.08em;transform:rotate(-2deg)}
+  .wf .hl{font-size:clamp(34px,6.2vw,68px);line-height:.96;font-weight:900;letter-spacing:-.03em;margin-top:16px;text-wrap:balance}
+  .wf .hl em{font-style:normal;color:var(--f-red)}
+  .wf .sub{font-size:15px;color:var(--f-ink2);margin-top:14px;max-width:52ch;font-weight:600}
+  .wf .tabs{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+  .wf .chip{border:2px solid var(--f-ink);padding:6px 14px;font-size:13px;font-weight:900;background:#fff}
+  .wf .chip.on{background:var(--f-red);color:#fff;border-color:var(--f-red)}
+  .wf .feed{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:16px;padding:16px 26px 30px}
+  .wf .card{background:#fff;border:2.5px solid var(--f-ink);padding:16px;box-shadow:6px 6px 0 var(--f-ink);position:relative}
+  .wf .card.big{box-shadow:8px 8px 0 var(--f-red)}
+  .wf .crow{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .wf .g{font-size:11px;font-weight:900;padding:3px 9px;background:var(--f-ink);color:#fff}
+  .wf .s{margin-left:auto;font-weight:900;font-size:15px;color:var(--f-red);font-family:"SF Mono",ui-monospace,monospace}
+  .wf .card h3{font-size:16px;line-height:1.25;font-weight:900;letter-spacing:-.01em}
+  .wf .card.big h3{font-size:23px}
+  .wf .card p{font-size:12.5px;color:var(--f-ink2);margin-top:8px;line-height:1.5;font-weight:500}
+  .wf .card time{font-size:11px;color:#948b80;margin-top:10px;display:block;font-weight:700}
+
+  @media (max-width:720px){
+    .wa .grid,.wb .feed,.wd .feed,.we .feed,.wf .feed{grid-template-columns:1fr}
+    .wa .col{border-right:0;border-bottom:1px solid var(--pa-line)}
+    .wc .item{grid-template-columns:44px 1fr}
+    .wc .item time{display:none}
+  }
+</style>
+
+<div class="wrap">
+  <div class="shell-head">
+    <div class="k">info-collector · renewal</div>
+    <h1>デザイン方向の比較 — 6案</h1>
+    <p>同じ中身（パーソナライズされた最新フィード）を3つの世界観で。スクロールして見比べ、気に入った案・混ぜたい要素を教えてください（配色/フォント/温度感どれでも）</p>
+  </div>
+
+  <!-- ============ A ============ -->
+  <section class="world">
+    <div class="world-tag"><span class="dot" style="background:#1f6f6b"></span><b>A. 編集部エディトリアル</b>　明朝ディスプレイ × 紙面グリッド · 信頼できるニュースブランド感</div>
+    <div class="wa">
+      <div class="top">
+        <div class="brand">情報<i>収集</i></div>
+        <nav class="nav"><span>ゲーム</span><span>アニメ</span><span>スポーツ</span><span>テック</span></nav>
+        <div class="date">2026.07.06 SUN</div>
+      </div>
+      <div class="hero">
+        <div class="kick">あなたの朝刊</div>
+        <div class="hl serif">追う時間はいらない<br>要点だけ、毎朝ここに</div>
+        <p class="sub">選んだジャンルの新着を AI が集めて要約し、重要度をつけて一面に。読む前に要点が分かる、自分だけの編集部</p>
+        <div class="tabs"><button class="tab on">ゲーム</button><button class="tab">アニメ</button><button class="tab">サッカー</button><button class="tab">生成AI</button><button class="tab">＋ 追加</button></div>
+      </div>
+      <div class="grid">
+        <div class="col lead">
+          <span class="badge serif">◆ 本日の一面 · 重要度 S</span>
+          <h3 class="serif">人気シリーズ最新作、続編アニメの制作が正式決定</h3>
+          <p>公式が2027年放送を発表。原作の到達点と、これまでの反響をまとめた。スタッフ続投の情報も添えて、放送前に押さえるべき点を整理</p>
+        </div>
+        <div class="col">
+          <div class="art"><span class="cat">サッカー · A</span><h4>プレミア第3節、後半ATの一撃で逆転</h4><p>途中出場の選手が決勝点。順位争いへの影響を短く</p></div>
+          <div class="art"><span class="cat">ゲーム · A</span><h4>新作RPGの発売日が9月12日に確定</h4><p>予約特典と対応機種、体験版の配信時期も公開</p></div>
+        </div>
+        <div class="col">
+          <div class="art"><span class="cat">生成AI · B</span><h4>新モデルの開発者向けイベントが10月に配信</h4><p>公開範囲と料金体系の見どころを先取り</p></div>
+          <div class="art"><span class="cat">アニメ · B</span><h4>話題作の円盤&配信が今週スタート</h4><p>特典と配信プラットフォームを一覧に</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ B ============ -->
+  <section class="world">
+    <div class="world-tag"><span class="dot" style="background:#ff4d8d"></span><b>B. キネティック・ポップ　（おすすめ）</b>　極太タイポ × グレイン × 動き · エンタメ/ファン向けの元気</div>
+    <div class="wb"><div class="in">
+      <div class="top">
+        <div class="brand">info<i>·</i>collector</div>
+        <button class="cta">ジャンルを選ぶ</button>
+      </div>
+      <div class="hero">
+        <span class="kick">おかえり — 今日の推し新着</span>
+        <div class="hl">追わなくても<br><em>ぜんぶ</em>集まる</div>
+        <p class="sub">好きなジャンルを選ぶだけ。AIが24時間集めて要約、重要なものだけ毎朝あなたのフィードへ</p>
+        <div class="tabs">
+          <span class="chip on"><span class="d" style="background:#5b9dff"></span>ゲーム</span>
+          <span class="chip"><span class="d" style="background:#c07bff"></span>アニメ</span>
+          <span class="chip"><span class="d" style="background:#37d29a"></span>サッカー</span>
+          <span class="chip"><span class="d" style="background:#ffb648"></span>生成AI</span>
+          <span class="chip">＋</span>
+        </div>
+      </div>
+      <div class="feed">
+        <div class="card big">
+          <div class="row"><span class="g" style="background:rgba(192,123,255,.16);color:#c07bff">アニメ</span><span class="s" style="background:#ff4d8d">S</span></div>
+          <h3>人気シリーズ第2期、制作決定 — 2027年放送へ</h3>
+          <p>公式が続編を発表。放送時期・スタッフ続投・原作の到達点まで、放送前に押さえるべき点をまとめた</p>
+          <div class="meta">コミックナタリー · 34分前</div>
+        </div>
+        <div class="card">
+          <div class="row"><span class="g" style="background:rgba(55,210,154,.16);color:#37d29a">サッカー</span><span class="s" style="background:#ffb648">A</span></div>
+          <h3>プレミア第3節、後半ATで逆転劇</h3>
+          <p>途中出場の一撃が決勝点、順位争いが激化</p>
+          <div class="meta">2時間前</div>
+        </div>
+        <div class="card">
+          <div class="row"><span class="g" style="background:rgba(91,157,255,.16);color:#5b9dff">ゲーム</span><span class="s" style="background:#ffb648">A</span></div>
+          <h3>新作RPG、発売日は9月12日に</h3>
+          <p>予約特典と体験版の配信時期を公開</p>
+          <div class="meta">5時間前</div>
+        </div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ============ C ============ -->
+  <section class="world">
+    <div class="world-tag"><span class="dot" style="background:#4d5bce"></span><b>C. ミニマル・データ</b>　タイポ主導 × 余白最大 · 静かで読みやすい premium</div>
+    <div class="wc">
+      <div class="top">
+        <div class="brand">情報収集 <span>/ personal feed</span></div>
+        <nav class="nav"><span>フィード</span><span>ジャンル</span><span>保存</span><span>設定</span></nav>
+      </div>
+      <div class="hero">
+        <div class="kick">Personalized digest</div>
+        <div class="hl">追いかけなくても、要点は届く</div>
+        <p class="sub">選んだジャンルの新着を AI が収集・要約し、重要度をつけて静かに並べる。ノイズを削ぎ、読むべきものだけを一画面に</p>
+      </div>
+      <div class="tabs">
+        <div class="tab on">すべて</div>
+        <div class="tab"><span class="d" style="background:#5b9dff"></span>ゲーム</div>
+        <div class="tab"><span class="d" style="background:#c07bff"></span>アニメ</div>
+        <div class="tab"><span class="d" style="background:#37d29a"></span>サッカー</div>
+        <div class="tab"><span class="d" style="background:#e0a52e"></span>生成AI</div>
+      </div>
+      <div class="list">
+        <div class="item"><div class="imp">S</div><div><div class="cat"><span style="width:7px;height:7px;border-radius:50%;background:#c07bff;display:inline-block"></span>アニメ</div><h3>人気シリーズ第2期の制作が決定、2027年放送へ</h3><p>公式が続編を発表。スタッフ続投と原作の到達点、放送前に押さえるべき点を整理</p></div><time>34分前</time></div>
+        <div class="item"><div class="imp">A</div><div><div class="cat"><span style="width:7px;height:7px;border-radius:50%;background:#37d29a;display:inline-block"></span>サッカー</div><h3>プレミア第3節、後半ATの決勝弾で逆転</h3><p>途中出場の選手が決めた一撃で順位争いが動いた</p></div><time>2時間前</time></div>
+        <div class="item"><div class="imp">A</div><div><div class="cat"><span style="width:7px;height:7px;border-radius:50%;background:#5b9dff;display:inline-block"></span>ゲーム</div><h3>新作RPGの発売日が9月12日に確定、予約特典も公開</h3><p>対応機種と体験版の配信時期もあわせて発表された</p></div><time>5時間前</time></div>
+        <div class="item"><div class="imp" style="opacity:.5">B</div><div><div class="cat"><span style="width:7px;height:7px;border-radius:50%;background:#e0a52e;display:inline-block"></span>生成AI</div><h3>新モデルの開発者向けイベントが10月に配信</h3><p>公開範囲と料金体系が明らかに</p></div><time>8時間前</time></div>
+      </div>
+    </div>
+  </section>
+
+  <p style="text-align:center;color:var(--shell-tx3);font-size:13px;margin-top:34px">3案とも中身は同じ — 世界観だけが違います　好みの案・混ぜたい要素を教えてください</p>
+</div>
