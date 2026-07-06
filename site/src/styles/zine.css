@@ -127,6 +127,47 @@ nav.top a:hover { border-color: var(--ink); }
 .digest-strip a:hover { transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--red); }
 .digest-strip a .dd { font-family: "SF Mono", ui-monospace, monospace; font-size: 11px; color: var(--ink3); display: block; margin-bottom: 2px; }
 
+/* ---------- onboarding (/join) ---------- */
+.hidden { display: none !important; }
+.onb { margin: 24px 0 10px; border: 3px solid var(--ink); background: var(--paper2); box-shadow: 10px 10px 0 var(--ink); }
+.onb .band { background: var(--ink); color: var(--paper); padding: 16px 26px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.onb .band .stamp2 { background: var(--red); color: #fff; font-size: 12px; font-weight: 900; padding: 4px 11px; transform: rotate(-2deg); }
+.onb .band b { font-size: 18px; font-weight: 900; }
+.onb .inner { padding: 24px 26px 28px; }
+.onb .steprow { display: flex; align-items: baseline; gap: 12px; }
+.onb .step { font-size: 13.5px; font-weight: 900; color: var(--ink2); }
+.onb .step b { color: var(--red); }
+.onb .selcount { margin-left: auto; font-weight: 900; font-size: 13px; color: var(--ink3); }
+.grp { margin-top: 18px; }
+.grp .gt { font-size: 12px; font-weight: 900; letter-spacing: .06em; margin-bottom: 9px; display: inline-block; padding: 3px 10px; color: #fff; }
+.grp .prow { display: flex; flex-wrap: wrap; gap: 9px; }
+.genre-chip { border: 2.5px solid var(--ink); background: var(--panel); color: var(--ink); font-weight: 800; font-size: 13.5px; padding: 7px 14px; cursor: pointer; transition: transform .1s; font-family: inherit; line-height: 1.2; }
+.genre-chip:hover { transform: translateY(-2px); }
+.genre-chip:active { transform: scale(.97); }
+.genre-chip[aria-pressed="true"] { background: var(--red); color: #fff; border-color: var(--red); }
+.genre-chip[aria-pressed="true"]::before { content: "✓ "; font-weight: 900; }
+.signup { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; align-items: center; border-top: 2px dashed #cdbfa3; padding-top: 22px; }
+.signup input { flex: 1; min-width: 220px; border: 2.5px solid var(--ink); background: var(--panel); padding: 12px 15px; font-size: 15px; font-weight: 600; font-family: inherit; color: var(--ink); }
+.signup input:focus { outline: none; box-shadow: 4px 4px 0 var(--red); }
+.signup button { border: 2.5px solid var(--red); background: var(--red); color: #fff; font-weight: 900; font-size: 15px; padding: 12px 24px; box-shadow: 4px 4px 0 var(--ink); transition: transform .12s, box-shadow .12s; cursor: pointer; }
+.signup button:hover { transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--ink); }
+.signup button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+.signup button:disabled { opacity: .6; cursor: default; }
+.onb .err { margin-top: 12px; color: var(--red); font-weight: 900; font-size: 14px; }
+.onb .fine { font-size: 12px; color: var(--ink3); margin-top: 12px; font-weight: 600; line-height: 1.7; }
+.onb-success { border: 3px solid var(--ink); background: var(--paper2); box-shadow: 10px 10px 0 var(--red); padding: 34px; text-align: center; margin-top: 20px; }
+.onb-success .chk { width: 54px; height: 54px; background: var(--red); color: #fff; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 30px; font-weight: 900; }
+.onb-success h2 { font-size: 22px; font-weight: 900; }
+.onb-success p { font-size: 14px; color: var(--ink2); margin-top: 10px; max-width: 40ch; margin-inline: auto; line-height: 1.7; }
+.proof { text-align: center; font-weight: 900; color: var(--ink3); margin-top: 22px; font-size: 14px; }
+
+/* ---------- static content (privacy/terms) ---------- */
+.doc { max-width: 760px; }
+.doc h2 { font-size: 20px; font-weight: 900; margin: 28px 0 10px; letter-spacing: -.01em; }
+.doc p, .doc li { font-size: 14.5px; color: var(--ink2); line-height: 1.9; }
+.doc ul { margin: 6px 0 6px 1.2em; }
+.doc a { color: var(--red); font-weight: 800; }
+
 /* ---------- footer ---------- */
 footer.zfoot { border-top: 3px solid var(--ink); margin-top: 56px; padding: 26px 0 46px; }
 .foot-in { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
