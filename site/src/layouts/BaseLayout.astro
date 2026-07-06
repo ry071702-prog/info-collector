@@ -15,6 +15,7 @@ const pageTitle = `${title} | info-collector`;
 const basePath = import.meta.env.BASE_URL;
 const homePath = basePath.endsWith("/") ? basePath : `${basePath}/`;
 const feedPath = `${homePath}feed/`;
+const joinPath = `${homePath}join/`;
 const manifestPath = `${homePath}manifest.json`;
 const icon192Path = `${homePath}icon-192.svg`;
 const siteData = loadSiteData();
@@ -84,6 +85,13 @@ const mastheadDate = formatJapaneseDate(new Date());
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-2 lg:justify-end">
+            <a
+              href={joinPath}
+              class="ui-control px-4 text-sm font-semibold"
+              style="background: var(--brand-blue); color: #fff; border-color: var(--brand-blue);"
+            >
+              ✉️ 先行登録
+            </a>
             <button
               type="button"
               class="ui-control px-4 text-sm font-medium"
