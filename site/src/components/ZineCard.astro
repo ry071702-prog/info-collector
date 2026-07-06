@@ -1,0 +1,17 @@
+---
+import { genreLabels, sourceLabel, type Article } from "../lib/articles";
+import { ago, headline, detail, kicker } from "../lib/zine";
+
+interface Props { article: Article; }
+const { article: a } = Astro.props;
+---
+<a class="card" href={a.url} target="_blank" rel="noopener noreferrer">
+  <div class="frow">
+    <span class={`g ${a.genre}`}>{genreLabels[a.genre]}</span>
+    {kicker(a) && <span class="kick">{kicker(a)}</span>}
+    <span class={`s ${a.final_priority}`}>{a.final_priority}</span>
+  </div>
+  <h3>{headline(a)}</h3>
+  {detail(a) && <p>{detail(a)}</p>}
+  <div class="src"><span>{sourceLabel(a)}</span><span>{ago(a.timestamp)}</span></div>
+</a>

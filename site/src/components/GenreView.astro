@@ -1,0 +1,55 @@
+---
+import ZineLayout from "../layouts/ZineLayout.astro";
+import ZineCard from "./ZineCard.astro";
+import { articlesByGenre, sortArticles, genreLabels, type Genre } from "../lib/articles";
+
+interface Props { genre: Genre; }
+const { genre } = Astro.props;
+
+const home = (import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`);
+const PAGE_CAP = 48;
+const all = sortArticles(articlesByGenre(genre));
+const shown = all.slice(0, PAGE_CAP);
+
+const tabs = [
+  { key: "games", label: "ゲーム", href: `${home}games/` },
+  { key: "anime", label: "アニメ", href: `${home}anime/` },
+  { key: "disney", label: "Disney", href: `${home}disney/` },
+] as const;
+---
+
+<ZineLayout title={genreLabels[genre]} active="feed">
+  <section class="hero cat">
+    <div class="wrap">
+      <div class="dateline">
+        <span class="stamp">{genreLabels[genre]}</span>
+        <span class="mono">{all.length}件 · 直近30日 · 重要度順</span>
+      </div>
+      <h1>{genreLabels[genre]}の<em>新着</em></h1>
+      <div class="tabs">
+        <a class="chip" href={home}>ぜんぶ</a>
+        {tabs.map((t) => (
+          <a class={`chip ${t.key === genre ? "on" : ""}`} href={t.href}>
+            {t.key !== genre && <span class={`g ${t.key}`} style="width:9px;height:9px;padding:0"></span>}{t.label}
+          </a>
+        ))}
+        <a class="chip" href={`${home}join/`}>＋</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap">
+    {shown.length > 0 ? (
+      <div class="feed" style="margin-top:22px">
+        {shown.map((a) => <ZineCard article={a} />)}
+      </div>
+    ) : (
+      <p class="lead" style="padding:30px 0">表示できる{genreLabels[genre]}ニュースはまだありません</p>
+    )}
+    {all.length > PAGE_CAP && (
+      <div style="text-align:center">
+        <a class="morelink" href={`${home}newspaper/`}>もっと見る — 過去の紙面まとめへ →</a>
+      </div>
+    )}
+  </section>
+</ZineLayout>

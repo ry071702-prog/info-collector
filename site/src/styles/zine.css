@@ -48,7 +48,10 @@ nav.top a:hover { border-color: var(--ink); }
 .dateline .mono { font-size: 12.5px; color: var(--ink2); }
 .hero h1 { font-size: clamp(38px, 7.4vw, 88px); line-height: .94; font-weight: 900; letter-spacing: -.04em; margin: 14px 0 0; text-wrap: balance; }
 .hero h1 em { font-style: normal; color: var(--red); }
+.hero.cat h1 { font-size: clamp(30px, 5vw, 54px); }
 .hero .lead { font-size: 16px; color: var(--ink2); font-weight: 600; margin-top: 16px; max-width: 54ch; }
+.morelink { display: inline-block; margin-top: 24px; border: 2.5px solid var(--ink); background: var(--panel); font-weight: 900; font-size: 13.5px; padding: 10px 18px; box-shadow: 4px 4px 0 var(--ink); transition: transform .12s, box-shadow .12s; }
+.morelink:hover { transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--red); }
 
 /* genre tabs */
 .tabs { display: flex; flex-wrap: wrap; gap: 9px; margin: 22px 0 4px; }
@@ -113,6 +116,16 @@ nav.top a:hover { border-color: var(--ink); }
 .card.promo p { color: #c9c0ad; flex: none; }
 .card.promo .mini { margin-top: 12px; border: 2px solid var(--paper); color: var(--paper); font-weight: 900; font-size: 12px; padding: 7px 12px; align-self: center; }
 .card.promo:hover .mini { background: var(--paper); color: var(--ink); }
+
+/* ---------- feed: per-genre "すべて見る" ---------- */
+.sec-h a.more { font-size: 13px; font-weight: 900; color: var(--ink2); border-bottom: 3px solid transparent; transform: none; }
+.sec-h a.more:hover { color: var(--red); border-color: var(--red); }
+
+/* ---------- digest strip ---------- */
+.digest-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.digest-strip a { border: 2.5px solid var(--ink); background: var(--panel); box-shadow: 4px 4px 0 var(--ink); padding: 11px 16px; font-weight: 900; font-size: 14px; transition: transform .12s, box-shadow .12s; }
+.digest-strip a:hover { transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--red); }
+.digest-strip a .dd { font-family: "SF Mono", ui-monospace, monospace; font-size: 11px; color: var(--ink3); display: block; margin-bottom: 2px; }
 
 /* ---------- footer ---------- */
 footer.zfoot { border-top: 3px solid var(--ink); margin-top: 56px; padding: 26px 0 46px; }
