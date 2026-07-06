@@ -121,8 +121,20 @@ def _configure_key(key_idx: int, api_key: str) -> None:
         _CONFIGURED_KEY_IDX = key_idx
 
 
+# genai.Client はキーごとに1つだけ生成して使い回す。
+# 呼び出し毎に生成すると新SDK (google-genai) では、前の Client が GC される際に
+# 内部 httpx クライアントが閉じられ、以降のリクエストが
+# "Cannot send a request, as the client has been closed" で全件失敗する
+# (2026-07-03 の旧SDK→新SDK移行で発生し、分類が全滅→processed 停止→通知が止まった)。
+_CLIENTS: dict[str, genai.Client] = {}
+
+
 def _client(api_key: str) -> genai.Client:
-    return genai.Client(api_key=api_key)
+    client = _CLIENTS.get(api_key)
+    if client is None:
+        client = genai.Client(api_key=api_key)
+        _CLIENTS[api_key] = client
+    return client
 
 
 def _is_quota_exhausted(exc: Exception) -> bool:
