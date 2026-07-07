@@ -1,40 +1,78 @@
 ---
-import ArticleControls from "../../components/ArticleControls.astro";
-import NewsCard from "../../components/NewsCard.astro";
-import NewsCardSkeleton from "../../components/NewsCardSkeleton.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { allArticles } from "../../lib/articles";
+import ZineLayout from "../../layouts/ZineLayout.astro";
 
-const articles = allArticles();
+const home = (import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`);
 ---
 
-<BaseLayout title="お気に入り">
-  <section class="mb-6">
-    <h1 class="section-title text-3xl">お気に入り</h1>
-    <p class="mt-2 text-sm section-copy">このブラウザで保存したニュース。</p>
+<ZineLayout title="お気に入り" description="このブラウザで保存したニュース。" active="saved">
+  <section class="hero cat">
+    <div class="wrap">
+      <div class="dateline"><span class="stamp">お気に入り</span><span class="mono" data-fav-count></span></div>
+      <h1>お<em>気に入り</em></h1>
+      <p class="lead">この端末で保存したニュース　記事カードの★から追加・解除できます</p>
+    </div>
   </section>
-  <ArticleControls showRange />
-  <p
-    class="empty-state p-6 text-sm"
-    data-favorites-empty
-    hidden
-  >
-    まだ保存していません
-  </p>
-  {
-    articles.length > 0 ? (
-      <>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-skeletons>
-          <NewsCardSkeleton count={8} />
-        </div>
-        <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list data-favorites-list>
-          {articles.map((article) => <NewsCard article={article} />)}
-        </div>
-      </>
-    ) : (
-      <p class="empty-state p-6 text-sm">
-        まだ保存していません
-      </p>
-    )
-  }
-</BaseLayout>
+
+  <section class="wrap">
+    <p class="note-line" data-fav-loading>読み込み中...</p>
+    <p class="note-line hidden" data-fav-empty>まだ保存はありません　各記事の★から追加できます</p>
+    <div class="feed" style="margin-top:20px" data-fav-list></div>
+  </section>
+
+  <script is:inline define:vars={{ home }}>
+    (() => {
+      const FAV_KEY = "favorites";
+      const list = document.querySelector("[data-fav-list]");
+      const loading = document.querySelector("[data-fav-loading]");
+      const empty = document.querySelector("[data-fav-empty]");
+      const countEl = document.querySelector("[data-fav-count]");
+      const GLABEL = { games: "ゲーム", anime: "アニメ", disney: "Disney" };
+      const RANK = { S: 0, A: 1, B: 2, C: 3 };
+
+      const favSet = () => {
+        try { return new Set(JSON.parse(localStorage.getItem(FAV_KEY) ?? "[]")); }
+        catch { return new Set(); }
+      };
+      const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+      const firstSentence = (s) => {
+        const t = (s || "").trim();
+        const m = t.match(/^[\s\S]{8,58}?。/);
+        return (m ? m[0] : t.slice(0, 52)).replace(/。$/, "");
+      };
+      const ago = (ts) => {
+        const min = Math.max(1, Math.round((Date.now() - new Date(ts).getTime()) / 60000));
+        if (min < 60) return min + "分前";
+        const h = Math.round(min / 60);
+        return h < 24 ? h + "時間前" : Math.round(h / 24) + "日前";
+      };
+      const card = (a) => {
+        const head = firstSentence(a.summary || "") || a.category_name || "最新トピック";
+        const rest = (a.summary || "").trim().slice(head.length).replace(/^。/, "").trim();
+        const src = a.source_platform || a.domain || "";
+        return `<a class="card" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">
+          <div class="frow"><span class="g ${esc(a.genre)}">${esc(GLABEL[a.genre] || a.genre)}</span>${a.category_name && a.category_name !== "ニュース" ? `<span class="kick">${esc(a.category_name)}</span>` : ""}<span class="s ${esc(a.final_priority)}">${esc(a.final_priority)}</span></div>
+          <h3>${esc(head)}</h3>${rest ? `<p>${esc(rest)}</p>` : ""}
+          <div class="src"><span>${esc(src)}</span><span>${esc(ago(a.timestamp))}</span></div></a>`;
+      };
+
+      const render = async () => {
+        const favs = favSet();
+        try {
+          const res = await fetch(`${home}articles.json`, { headers: { Accept: "application/json" } });
+          const data = await res.json();
+          const items = (Array.isArray(data.articles) ? data.articles : [])
+            .filter((a) => favs.has(a.url))
+            .sort((a, b) => (RANK[a.final_priority] ?? 3) - (RANK[b.final_priority] ?? 3) || new Date(b.timestamp) - new Date(a.timestamp));
+          if (list instanceof HTMLElement) list.innerHTML = items.map(card).join("");
+          if (countEl) countEl.textContent = `${items.length}件 保存中`;
+          if (empty instanceof HTMLElement) empty.classList.toggle("hidden", items.length > 0);
+        } catch {
+          if (empty instanceof HTMLElement) { empty.textContent = "読み込みに失敗しました"; empty.classList.remove("hidden"); }
+        } finally {
+          if (loading instanceof HTMLElement) loading.classList.add("hidden");
+        }
+      };
+      render();
+    })();
+  </script>
+</ZineLayout>

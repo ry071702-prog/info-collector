@@ -1,83 +1,69 @@
 ---
-import ArticleControls from "../../components/ArticleControls.astro";
-import DigestCard from "../../components/DigestCard.astro";
-import NewsCard from "../../components/NewsCard.astro";
-import NewsCardSkeleton from "../../components/NewsCardSkeleton.astro";
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import { allArticles, genres, genreLabels, latestByGenre, loadDigests } from "../../lib/articles";
+import ZineLayout from "../../layouts/ZineLayout.astro";
+import ZineCard from "../../components/ZineCard.astro";
+import { allArticles, sortArticles, genres, genreLabels, latestByGenre, loadDigests } from "../../lib/articles";
 
-const latest = allArticles();
-const digests = loadDigests().slice(0, 8);
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const home = (import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`);
+const overall = sortArticles(allArticles());
+const overallShown = overall.slice(0, 24);
+const digests = loadDigests().slice(0, 12);
+
+const tabs = [
+  { key: "games", label: "ゲーム" },
+  { key: "anime", label: "アニメ" },
+  { key: "disney", label: "Disney" },
+] as const;
 ---
 
-<BaseLayout title="最新フィード">
-  <section class="mb-10">
-    <h1 class="section-title text-3xl sm:text-4xl">統合ニュース</h1>
-    <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
-      直近30日の収集データを、重要度と新しさで整理しています。
-    </p>
+<ZineLayout title="フィード" active="feed">
+  <section class="hero cat">
+    <div class="wrap">
+      <div class="dateline">
+        <span class="stamp">フィード</span>
+        <span class="mono">{overall.length}件 · 直近30日 · 重要度と新しさで整理</span>
+      </div>
+      <h1>統合<em>ニュース</em></h1>
+      <div class="tabs">
+        <span class="chip on">ぜんぶ</span>
+        {tabs.map((t) => (
+          <a class="chip" href={`${home}${t.key}/`}><span class={`g ${t.key}`} style="width:9px;height:9px;padding:0"></span>{t.label}</a>
+        ))}
+        <a class="chip" href={`${home}join/`}>＋</a>
+      </div>
+    </div>
   </section>
 
-  {
-    genres.map((genre) => {
-      const articles = latestByGenre(genre, 8);
-      return (
-        <section class="mb-12">
-          <div class="mb-4 flex items-end justify-between gap-4">
-            <h2 class="section-title text-2xl">{genreLabels[genre]}</h2>
-            <a href={`${base}/${genre}/`} class="text-sm font-bold section-kicker hover:text-[var(--text-primary)]">
-              すべて見る
-            </a>
-          </div>
-          {articles.length > 0 ? (
-            <>
-              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-skeletons>
-                <NewsCardSkeleton count={4} />
-              </div>
-              <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-article-static-list>
-                {articles.map((article) => <NewsCard article={article} />)}
-              </div>
-            </>
-          ) : (
-            <p class="empty-state p-6 text-sm">
-              このカテゴリのニュースはまだありません。
-            </p>
-          )}
-        </section>
-      );
-    })
-  }
-
-  <section class="mb-12">
-    <h2 class="section-title mb-4 text-2xl">全体新着</h2>
-    <ArticleControls />
-    {
-      latest.length > 0 ? (
-        <>
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-skeletons>
-            <NewsCardSkeleton count={8} />
-          </div>
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" data-article-list>
-            {latest.map((article) => <NewsCard article={article} />)}
-          </div>
-        </>
-      ) : (
-        <p class="empty-state p-6 text-sm">
-          表示できるニュースはまだありません。
-        </p>
-      )
-    }
-  </section>
-
-  {
-    digests.length > 0 && (
-      <section>
-        <h2 class="section-title mb-4 text-2xl">デイリーまとめ</h2>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {digests.map((digest) => <DigestCard digest={digest} />)}
+  {tabs.map((t) => {
+    const items = latestByGenre(t.key, 6);
+    if (items.length === 0) return null;
+    return (
+      <section class="wrap">
+        <div class="sec-h">
+          <h2>{t.label}</h2>
+          <a class="more" href={`${home}${t.key}/`}>すべて見る →</a>
+        </div>
+        <div class="feed" style="margin-top:20px">
+          {items.map((a) => <ZineCard article={a} />)}
         </div>
       </section>
-    )
-  }
-</BaseLayout>
+    );
+  })}
+
+  <section class="wrap">
+    <div class="sec-h"><h2>全体の新着</h2><span class="mono">最新24件</span></div>
+    <div class="feed" style="margin-top:20px">
+      {overallShown.map((a) => <ZineCard article={a} />)}
+    </div>
+  </section>
+
+  {digests.length > 0 && (
+    <section class="wrap">
+      <div class="sec-h"><h2>デイリーまとめ</h2><span class="mono">過去の紙面</span></div>
+      <div class="digest-strip">
+        {digests.map((d) => (
+          <a href={`${home}digest/${d.slug}/`}><span class="dd mono">{d.date}</span>{d.label}</a>
+        ))}
+      </div>
+    </section>
+  )}
+</ZineLayout>

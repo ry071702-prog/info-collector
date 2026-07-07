@@ -1,50 +1,42 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import ZineLayout from "../../layouts/ZineLayout.astro";
 import { allArticles } from "../../lib/articles";
 import { formatJapaneseDate } from "../../lib/japaneseDate";
 
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const home = (import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`);
 
-// 直近30日のうち記事のある日付を新しい順に
+// 直近30日のうち記事のある日付を新しい順に（[date].astro と同じ UTC 日付規則で集計）
 const articles = allArticles();
 const dateMap = new Map<string, number>();
 for (const a of articles) {
-  // newspaper/[date].astro の getStaticPaths / isOnDate と同じ UTC 日付規則で集計し、
-  // 一覧リンクが必ず実在する新聞ページを指すようにする (JST 集計だと日付がずれて 404 になる)。
   const d = a.timestamp.slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
   dateMap.set(d, (dateMap.get(d) ?? 0) + 1);
 }
-const dates = [...dateMap.entries()]
-  .sort((a, b) => b[0].localeCompare(a[0]))
-  .slice(0, 30);
+const dates = [...dateMap.entries()].sort((a, b) => b[0].localeCompare(a[0])).slice(0, 30);
 ---
 
-<BaseLayout title="新聞アーカイブ">
-  <section class="mb-6">
-    <h1 class="section-title text-3xl sm:text-4xl">新聞アーカイブ</h1>
-    <p class="mt-2 text-sm section-copy">
-      毎日その日のニュースを 1 ページの新聞風レイアウトでまとめます。見出しから元記事へ遷移できます。
-    </p>
+<ZineLayout title="新聞アーカイブ" active="home">
+  <section class="hero cat">
+    <div class="wrap">
+      <div class="dateline"><span class="stamp">新聞アーカイブ</span><span class="mono">{dates.length}号 · 直近30日</span></div>
+      <h1>その日の<em>紙面</em></h1>
+      <p class="lead">毎日その日のニュースを1ページの新聞風レイアウトでまとめます　見出しから元記事へ遷移できます</p>
+    </div>
   </section>
 
-  {dates.length === 0 ? (
-    <p class="empty-state p-6 text-sm">まだ新聞が発行されていません。</p>
-  ) : (
-    <ul class="surface-panel divide-y divide-[var(--border-color)] overflow-hidden">
-      {dates.map(([date, count]) => (
-        <li>
-          <a href={`${base}/newspaper/${date}/`} class="group flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-[var(--surface-subtle)]">
-            <div>
-              <h2 class="text-lg font-semibold text-[var(--text-primary)]">
-                {formatJapaneseDate(`${date}T12:00:00+09:00`)}
-              </h2>
-              <p class="text-xs section-kicker">{count} 件の記事を収録</p>
-            </div>
-            <span class="text-xs font-bold section-kicker group-hover:text-[var(--text-primary)]">読む</span>
+  <section class="wrap">
+    {dates.length > 0 ? (
+      <div class="gridcards">
+        {dates.map(([date, count]) => (
+          <a class="gcard" href={`${home}newspaper/${date}/`}>
+            <span class="nm">{formatJapaneseDate(`${date}T12:00:00+09:00`)}<small>{count} 件を収録</small></span>
+            <span class="cnt">読む →</span>
           </a>
-        </li>
-      ))}
-    </ul>
-  )}
-</BaseLayout>
+        ))}
+      </div>
+    ) : (
+      <p class="lead" style="padding:30px 0">まだ新聞が発行されていません</p>
+    )}
+  </section>
+</ZineLayout>

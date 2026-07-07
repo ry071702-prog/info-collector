@@ -1,5 +1,5 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import ZineLayout from "../../layouts/ZineLayout.astro";
 import { loadSiteData } from "../../lib/articles";
 import { MIN_TAG_PAGE_COUNT, allTagEntries, tagPageEntries, tagPathSegment } from "../../lib/stats";
 
@@ -7,48 +7,33 @@ const siteData = loadSiteData();
 const allTags = allTagEntries(siteData.articles);
 const tags = tagPageEntries(siteData.articles);
 const omittedTagCount = allTags.length - tags.length;
-const omittedOccurrenceCount = allTags.filter((tag) => tag.count < MIN_TAG_PAGE_COUNT).reduce((sum, tag) => sum + tag.count, 0);
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const home = (import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`);
 ---
 
-<BaseLayout title="タグ一覧" description="記事に自動付与されたタグを件数順に一覧します。">
-  <section class="mb-8">
-    <p class="section-kicker text-sm font-black">Tags</p>
-    <h1 class="section-title mt-2 text-3xl sm:text-4xl">タグ一覧</h1>
-    <p class="mt-3 max-w-3xl text-sm leading-6 section-copy">
-      title_tags と entity_tags を集計し、{MIN_TAG_PAGE_COUNT}件以上の記事があるタグだけを人気順に並べています。タグを選ぶと、その話題を含む記事だけを読めます。
-    </p>
+<ZineLayout title="タグ一覧" description="記事に自動付与されたタグを件数順に一覧します。">
+  <section class="hero cat">
+    <div class="wrap">
+      <div class="dateline"><span class="stamp">タグ</span><span class="mono">{tags.length}タグ · {MIN_TAG_PAGE_COUNT}件以上を掲載</span></div>
+      <h1>タグ<em>一覧</em></h1>
+      <p class="lead">記事に自動付与されたタグを人気順に　タグを選ぶと、その話題を含む記事だけを読めます</p>
+    </div>
   </section>
 
-  {
-    tags.length > 0 ? (
-      <section class="surface-panel p-4 sm:p-5">
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {tags.map((tag) => (
-            <a
-              href={`${base}/tags/${tag.slug || tagPathSegment(tag.tag)}/`}
-              class="soft-card group p-4 transition hover:border-[var(--brand-blue)] hover:bg-[var(--surface)]"
-            >
-              <div class="flex items-center justify-between gap-3">
-                <span class="min-w-0 truncate text-sm font-black text-[var(--text-primary)]">#{tag.tag}</span>
-                <span class="status-chip shrink-0 px-2.5 py-1 text-xs font-bold">{tag.count}</span>
-              </div>
-              <div class="progress-track mt-3 h-1.5 overflow-hidden rounded-full">
-                <div class="h-full rounded-full bg-[var(--brand-blue)]" style={`width: ${Math.max(3, tag.percentage)}%`}></div>
-              </div>
-            </a>
-          ))}
-        </div>
-        {
-          omittedTagCount > 0 && (
-            <p class="soft-card mt-5 px-4 py-3 text-sm section-copy">
-              その他 {omittedTagCount} 個の少数タグ（合計 {omittedOccurrenceCount} 回）はページ化していません。
-            </p>
-          )
-        }
-      </section>
+  <section class="wrap">
+    {tags.length > 0 ? (
+      <div class="gridcards">
+        {tags.map((tag) => (
+          <a class="gcard" href={`${home}tags/${tag.slug || tagPathSegment(tag.tag)}/`}>
+            <span class="nm">#{tag.tag}</span>
+            <span class="cnt">{tag.count}</span>
+          </a>
+        ))}
+      </div>
     ) : (
-      <p class="empty-state p-6 text-sm">集計できるタグはまだありません。</p>
-    )
-  }
-</BaseLayout>
+      <p class="lead" style="padding:30px 0">集計できるタグはまだありません</p>
+    )}
+    {omittedTagCount > 0 && (
+      <p class="note-line">その他 {omittedTagCount} 個の少数タグはページ化していません</p>
+    )}
+  </section>
+</ZineLayout>
