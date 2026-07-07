@@ -168,6 +168,15 @@ nav.top a:hover { border-color: var(--ink); }
 .doc ul { margin: 6px 0 6px 1.2em; }
 .doc a { color: var(--red); font-weight: 800; }
 
+/* ---------- grid cards (tags / newspaper index) ---------- */
+.gridcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; margin-top: 22px; }
+.gcard { border: 2.5px solid var(--ink); background: var(--panel); box-shadow: 4px 4px 0 var(--ink); padding: 15px 17px; transition: transform .12s, box-shadow .12s; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.gcard:hover { transform: translate(-1px,-1px); box-shadow: 6px 6px 0 var(--red); }
+.gcard .nm { font-weight: 900; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+.gcard .nm small { display: block; font-family: "SF Mono", ui-monospace, monospace; font-size: 11px; color: var(--ink3); font-weight: 700; white-space: normal; }
+.gcard .cnt { font-family: "SF Mono", ui-monospace, monospace; font-size: 12px; background: var(--ink); color: var(--paper); padding: 3px 9px; font-weight: 900; flex: none; }
+.note-line { margin-top: 18px; font-size: 13px; color: var(--ink3); font-weight: 600; }
+
 /* ---------- footer ---------- */
 footer.zfoot { border-top: 3px solid var(--ink); margin-top: 56px; padding: 26px 0 46px; }
 .foot-in { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
