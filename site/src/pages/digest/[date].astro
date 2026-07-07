@@ -1,5 +1,5 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
+import ZineLayout from "../../layouts/ZineLayout.astro";
 import { allArticles, byImportance, loadDigestDocument, loadDigests, type Article } from "../../lib/articles";
 import { formatJapaneseDate } from "../../lib/japaneseDate";
 import { getPublicationMeta } from "../../lib/issueNumber";
@@ -11,14 +11,8 @@ export function getStaticPaths() {
   }));
 }
 
-interface Props {
-  date: string;
-}
-
-interface DigestSection {
-  title: string;
-  items: string[];
-}
+interface Props { date: string; }
+interface DigestSection { title: string; items: string[]; }
 
 const { date } = Astro.props;
 const digest = loadDigestDocument(date);
@@ -35,57 +29,39 @@ function cleanLine(line: string): string {
   return line
     .replace(/^#+\s*/, "")
     .replace(/^[-*]\s+/, "")
-    .replace(/^[\p{Extended_Pictographic}\uFE0F]+\s*/u, "")
+    .replace(/^[\p{Extended_Pictographic}️]+\s*/u, "")
     .trim();
 }
-
 function stripMarkdown(value: string): string {
-  return cleanLine(value)
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  return cleanLine(value).replace(/\*\*([^*]+)\*\*/g, "$1").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
 }
-
 function extractSections(markdown: string): DigestSection[] {
   const sections: DigestSection[] = [];
   let current: DigestSection | null = null;
-
   for (const rawLine of markdown.split(/\r?\n/)) {
     const line = rawLine.trim();
-    if (/^##+\s+/.test(line)) {
-      current = { title: stripMarkdown(line), items: [] };
-      sections.push(current);
-      continue;
-    }
+    if (/^##+\s+/.test(line)) { current = { title: stripMarkdown(line), items: [] }; sections.push(current); continue; }
     if (/^[-*]\s+/.test(line)) {
-      if (current === null) {
-        current = { title: "主要トピック", items: [] };
-        sections.push(current);
-      }
+      if (current === null) { current = { title: "主要トピック", items: [] }; sections.push(current); }
       current.items.push(stripMarkdown(line));
     }
   }
-
   return sections.filter((section) => section.title || section.items.length > 0);
 }
-
 function extractUrls(markdown: string): string[] {
   return Array.from(markdown.matchAll(/\[[^\]]+\]\((https?:\/\/[^)]+)\)/g), (match) => match[1]);
 }
-
 function localImagePath(article: Article | undefined): string | null {
-  if (!article?.image_url) {
-    return null;
-  }
+  if (!article?.image_url) return null;
   return article.image_url.startsWith("http") ? article.image_url : `${base}${article.image_url}`;
 }
 
 const sections = digest ? extractSections(digest.markdown) : [];
 const firstItems = sections.flatMap((section) => section.items).slice(0, 4);
 const title = digest?.title ?? `Digest ${date}`;
-const subtitle = firstItems[0] ?? "ゲーム、アニメ、Disney 周辺の動きを半日単位で整理。";
-const leadParagraphs = firstItems.length > 0
-  ? firstItems.slice(0, 3)
-  : ["重要度の高い話題を中心に、ソース横断で見えた変化を新聞面として再構成しました。"];
+const subtitle = firstItems[0] ?? "ゲーム、アニメ、Disney 周辺の動きを半日単位で整理";
+const leadParagraphs = firstItems.length > 0 ? firstItems.slice(0, 3)
+  : ["重要度の高い話題を中心に、ソース横断で見えた変化を紙面として再構成しました"];
 const columnSections = sections.length > 0 ? sections.slice(0, 3) : [{ title: "主要トピック", items: leadParagraphs }];
 const digestUrls = digest ? extractUrls(digest.markdown) : [];
 const relatedArticles = byImportance(allArticles().filter((article) => digestUrls.includes(article.url)));
@@ -93,106 +69,56 @@ const leadArticle = relatedArticles[0];
 const leadImage = localImagePath(leadArticle);
 const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
-    <defs>
-      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop stop-color="#2563eb"/>
-        <stop offset="0.52" stop-color="#06b6d4"/>
-        <stop offset="1" stop-color="#fbbf24"/>
-      </linearGradient>
-    </defs>
-    <rect width="640" height="480" fill="#edf5ff"/>
-    <rect x="72" y="64" width="496" height="352" rx="42" fill="url(#g)" opacity="0.9"/>
-    <circle cx="184" cy="152" r="64" fill="white" opacity="0.32"/>
-    <path d="M154 280h332M154 326h258" stroke="white" stroke-width="24" stroke-linecap="round" opacity="0.72"/>
-    <path d="M154 214h196" stroke="white" stroke-width="34" stroke-linecap="round" opacity="0.9"/>
+    <defs><pattern id="h" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="12" height="4" fill="rgba(20,16,9,0.16)"/></pattern></defs>
+    <rect width="640" height="480" fill="#f5333a"/>
+    <rect width="640" height="480" fill="url(#h)"/>
+    <text x="596" y="430" font-family="serif" font-size="220" font-weight="900" fill="rgba(255,255,255,0.9)" text-anchor="end">収</text>
   </svg>
 `)}`;
 ---
 
-<BaseLayout title={title}>
-  {
-    digest ? (
-      <>
-        <div class="mb-4 flex justify-end">
-          <button
-            type="button"
-            class="ui-control px-4 text-sm font-medium"
-            data-export-newspaper
-            data-export-filename={exportFilename}
-          >
-            画像として保存
-          </button>
+<ZineLayout title={title} active="home">
+  {digest ? (
+    <section class="wrap" style="padding-top:22px">
+      <div class="doc-actions">
+        <button type="button" class="mast-cta" data-export-newspaper data-export-filename={exportFilename}>画像として保存</button>
+      </div>
+
+      <article data-newspaper-page class="paper">
+        <div class="masthead">
+          <span class="pn">情報<b>収集</b></span>
+          <span class="issue">{issueLabel}<br />{publication.dateLabel} · 著者: 自動生成 (Gemini)</span>
         </div>
+        <div class="inner">
+          <p class="kick">{issueLabel} · {fullDateLabel}</p>
+          <h1 class="hl">{title}</h1>
+          <p class="sub">{subtitle}</p>
 
-        <article
-          data-newspaper-page
-          class="surface-panel grid gap-0 overflow-hidden text-[var(--text-primary)] lg:grid-cols-[minmax(0,1fr)_96px]"
-        >
-          <aside class="newspaper-sidebar order-first border-b border-[var(--border-color)] bg-[var(--surface-subtle)] p-4 lg:order-last lg:border-b-0 lg:border-l">
-            <div class="flex flex-wrap items-center justify-between gap-3 text-sm font-bold lg:h-full lg:flex-col lg:justify-start lg:[writing-mode:vertical-rl]">
-              <span class="text-2xl font-semibold tracking-[-0.014em]">{publication.name}</span>
-              <span class="text-xl font-semibold">{issueLabel}</span>
-              <time class="text-sm section-kicker" datetime={exportDate}>{publication.dateLabel}</time>
-            </div>
-          </aside>
-
-          <div class="p-5 sm:p-8 lg:p-10">
-            <div class="mb-6 flex flex-col gap-2 border-b border-[var(--border-color)] pb-3 text-xs font-bold section-kicker sm:flex-row sm:items-center sm:justify-between">
-              <span>著者: 自動生成 (Gemini)</span>
-              <time class="text-sm" datetime={exportDate}>{fullDateLabel}</time>
-            </div>
-
-            <header class="border-b border-[var(--border-color)] pb-6">
-              <p class="mb-2 text-sm font-bold text-[var(--brand-blue)]">{issueLabel}</p>
-              <h1 class="text-4xl font-bold leading-tight tracking-[-0.018em] sm:text-5xl lg:text-6xl">{title}</h1>
-              <p class="mt-5 text-lg font-bold leading-8 section-copy">{subtitle}</p>
-            </header>
-
-            <section class="mt-7 flow-root border-b border-[var(--border-color)] pb-7">
-              <figure class="surface-card mb-4 overflow-hidden sm:float-left sm:mb-3 sm:mr-6 sm:w-[42%] lg:w-[38%]">
-                <img
-                  src={leadImage ?? placeholderSvg}
-                  alt=""
-                  class="aspect-[4/3] w-full object-cover"
-                  loading="eager"
-                />
-                <figcaption class="border-t border-[var(--border-color)] px-3 py-2 text-xs section-kicker">
-                  source: {leadArticle?.category_name ?? leadArticle?.author ?? "情報収集"}
-                </figcaption>
-              </figure>
-              <div class="newspaper-lead space-y-4 text-base leading-8 section-copy">
-                {leadParagraphs.map((paragraph) => <p>{paragraph}</p>)}
-              </div>
-            </section>
-
-            <section class="mt-7">
-              <h2 class="border-y border-[var(--border-color)] py-3 text-2xl font-bold tracking-[-0.014em]">
-                {sections[0]?.title ?? "なぜいま注目なのか"}
-              </h2>
-              <div class="mt-5 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {columnSections.map((section) => (
-                  <section class="soft-card p-4">
-                    <h3 class="mb-3 text-xl font-semibold leading-snug">
-                      （{section.title.replace(/^速報・重要\s*\(S\/A\)$/, "速報・重要")}）
-                    </h3>
-                    <div class="space-y-3 text-sm leading-7 section-copy">
-                      {(section.items.length > 0 ? section.items : leadParagraphs).slice(0, 5).map((item) => (
-                        <p>{item}</p>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            </section>
+          <div class="lead">
+            <figure>
+              <img src={leadImage ?? placeholderSvg} alt="" loading="eager" />
+              <figcaption>source: {leadArticle?.category_name ?? leadArticle?.author ?? "情報収集"}</figcaption>
+            </figure>
+            {leadParagraphs.map((paragraph) => <p>{paragraph}</p>)}
           </div>
-        </article>
-      </>
-    ) : (
-      <p class="empty-state p-6 text-sm">
-        指定されたまとめは見つかりません。
-      </p>
-    )
-  }
+
+          <div class="cols">
+            <h2>{sections[0]?.title ?? "なぜいま注目なのか"}</h2>
+            <div class="colgrid">
+              {columnSections.map((section) => (
+                <section class="col">
+                  <h3>{section.title.replace(/^速報・重要\s*\(S\/A\)$/, "速報・重要")}</h3>
+                  {(section.items.length > 0 ? section.items : leadParagraphs).slice(0, 5).map((item) => <p>{item}</p>)}
+                </section>
+              ))}
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  ) : (
+    <section class="wrap"><p class="lead" style="padding:30px 0">指定されたまとめは見つかりません</p></section>
+  )}
 
   <script>
     const button = document.querySelector("[data-export-newspaper]");
@@ -214,11 +140,7 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
       const style = document.createElement("style");
       style.textContent = Array.from(document.styleSheets)
         .flatMap((sheet) => {
-          try {
-            return Array.from(sheet.cssRules, (rule) => rule.cssText);
-          } catch {
-            return [];
-          }
+          try { return Array.from(sheet.cssRules, (rule) => rule.cssText); } catch { return []; }
         })
         .join("\n");
       clone.prepend(style);
@@ -262,4 +184,4 @@ const placeholderSvg = `data:image/svg+xml;utf8,${encodeURIComponent(`
       }
     });
   </script>
-</BaseLayout>
+</ZineLayout>
