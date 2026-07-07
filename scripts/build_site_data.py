@@ -6,6 +6,7 @@ import hashlib
 import json
 import mimetypes
 import re
+import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -80,6 +81,11 @@ RECENT_DAYS = 30
 # 実測: 1 記事 ≒ 4.1 KiB/HTML カード → 3500 件で最悪ページ ≒ 14 MiB (上限に十分な余裕)。
 MAX_ARTICLES = 3500
 REQUEST_TIMEOUT_SECONDS = 8.0
+# OG 画像取得のハード上限。site/public/og-cache は gitignore かつ CI では毎回空なので、
+# 全記事を毎回取得すると死んだ URL のタイムアウトが積み重なり publish がハングする。
+# 表示上重要な新しい記事から順に、試行数と実時間の両方で打ち切る。
+OG_FETCH_MAX = 800
+OG_FETCH_BUDGET_SECONDS = 120.0
 MAX_IMAGE_BYTES = 4 * 1024 * 1024
 UTC = timezone.utc
 USER_AGENT = (
@@ -239,10 +245,13 @@ def fetch_og_image(client: httpx.Client, article_url: str, cache_path: Path) -> 
 
 def build_article(
     raw: dict[str, Any],
-    client: httpx.Client,
     source_platforms: dict[str, str],
 ) -> Optional[dict[str, Any]]:
-    """Normalize one ProcessedItem-like dict for the static site."""
+    """Normalize one ProcessedItem-like dict for the static site.
+
+    OG 画像の取得はここでは行わない(ネットワーク I/O なし)。キャッシュ済みなら
+    参照だけ張り、未取得分は capping 後に enrich_og_images() でまとめて上限付きで取得する。
+    """
     genre = raw.get("genre")
     url = str(raw.get("url") or "")
     if genre not in ALLOWED_GENRES or not url:
@@ -254,11 +263,7 @@ def build_article(
 
     filename = cache_filename(url)
     cache_path = OG_CACHE_DIR / filename
-    image_url: str | None = None
-    if cache_path.exists():
-        image_url = f"/og-cache/{filename}"
-    elif fetch_og_image(client, url, cache_path):
-        image_url = f"/og-cache/{filename}"
+    image_url: str | None = f"/og-cache/{filename}" if cache_path.exists() else None
 
     flags = raw.get("flags")
     if not isinstance(flags, dict):
@@ -294,28 +299,61 @@ def build_article(
     }
 
 
+def enrich_og_images(articles: list[dict[str, Any]]) -> None:
+    """Cache-miss の記事に OG 画像を取得する(新しい順・ハード上限付き)。
+
+    articles は timestamp 降順にソート済みである前提。表示上重要な新しい記事から順に
+    取得し、試行数 (OG_FETCH_MAX) と実時間 (OG_FETCH_BUDGET_SECONDS) の両方で打ち切る。
+    死んだ URL のタイムアウトが積み重なっても publish がハングしないための保険。
+    """
+    headers = {"User-Agent": USER_AGENT}
+    timeout = httpx.Timeout(REQUEST_TIMEOUT_SECONDS)
+    start = time.monotonic()
+    deadline = start + OG_FETCH_BUDGET_SECONDS
+    attempts = 0
+    fetched = 0
+
+    with httpx.Client(headers=headers, timeout=timeout) as client:
+        for article in articles:
+            if article.get("image_url"):
+                continue
+            if attempts >= OG_FETCH_MAX or time.monotonic() >= deadline:
+                break
+            filename = cache_filename(article["url"])
+            attempts += 1
+            if fetch_og_image(client, article["url"], OG_CACHE_DIR / filename):
+                article["image_url"] = f"/og-cache/{filename}"
+                fetched += 1
+
+    logger.info(
+        "OG images: fetched {} / attempted {} in {:.1f}s (max={}, budget={}s)",
+        fetched,
+        attempts,
+        time.monotonic() - start,
+        OG_FETCH_MAX,
+        OG_FETCH_BUDGET_SECONDS,
+    )
+
+
 def load_articles() -> list[dict[str, Any]]:
     """Load and normalize articles from recent processed JSONL files."""
     articles: list[dict[str, Any]] = []
     source_platforms = load_source_platforms()
-    headers = {"User-Agent": USER_AGENT}
-    timeout = httpx.Timeout(REQUEST_TIMEOUT_SECONDS)
 
-    with httpx.Client(headers=headers, timeout=timeout) as client:
-        for path in processed_files():
-            try:
-                for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-                    if not line.strip():
-                        continue
-                    try:
-                        raw = json.loads(line)
-                        article = build_article(raw, client, source_platforms)
-                        if article is not None:
-                            articles.append(article)
-                    except Exception as exc:  # noqa: BLE001 - skip only this row
-                        logger.warning("Skipping {}:{}: {}", path, line_number, exc)
-            except Exception as exc:  # noqa: BLE001 - skip only this file
-                logger.warning("Failed to read processed file {}: {}", path, exc)
+    for path in processed_files():
+        try:
+            for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                if not line.strip():
+                    continue
+                try:
+                    raw = json.loads(line)
+                    article = build_article(raw, source_platforms)
+                    if article is not None:
+                        articles.append(article)
+                except Exception as exc:  # noqa: BLE001 - skip only this row
+                    logger.warning("Skipping {}:{}: {}", path, line_number, exc)
+        except Exception as exc:  # noqa: BLE001 - skip only this file
+            logger.warning("Failed to read processed file {}: {}", path, exc)
 
     articles.sort(key=timestamp_sort_key)
     if len(articles) > MAX_ARTICLES:
@@ -325,6 +363,9 @@ def load_articles() -> list[dict[str, Any]]:
             MAX_ARTICLES,
         )
         articles = articles[:MAX_ARTICLES]
+
+    # OG 取得は capping 後のサブセットに対してのみ(全処理記事ではなく)行う。
+    enrich_og_images(articles)
     return articles
 
 
