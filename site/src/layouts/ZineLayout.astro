@@ -32,6 +32,12 @@ const pageTitle = `${title} | 情報収集`;
     <link rel="icon" href={`${home}icon-192.svg`} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={`${home}icon-192.svg`} />
     <title>{pageTitle}</title>
+    <script is:inline>
+      (() => {
+        const t = localStorage.getItem("theme");
+        if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+      })();
+    </script>
   </head>
   <body>
     <a href="#main" class="sr-only">本文へスキップ</a>
@@ -44,6 +50,7 @@ const pageTitle = `${title} | 情報収集`;
           <a href={`${home}join/`} class={active === "genres" ? "on" : ""}>ジャンル</a>
           <a href={`${home}collection/`} class={active === "saved" ? "on" : ""}>保存</a>
         </nav>
+        <button type="button" class="mast-toggle" data-theme-toggle aria-label="テーマを切り替え">◐</button>
         <a class="mast-cta" href={`${home}join/`}>＋ ジャンルを追加</a>
       </div>
     </header>
@@ -64,5 +71,17 @@ const pageTitle = `${title} | 情報収集`;
         <span class="copy">© 2026 情報収集 · 個人運用</span>
       </div>
     </footer>
+    <script is:inline>
+      (() => {
+        const btn = document.querySelector("[data-theme-toggle]");
+        btn?.addEventListener("click", () => {
+          const cur = document.documentElement.dataset.theme;
+          const isDark = cur ? cur === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          const next = isDark ? "light" : "dark";
+          document.documentElement.dataset.theme = next;
+          localStorage.setItem("theme", next);
+        });
+      })();
+    </script>
   </body>
 </html>

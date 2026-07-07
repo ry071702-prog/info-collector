@@ -1,0 +1,83 @@
+---
+import { genreLabels, type Genre } from "../lib/articles";
+import { tagPathSegment, type SiteStats } from "../lib/stats";
+
+interface Props { stats: SiteStats; rangeLabel?: string; }
+const { stats, rangeLabel = "直近30日" } = Astro.props;
+const home = (import.meta.env.BASE_URL.endsWith("/") ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`);
+
+const genreColor: Record<Genre, string> = { games: "#2b56ff", anime: "#7b3ff2", disney: "#f5a623" };
+const prioColor: Record<string, string> = { S: "#f5333a", A: "#141009", B: "#8b8271", C: "#b4ab98" };
+
+const maxGenre = Math.max(1, ...stats.genreCounts.map((g) => g.count));
+const maxPrio = Math.max(1, ...stats.priorityCounts.map((p) => p.count));
+const maxDaily = Math.max(1, ...stats.dailyCounts.map((d) => d.total));
+const days = stats.dailyCounts;
+---
+
+<div class="statgrid">
+  <div class="stat"><div class="n">{stats.totalArticles}</div><div class="l">総記事数</div><div class="sub">{rangeLabel}</div></div>
+  <div class="stat"><div class="n">{stats.todayArticles}</div><div class="l">今日の新着</div><div class="sub">JST基準</div></div>
+  <div class="stat"><div class="n">{stats.topSources.length}</div><div class="l">アクティブ source</div><div class="sub">1件以上配信</div></div>
+  <div class="stat"><div class="n">{stats.topTags.length}</div><div class="l">人気タグ</div><div class="sub">集計対象</div></div>
+</div>
+
+<div class="statblock">
+  <h2>ジャンル構成</h2>
+  <div class="barlist">
+    {stats.genreCounts.map((g) => (
+      <div class="barrow">
+        <span class="bl">{genreLabels[g.genre]}</span>
+        <span class="bt"><span class="bf" style={`width:${Math.round((g.count / maxGenre) * 100)}%;background:${genreColor[g.genre]}`}></span></span>
+        <span class="bv">{g.count}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+<div class="statblock">
+  <h2>重要度構成</h2>
+  <div class="barlist">
+    {stats.priorityCounts.map((p) => (
+      <div class="barrow">
+        <span class="bl">重要度 {p.priority}</span>
+        <span class="bt"><span class="bf" style={`width:${Math.round((p.count / maxPrio) * 100)}%;background:${prioColor[p.priority] ?? "var(--ink)"}`}></span></span>
+        <span class="bv">{p.count}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+<div class="statblock">
+  <h2>日次推移</h2>
+  <div class="daybars">
+    {days.map((d) => (
+      <span class="db" style={`height:${Math.max(2, Math.round((d.total / maxDaily) * 100))}%`} title={`${d.label}: ${d.total}`}></span>
+    ))}
+  </div>
+  <div class="daylabels">
+    <span>{days[0]?.label}</span>
+    <span>{days[Math.floor(days.length / 2)]?.label}</span>
+    <span>{days[days.length - 1]?.label}</span>
+  </div>
+</div>
+
+<div class="statblock">
+  <h2>人気タグ</h2>
+  <div class="ranklist">
+    {stats.topTags.slice(0, 10).map((t) => (
+      <a href={`${home}tags/${(t as any).slug || tagPathSegment(t.tag)}/`}>
+        <span>#{t.tag}</span><span class="rc">{t.count}</span>
+      </a>
+    ))}
+  </div>
+</div>
+
+<div class="statblock">
+  <h2>source 別</h2>
+  <div class="ranklist">
+    {stats.topSources.slice(0, 10).map((s) => (
+      <div><span>{s.label}</span><span class="rc">{s.count}</span></div>
+    ))}
+  </div>
+</div>
