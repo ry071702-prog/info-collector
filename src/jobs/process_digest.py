@@ -11,12 +11,12 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 
-from .. import dedup, logger
+from .. import dedup, logger, outbox
 from ..config import cache_dir, settings
 from ..models import RawItem
 from ..outputs import discord, markdown, notion, sheets
 from ..processors import classify, digest
-from ..storage import read_raw, write_processed
+from ..storage import read_raw, write_json_atomic, write_processed
 
 log = logger.get(__name__)
 JST = timezone(timedelta(hours=9))
@@ -51,8 +51,7 @@ def _save_run_record(classified: int, raw_window_count: int, stopped_early: bool
     }
     history.insert(0, record)
     history = history[:10]
-    RUN_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RUN_HISTORY_PATH.write_text(json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_json_atomic(RUN_HISTORY_PATH, history)
 
     consecutive_zero = 0
     for r in history:
@@ -71,6 +70,23 @@ def _phase(now_utc: datetime) -> tuple[str, str]:
     now_jst = now_utc.astimezone(JST)
     phase = "AM" if 6 <= now_jst.hour < 18 else "PM"
     return now_jst.strftime("%Y-%m-%d"), phase
+
+
+def _flush_outbox(totals: dict) -> None:
+    """前回 run で外部出力に失敗した item を再送する。成功分はキューから消える。"""
+    for target, send in (("notion", notion.write), ("sheets", sheets.append)):
+        pending = outbox.load(target)
+        if not pending:
+            continue
+        log.info(f"outbox[{target}]: 前回失敗した {len(pending)} 件を再送")
+        try:
+            ok, failed = send(pending)
+        except Exception as e:  # noqa: BLE001
+            log.error(f"outbox[{target}]: 再送に失敗: {e}")
+            continue  # キューは残したまま次回に持ち越す
+        outbox.replace(target, failed)
+        totals["resent"] += ok
+        log.info(f"outbox[{target}]: {ok} 件 再送成功 / {len(failed)} 件 まだ失敗")
 
 
 def _read_raw_window(start: datetime, end: datetime) -> list[RawItem]:
@@ -131,7 +147,17 @@ def main() -> None:
     log.info(f"Already processed: {len(already_fps)}, pending: {len(pending)}")
 
     chunk_size = settings()["batch_sizes"].get("classify_batch", 20)
-    totals = {"classified": 0, "notion_ok": 0, "notion_fail": 0, "sheets": 0, "duplicates": 0}
+    totals = {
+        "classified": 0,
+        "notion_ok": 0,
+        "notion_fail": 0,
+        "sheets": 0,
+        "duplicates": 0,
+        "resent": 0,
+    }
+
+    # 前回 run で Notion / Sheets への書き込みに失敗した記事を先に再送する
+    _flush_outbox(totals)
     consecutive_empty = 0
     stopped_early = False
     processed_for_digest = []
@@ -168,24 +194,30 @@ def main() -> None:
         totals["classified"] += len(fresh)
         log.info(f"Chunk {chunk_idx}: {len(fresh)} fresh classified ({dropped} duplicates)")
 
-        # Incremental writes: each chunk goes to outputs immediately
+        # Incremental writes: each chunk goes to outputs immediately.
+        # 失敗分は outbox に積み、次回 run の冒頭で再送する (processed は既に書かれており、
+        # 再実行しても fingerprint でスキップされるため、ここで捨てると永久欠損になる)。
         try:
-            n = sheets.append(fresh)
+            n, failed = sheets.append(fresh)
             totals["sheets"] += n
+            outbox.add("sheets", failed)
         except Exception as e:  # noqa: BLE001
             log.error(f"Chunk {chunk_idx}: Sheets append failed: {e}")
+            outbox.add("sheets", fresh)
         try:
-            ok, fail = notion.write(fresh)
+            ok, failed = notion.write(fresh)
             totals["notion_ok"] += ok
-            totals["notion_fail"] += fail
+            totals["notion_fail"] += len(failed)
+            outbox.add("notion", failed)
         except Exception as e:  # noqa: BLE001
             log.error(f"Chunk {chunk_idx}: Notion write failed: {e}")
+            outbox.add("notion", fresh)
 
     log.info(
         f"Pipeline summary: classified={totals['classified']} "
         f"duplicates={totals['duplicates']} "
         f"notion_ok={totals['notion_ok']} notion_fail={totals['notion_fail']} "
-        f"sheets={totals['sheets']} "
+        f"sheets={totals['sheets']} resent={totals['resent']} "
         f"early_stopped={stopped_early}"
     )
 

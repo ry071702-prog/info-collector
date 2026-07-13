@@ -17,7 +17,7 @@ from .. import logger
 from ..config import DATA_DIR, cache_dir
 from ..models import ProcessedItem
 from ..outputs import discord, email_digest, slack_digest
-from ..storage import read_processed
+from ..storage import read_processed, write_json_atomic
 
 log = logger.get(__name__)
 
@@ -58,7 +58,7 @@ def _save_sent(d: dict[str, str]) -> None:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=SENT_RETAIN_DAYS)).isoformat()
     d = {k: v for k, v in d.items() if v >= cutoff}
     SENT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    SENT_FILE.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
+    write_json_atomic(SENT_FILE, d)
 
 
 def _recent_candidates(now: datetime) -> list[ProcessedItem]:

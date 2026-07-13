@@ -1,0 +1,56 @@
+name: Test
+
+# これまで pytest は夜間メンテでしか走っておらず、push/PR では検証されていなかった。
+# 2026-07-12 の分類全滅 (llm_client の APIError 判定が TypeError) のような回帰を
+# マージ前に止めるため、コードに触る push / PR で必ずテストを回す。
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "requirements.lock"
+      - ".github/workflows/test.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "scripts/**"
+      - "requirements*.txt"
+      - "requirements.lock"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.lock
+
+      - name: Run tests
+        run: python -m pytest -q
+
+      - name: Check requirements.lock is in sync with requirements.txt
+        run: |
+          pip install uv
+          uv pip compile requirements.txt -o /tmp/expected.lock --python-version 3.12 --quiet
+          if ! diff -q <(grep -v '^#' requirements.lock) <(grep -v '^#' /tmp/expected.lock) > /dev/null; then
+            echo "::error::requirements.lock が requirements.txt と乖離しています。'uv pip compile requirements.txt -o requirements.lock --python-version 3.12' を実行してコミットしてください"
+            diff <(grep -v '^#' requirements.lock) <(grep -v '^#' /tmp/expected.lock) || true
+            exit 1
+          fi

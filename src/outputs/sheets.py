@@ -97,27 +97,37 @@ def delete_by_urls(urls: list[str]) -> int:
     return deleted
 
 
-def append(items: list[ProcessedItem]) -> int:
+def append(items: list[ProcessedItem]) -> tuple[int, list[ProcessedItem]]:
+    """Returns (appended_count, failed_items).
+
+    失敗した item を返すのは、呼び出し元が outbox に積んで次回 run で再送するため。
+    processed は先に書かれるので、ここで落とすと記事は二度と Sheets に載らない。
+    """
     if is_dry_run():
         log.info(f"[DRY_RUN] would append {len(items)} rows to Sheets")
-        return 0
+        return 0, []
     if not items:
-        return 0
+        return 0, []
     try:
         book = _open_book()
     except Exception as e:  # noqa: BLE001
         log.error(f"Sheets open failed: {e}")
-        return 0
+        return 0, list(items)  # 認証・接続の一時障害 → 全件を再送対象に
 
-    games = [_row(it) for it in items if it.genre in ("games", "both")]
-    anime = [_row(it) for it in items if it.genre == "anime"]
+    groups = [
+        ("ゲーム&esports", [it for it in items if it.genre in ("games", "both")]),
+        ("アニメ&漫画", [it for it in items if it.genre == "anime"]),
+    ]
     count = 0
-    if games:
-        ws = _ensure_sheet(book, "ゲーム&esports")
-        ws.append_rows(games, value_input_option="USER_ENTERED")
-        count += len(games)
-    if anime:
-        ws = _ensure_sheet(book, "アニメ&漫画")
-        ws.append_rows(anime, value_input_option="USER_ENTERED")
-        count += len(anime)
-    return count
+    failed: list[ProcessedItem] = []
+    for sheet_name, group in groups:
+        if not group:
+            continue
+        try:
+            ws = _ensure_sheet(book, sheet_name)
+            ws.append_rows([_row(it) for it in group], value_input_option="USER_ENTERED")
+            count += len(group)
+        except Exception as e:  # noqa: BLE001
+            log.error(f"Sheets append failed for {sheet_name}: {e}")
+            failed.extend(group)
+    return count, failed

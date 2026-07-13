@@ -9,6 +9,7 @@ import httpx
 from .. import logger
 from ..config import cache_dir, env, is_dry_run
 from ..models import ProcessedItem
+from ..storage import write_json_atomic
 
 log = logger.get(__name__)
 DEDUP_FILE = cache_dir() / "discord_sent.json"
@@ -28,7 +29,7 @@ def _save_sent(d: dict[str, str]) -> None:
     cutoff = (datetime.utcnow() - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
     d = {k: v for k, v in d.items() if v >= cutoff}
     DEDUP_FILE.parent.mkdir(parents=True, exist_ok=True)
-    DEDUP_FILE.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
+    write_json_atomic(DEDUP_FILE, d)
 
 
 def _format(item: ProcessedItem) -> str:

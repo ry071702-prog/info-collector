@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from .. import logger
 from ..config import cache_dir, is_dry_run
 from ..models import RawItem
+from ..storage import write_json_atomic
 
 log = logger.get(__name__)
 
@@ -54,5 +55,5 @@ def commit_baseline(items: list[RawItem]) -> None:
     if len(seen) > _MAX_KEEP:
         seen = dict(sorted(seen.items(), key=lambda kv: kv[1])[-_MAX_KEEP:])
     base["seen"] = seen
-    _path().write_text(json.dumps(base, ensure_ascii=False), encoding="utf-8")
+    write_json_atomic(_path(), base)
     log.info(f"baseline updated: {len(seen)} fingerprints")

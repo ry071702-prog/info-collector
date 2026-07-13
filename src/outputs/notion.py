@@ -280,24 +280,29 @@ def archive_by_urls(urls: list[str]) -> int:
     return archived
 
 
-def write(items: list[ProcessedItem]) -> tuple[int, int]:
-    """Returns (success, failed)."""
+def write(items: list[ProcessedItem]) -> tuple[int, list[ProcessedItem]]:
+    """Returns (success, failed_items).
+
+    失敗した item を返すのは、呼び出し元が outbox に積んで次回 run で再送するため。
+    processed は先に書かれるので、ここで落とすと記事は二度と Notion に載らない。
+    """
     if is_dry_run():
         log.info(f"[DRY_RUN] would write {len(items)} items to Notion")
-        return 0, 0
+        return 0, []
 
     db_games = normalize_db_id(env("NOTION_DATABASE_ID_GAMES"))
     db_anime = normalize_db_id(env("NOTION_DATABASE_ID_ANIME"))
     db_disney = normalize_db_id(env("NOTION_DATABASE_ID_DISNEY"))
     if not (db_games or db_anime or db_disney):
+        # 設定漏れは再送しても直らないので outbox には積まない
         log.warning("Notion DB IDs not set; skipping")
-        return 0, 0
+        return 0, []
 
     try:
         client = _client()
     except Exception as e:  # noqa: BLE001
         log.error(f"Notion auth failed: {e}")
-        return 0, len(items)
+        return 0, list(items)  # 一時障害の可能性 → 再送対象に
 
     # Cache schema per DB so we only fetch once per run
     schema_cache: dict[str, set[str]] = {}
@@ -305,7 +310,8 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
         if db_id and db_id not in schema_cache:
             schema_cache[db_id] = _db_property_names(client, db_id) or _CORE_SAFE_PROPS.copy()
 
-    success, failed = 0, 0
+    success = 0
+    failed: list[ProcessedItem] = []
     for it in items:
         if it.genre == "disney":
             db_id = db_disney
@@ -334,5 +340,5 @@ def write(items: list[ProcessedItem]) -> tuple[int, int]:
             schema_cache[db_id].update(props.keys() - dropped)
             success += 1
         else:
-            failed += 1
+            failed.append(it)
     return success, failed

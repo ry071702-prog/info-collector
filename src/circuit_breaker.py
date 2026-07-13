@@ -7,6 +7,7 @@ from pathlib import Path
 
 from . import logger
 from .config import cache_dir
+from .storage import write_json_atomic
 
 log = logger.get(__name__)
 STATE_FILE = cache_dir() / "circuit_breakers.json"
@@ -23,7 +24,7 @@ def _load() -> dict:
 
 def _save(state: dict) -> None:
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+    write_json_atomic(STATE_FILE, state)
 
 
 def is_open(name: str) -> bool:

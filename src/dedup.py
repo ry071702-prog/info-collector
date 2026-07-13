@@ -7,6 +7,7 @@ from pathlib import Path
 from . import logger
 from .config import DATA_DIR, cache_dir
 from .models import ProcessedItem
+from .storage import write_json_atomic
 
 log = logger.get(__name__)
 CACHE_FILE = cache_dir() / "dedup_keys.json"
@@ -38,8 +39,7 @@ def load_recent_keys() -> dict[str, str]:
 
 
 def save_keys(keys: dict[str, str]) -> None:
-    CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    CACHE_FILE.write_text(json.dumps(keys, ensure_ascii=False, indent=2), encoding="utf-8")
+    write_json_atomic(CACHE_FILE, keys)
 
 
 def filter_new(items: list[ProcessedItem]) -> tuple[list[ProcessedItem], int]:
