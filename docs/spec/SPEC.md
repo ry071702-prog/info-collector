@@ -21,7 +21,7 @@ Gemini で分類・要約・スコアリングして、**Notion / Google Sheets 
 | 領域 | 技術 |
 |---|---|
 | 言語 | Python 3.12 |
-| LLM | Gemini API (`google-generativeai`) |
+| LLM | Gemini API (`google-genai`) |
 | X 収集 | `twscrape` |
 | RSS/HTTP | `feedparser`, `httpx`, `selectolax` |
 | Google Sheets | `gspread`, `google-auth` |

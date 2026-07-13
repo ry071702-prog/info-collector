@@ -29,7 +29,7 @@ X / YouTube / Twitch / RSS から指定ジャンル（例: ゲーム・アニメ
 6. **秘密情報は env / GitHub Secrets**: `.env` と `config/secrets/*` は gitignore。鍵やWebhookをコミットしない。
 
 ## 技術スタック
-Python 3.12 / `google-generativeai` / `twscrape`(X) / `feedparser`+`httpx`+`selectolax`(RSS) / `gspread`+`google-auth`(Sheets) / `notion-client`(Notion, **API バージョン `2022-06-28` 固定**) / `pydantic` / `tomli` / `python-dotenv` / `tenacity` / `loguru`。サイトは Astro 6 + Tailwind 4 + Node 20、必要なら Cloudflare Pages Functions + D1。
+Python 3.12 / `google-genai` / `twscrape`(X) / `feedparser`+`httpx`+`selectolax`(RSS) / `gspread`+`google-auth`(Sheets) / `notion-client`(Notion, **API バージョン `2022-06-28` 固定**) / `pydantic` / `tomli` / `python-dotenv` / `tenacity` / `loguru`。サイトは Astro 6 + Tailwind 4 + Node 20、必要なら Cloudflare Pages Functions + D1。
 
 ## ディレクトリ構成
 ```

@@ -10,6 +10,8 @@
 #   フォールバック)。同一便を両方が送っても catchup_sent.json の dedup +
 #   concurrency 直列化で二重送信されない。
 set -euo pipefail
+source "$HOME/.claude/lib/automation-stamp.sh"   # 成功/失敗を記録 (automation-health.sh が見る)
+JOB="info-catchup"
 GH=/opt/homebrew/bin/gh
 REPO=ry071702-prog/info-collector
 
@@ -22,5 +24,14 @@ elif [ "$h" -lt 15 ]; then slot=noon
 else                       slot=evening
 fi
 
-"$GH" workflow run send_catchup.yml --repo "$REPO" -f slot="$slot" -f dry_run=false
-echo "$(date '+%F %T') triggered send_catchup slot=$slot"
+# dispatch は起床直後にネット未確立で落ちることがある  数回リトライしてから諦める
+for i in 1 2 3 4 5; do
+  if "$GH" workflow run send_catchup.yml --repo "$REPO" -f slot="$slot" -f dry_run=false; then
+    echo "$(date '+%F %T') triggered send_catchup slot=$slot (try $i)"
+    auto_ok "$JOB" "dispatch OK (slot=$slot)"
+    exit 0
+  fi
+  echo "$(date '+%F %T') dispatch 失敗 (try $i)  $((i * 30))秒後に再試行" >&2
+  sleep $((i * 30))
+done
+auto_die "$JOB" "send_catchup の dispatch に5回失敗 (slot=$slot  ネット未確立 or gh 認証切れ)"

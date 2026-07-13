@@ -14,7 +14,7 @@ GitHub Actions の cron 実行を前提に、生データを `data/raw/`、分�
 ### 主要な技術スタック
 
 - Python 3.12
-- Gemini API: `google-generativeai`
+- Gemini API: `google-genai` (新 SDK。`google.genai.errors.APIError` は `.code` が HTTP ステータス、`.status` は文字列)
 - X 収集: `twscrape`
 - RSS / HTTP: `feedparser`, `httpx`
 - Google Sheets: `gspread`, `google-auth`

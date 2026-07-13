@@ -6,7 +6,7 @@ the most recent batch and sends S/A items to the priority webhook.
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
-from .. import dedup, logger
+from .. import logger
 from ..outputs import discord
 from ..processors import classify
 from ..storage import read_raw
@@ -25,10 +25,12 @@ def main() -> None:
         return
 
     processed = classify.process(raw_items)
-    fresh, _ = dedup.filter_new(processed)
+    # ここで dedup.filter_new は呼ばない。あれは副作用で dedup_keys.json に全記事のキーを
+    # 登録するため、後続の process_digest が同じ記事を「重複」として捨ててしまう
+    # (通知自体の重複抑制は discord.notify_priority が discord_sent.json で 24h 単位に行う)。
     # importance S/A だけ拾い、risk_level=high は確認待ちなので priority 通知から除外
-    sa = [it for it in fresh if it.importance in ("S", "A") and it.risk_level != "high"]
-    suppressed = sum(1 for it in fresh if it.importance in ("S", "A") and it.risk_level == "high")
+    sa = [it for it in processed if it.importance in ("S", "A") and it.risk_level != "high"]
+    suppressed = sum(1 for it in processed if it.importance in ("S", "A") and it.risk_level == "high")
     log.info(f"S/A items to notify: {len(sa)} (suppressed {suppressed} high-risk)")
 
     sent = discord.notify_priority(sa)

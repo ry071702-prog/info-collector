@@ -7,13 +7,12 @@ from collections import deque
 from datetime import datetime, timezone
 from typing import Any
 
-from google.api_core import exceptions as gx
 from google import genai
 from google.genai import errors as genai_errors
 from google.genai import types
 from tenacity import (
     retry,
-    retry_if_exception_type,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential_jitter,
 )
@@ -34,13 +33,8 @@ _ACTIVE_KEY_IDX = 0
 _CONFIGURED_KEY_IDX: int | None = None
 _DEAD_KEYS: dict[str, set[int]] = {}
 
-# 一過性エラー（リトライ対象）。ResourceExhausted (=daily quota) は除外。
-_TRANSIENT_EXC: tuple[type[Exception], ...] = (
-    gx.InternalServerError,
-    gx.ServiceUnavailable,
-    gx.DeadlineExceeded,
-    gx.TooManyRequests,
-)
+# 日次クォータ枯渇を示す 429 の quota id。分次 (PerMinute) のレート制限と区別する。
+_DAILY_QUOTA_MARKERS = ("perday", "per day", "per_day")
 
 
 def _utc_now() -> datetime:
@@ -137,12 +131,34 @@ def _client(api_key: str) -> genai.Client:
     return client
 
 
-def _is_quota_exhausted(exc: Exception) -> bool:
-    return isinstance(exc, genai_errors.APIError) and exc.status == 429
+def _is_rate_limited(exc: BaseException) -> bool:
+    """429 (レート制限 or 日次クォータ枯渇)。
+
+    APIError の .code が HTTP ステータス (int)。.status は 'RESOURCE_EXHAUSTED' 等の
+    文字列なので数値比較してはいけない。
+    """
+    return isinstance(exc, genai_errors.APIError) and exc.code == 429
 
 
-def _is_transient_genai_error(exc: BaseException) -> bool:
-    return isinstance(exc, genai_errors.APIError) and exc.status >= 500
+def _is_daily_quota_exhausted(exc: BaseException) -> bool:
+    """429 のうち日次クォータ枯渇のもの。キーを切り替えても即座には回復しない。
+
+    分次レート制限 (RPM 超過) は待てば回復するので、ここでは弾く。判別できない 429 は
+    「一時的」側に倒す (キーを永久停止して全滅させるより、待って再試行する方が安全)。
+    """
+    if not _is_rate_limited(exc):
+        return False
+    details = str(getattr(exc, "details", "") or exc).lower()
+    return any(marker in details for marker in _DAILY_QUOTA_MARKERS)
+
+
+def _is_server_error(exc: BaseException) -> bool:
+    return isinstance(exc, genai_errors.APIError) and (exc.code or 0) >= 500
+
+
+def _should_retry(exc: BaseException) -> bool:
+    """5xx と、日次枯渇でない 429 だけリトライする。QuotaExhausted は対象外。"""
+    return _is_server_error(exc) or (_is_rate_limited(exc) and not _is_daily_quota_exhausted(exc))
 
 
 def _mark_key_exhausted(model: str, key_idx: int, exc: Exception) -> None:
@@ -175,7 +191,7 @@ def _throttle(model: str, key_idx: int) -> None:
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential_jitter(initial=2, max=30, jitter=2),
-    retry=retry_if_exception_type(_TRANSIENT_EXC),
+    retry=retry_if_exception(_should_retry),
     reraise=True,
 )
 def call_json(
@@ -204,14 +220,11 @@ def call_json(
                 ),
             )
             break
-        except gx.ResourceExhausted as e:
-            _mark_key_exhausted(model, key_idx, e)
         except genai_errors.APIError as e:
-            if _is_quota_exhausted(e):
+            if _is_daily_quota_exhausted(e):
                 _mark_key_exhausted(model, key_idx, e)
                 continue
-            if _is_transient_genai_error(e):
-                raise gx.ServiceUnavailable(str(e)) from e
+            # 5xx と一時的な 429 は tenacity (_should_retry) が指数バックオフで再試行する
             raise
     text = (resp.text or "").strip()
     _track_usage(model, key_idx)
@@ -221,7 +234,7 @@ def call_json(
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential_jitter(initial=2, max=30, jitter=2),
-    retry=retry_if_exception_type(_TRANSIENT_EXC),
+    retry=retry_if_exception(_should_retry),
     reraise=True,
 )
 def call_text(
@@ -249,14 +262,11 @@ def call_text(
                 ),
             )
             break
-        except gx.ResourceExhausted as e:
-            _mark_key_exhausted(model, key_idx, e)
         except genai_errors.APIError as e:
-            if _is_quota_exhausted(e):
+            if _is_daily_quota_exhausted(e):
                 _mark_key_exhausted(model, key_idx, e)
                 continue
-            if _is_transient_genai_error(e):
-                raise gx.ServiceUnavailable(str(e)) from e
+            # 5xx と一時的な 429 は tenacity (_should_retry) が指数バックオフで再試行する
             raise
     _track_usage(model, key_idx)
     return resp.text or ""

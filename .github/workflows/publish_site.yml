@@ -17,6 +17,8 @@ jobs:
   deploy:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    # Cloudflare 側が停滞すると deploy が無限に待つ (2026-07-03〜09 に 45 分ハング × 6 回)。
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -49,28 +51,29 @@ jobs:
           PUBLIC_BASE_PATH: "/"
         run: npm run build
 
-      - name: Ensure Cloudflare Pages project exists
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # 初回のみ作成。既存ならエラーで止まるので || true で抑制。
-          command: pages project create info-collector --production-branch=main
-        continue-on-error: true
-
+      # site/wrangler.toml (pages_build_output_dir=./dist, D1 binding) と
+      # site/functions/ (Pages Functions) を含めてデプロイするため site/ で実行する。
+      # Cloudflare API は長文/多バイトの commit message を invalid UTF-8 として
+      # reject することがあるため、明示的に短い ASCII (1単語) を渡す。
+      # wrangler は site/package.json に exact 固定 (CLI 側の更新で挙動が変わらないように)。
       - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # site/wrangler.toml (pages_build_output_dir=./dist, D1 binding) と
-          # site/functions/ (Pages Functions) を含めてデプロイするため site/ で実行する。
-          # Cloudflare API は長文/多バイトの commit message を invalid UTF-8 として
-          # reject することがあるため、明示的に短い ASCII (1単語) を渡す。
-          workingDirectory: site
-          command: >-
-            pages deploy
-            --project-name=info-collector
-            --branch=main
-            --commit-hash=${{ github.sha }}
-            --commit-message=ci
+        working-directory: site
+        timeout-minutes: 12
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          deployed=""
+          for i in 1 2 3; do
+            if npx --no-install wrangler pages deploy \
+                 --project-name=info-collector \
+                 --branch=main \
+                 --commit-hash="${GITHUB_SHA}" \
+                 --commit-message=ci; then
+              deployed=1
+              break
+            fi
+            echo "::warning::Cloudflare deploy attempt $i failed; retrying"
+            sleep $((i * 30))
+          done
+          [ -n "$deployed" ] || { echo "::error::Cloudflare deploy failed after 3 attempts"; exit 1; }

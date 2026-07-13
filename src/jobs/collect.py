@@ -52,6 +52,8 @@ def main(tier: str) -> None:
         log.info(f"[{tier}] COLLECTORS restricted to: {sorted(allow)}")
 
     all_items = []
+    ran = 0
+    crashed: list[str] = []
     for collector_name, collector in [
         ("youtube_rss", youtube_rss),
         ("youtube_search", youtube_search),
@@ -63,12 +65,19 @@ def main(tier: str) -> None:
     ]:
         if allow and collector_name not in allow:
             continue
+        ran += 1
         try:
             items = collector.collect(sources, since)
             log.info(f"[{tier}] {collector_name}: {len(items)} items")
             all_items.extend(items)
         except Exception as e:  # noqa: BLE001
+            crashed.append(collector_name)
             log.error(f"[{tier}] collector {collector_name} crashed: {e}")
+
+    # 一部の collector 障害は握って続行するが、全滅は「0 件収集できた」ではなく障害。
+    # 従来はここで正常終了していたため、依存破損や設定ミスでも workflow が緑になっていた。
+    if ran and len(crashed) == ran:
+        raise SystemExit(f"[{tier}] all {ran} collector(s) crashed: {', '.join(crashed)}")
 
     # Write per-source jsonl
     source_priority = {source.id: source.priority for source in sources}

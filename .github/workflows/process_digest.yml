@@ -86,9 +86,11 @@ jobs:
           git config user.name "github-actions"
           git add data/processed docs/digests data/cache data/logs site/public/newspaper-img site/public/audio || true
           git diff --quiet --staged || git commit -m "digest $(date -u +%F)"
+          pushed=""
           for i in 1 2 3; do
-            git pull --rebase --autostash -X theirs && git push && break
-            echo "push attempt $i failed; retrying..."
+            if git pull --rebase --autostash -X theirs && git push; then pushed=1; break; fi
+            echo "::warning::push attempt $i failed; retrying"
             git rebase --abort 2>/dev/null || true
             sleep $((i * 5))
           done
+          [ -n "$pushed" ] || { echo "::error::git push failed after 3 attempts"; exit 1; }

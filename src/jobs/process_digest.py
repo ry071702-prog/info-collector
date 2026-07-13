@@ -235,6 +235,15 @@ def main() -> None:
             f"\nGemini quota / filter ロジック / watchlist の点検を推奨。",
         )
 
+    # raw があるのに 1 件も分類できていないのは、フィルタの結果ではなく分類の故障
+    # (2026-07-12: APIError の扱いが TypeError になり raw 626 件が全滅。それでも緑だった)。
+    # quota 切れによる early stop は既知の劣化なので、ここでは失敗にしない。
+    if raw_items and totals["classified"] == 0 and not stopped_early:
+        raise SystemExit(
+            f"classified 0 items out of {len(raw_items)} raw items "
+            f"({digest_date}-{digest_phase}); classification is broken"
+        )
+
 
 if __name__ == "__main__":
     main()
