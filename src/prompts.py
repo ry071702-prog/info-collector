@@ -225,3 +225,63 @@ WEEKLY_USER_TEMPLATE = """以下の {week_start} 〜 {week_end} の収集デー�
 ## 来週の注目予定
 
 ## 編集後記（1段落）"""
+
+
+# ============================================================
+# バッチ版プロンプト (コスト削減 2026-07-13)
+#
+# 1件ずつ LLM を呼ぶと、判定ルール文 (filter: 約570tok / classify: taxonomy
+# 込みで約1,140tok) を「毎件」送ることになる。実測 (2026-07-06, raw 730件) では
+# classify の入力 1,197,616tok のうち 518,700tok = 43% が taxonomy の再送だった。
+# ルール文を1回だけ送って複数件をまとめて判定させることで入力トークンを大幅に削る。
+#
+# ルール文は上の単件プロンプトから導出する (二重管理して片方だけ直す事故を防ぐ)。
+# ============================================================
+_FILTER_RULES = FILTER_USER.split("【入力】")[0].replace(
+    "以下の投稿を分類してください。", "以下の複数の投稿を、それぞれ独立に分類してください。", 1
+)
+
+FILTER_BATCH_USER = _FILTER_RULES + """【入力（{n}件）】
+{items}
+
+【出力フォーマット（厳密にこのJSONのみ。入力と同じ {n} 件を、同じ順序・同じ id で返す）】
+{{"results": [
+  {{"id": 0, "spam": false, "genre": "games", "confidence": 0.92, "reason": "理由"}},
+  {{"id": 1, "spam": true, "genre": "neither", "confidence": 0.8, "reason": "理由"}}
+]}}
+- 必ず {n} 件すべてを返すこと。1件も省略しない
+- id は入力の番号をそのまま使う（並べ替えない）"""
+
+_CLASSIFY_RULES = CLASSIFY_USER_TEMPLATE.split("【入力】")[0].replace(
+    "以下の投稿を分析し、指定スキーマでJSON出力してください。",
+    "以下の複数の投稿を、それぞれ独立に分析し、指定スキーマでJSON出力してください。",
+    1,
+)
+# 単件テンプレの出力フォーマット節からスキーマ本体を取り出す。
+# 元テンプレは .format() 用にブレースが {{ }} と二重化されているので、
+# そのまま (二重化を保ったまま) 連結する。ここで {{ を { に戻すと、
+# 後段の .format() がスキーマのキー名をフィールド名と誤解して KeyError になる。
+_CLASSIFY_SINGLE_SCHEMA = CLASSIFY_USER_TEMPLATE.split("【出力フォーマット", 1)[1]
+_CLASSIFY_SCHEMA_BODY = "{{" + _CLASSIFY_SINGLE_SCHEMA.split("{{", 1)[1]
+
+CLASSIFY_BATCH_USER_TEMPLATE = _CLASSIFY_RULES + """【入力（{n}件）】
+{items}
+
+【出力フォーマット（厳密にこのJSONのみ）】
+{{"results": [ {{"id": 0, ...単件と同じスキーマ...}}, {{"id": 1, ... }} ]}}
+
+各要素は次のスキーマに従う（判定不能なら risk_level="low"、各 score=0）:
+""" + _CLASSIFY_SCHEMA_BODY + """
+
+- 必ず {n} 件すべてを返すこと。1件も省略しない
+- id は入力の番号をそのまま使う（並べ替えない）
+- summary は件ごとに独立して書く（他の投稿の内容を混ぜない）"""
+
+# バッチ入力の1件分
+BATCH_ITEM_TEMPLATE = """--- [{id}] ---
+ソース: {source}
+投稿者: {author}
+アカウント種別: {account_type}
+本文/タイトル: {text}
+URL: {url}
+投稿日時: {timestamp}"""

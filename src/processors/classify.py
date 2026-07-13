@@ -186,7 +186,8 @@ def _heuristic_prefilter(item: RawItem) -> FilterResult | None:
     return None
 
 
-def filter_and_genre(item: RawItem) -> FilterResult | None:
+def _filter_without_llm(item: RawItem) -> FilterResult | None:
+    """LLM を呼ばずに判定できる分だけ返す。決められなければ None（= LLM 行き）。"""
     extra = item.extra or {}
     source_type = str(extra.get("source_type") or item.account_type or "")
     if source_type == "個人":
@@ -205,6 +206,13 @@ def filter_and_genre(item: RawItem) -> FilterResult | None:
             confidence=1.0,
             reason="watchlist-pinned-official",
         )
+    return None
+
+
+def filter_and_genre(item: RawItem) -> FilterResult | None:
+    pre = _filter_without_llm(item)
+    if pre is not None:
+        return pre
 
     model = settings()["models"]["filter"]
     user = prompts.FILTER_USER.format(
@@ -239,17 +247,70 @@ def should_classify(item: RawItem) -> bool:
     return source_type != "個人"
 
 
+def _genre_prompt(genre: str) -> tuple[str, str]:
+    """genre -> (system prompt, taxonomy)。"""
+    if genre == "anime":
+        return prompts.CLASSIFY_ANIME_SYSTEM, taxonomy.ANIME_TAXONOMY
+    if genre == "disney":
+        return prompts.CLASSIFY_DISNEY_SYSTEM, taxonomy.DISNEY_TAXONOMY
+    return prompts.CLASSIFY_GAMES_SYSTEM, taxonomy.GAMES_TAXONOMY
+
+
+def _build_processed(item: RawItem, data: dict, genre: str) -> ProcessedItem:
+    """LLM の生 JSON 1件分 -> ProcessedItem。単件・バッチ両経路で共用。
+
+    必須キー欠落などは例外を投げる（呼び出し側が握って None 扱いにする）。
+    """
+    flags = Flags(**_coerce_flags(data.get("flags")))
+    importance = data["importance"]
+    risk_level = data.get("risk_level", "low") if data.get("risk_level") in ("low", "middle", "high") else "low"
+    streamer = max(0, min(100, int(data.get("streamer_influence_score") or 0)))
+    virality = max(0, min(100, int(data.get("clip_virality_score") or 0)))
+    trend = max(0, min(100, int(data.get("game_trend_from_streamers_score") or 0)))
+    freshness = _freshness_score(item.timestamp)
+    # live_trend_score: Twitch コレクターが extra.viewer_count を入れている前提（live のみ非0）
+    live = _live_trend_score(item.extra.get("viewer_count") if item.extra else 0)
+    # video_trend_score: YouTube 急上昇等で view_count が取得できる場合のみ非0
+    video = _video_trend_score(
+        item.extra.get("view_count") if item.extra else 0,
+        item.timestamp,
+    )
+    final_pri = _final_priority(importance, freshness, streamer, virality, trend, live, video)
+    return ProcessedItem(
+        source_id=item.source_id,
+        raw_fingerprint=item.fingerprint,
+        timestamp=item.timestamp,
+        url=item.url,
+        author=item.author,
+        genre=genre if genre != "both" else "both",  # type: ignore[arg-type]
+        subcategory_id=data["subcategory_id"],
+        category_name=data["category_name"],
+        importance=importance,
+        summary=data["summary"],
+        title_tags=data.get("title_tags", []),
+        entity_tags=data.get("entity_tags", []),
+        flags=flags,
+        dedup_key=data["dedup_key"],
+        raw_text=item.text[:500],
+        risk_level=risk_level,
+        streamer_influence_score=streamer,
+        clip_virality_score=virality,
+        game_trend_from_streamers_score=trend,
+        live_trend_score=live,
+        video_trend_score=video,
+        freshness_score=freshness,
+        final_priority=final_pri,  # type: ignore[arg-type]
+        streamer_name=str(data.get("streamer_name") or "")[:80],
+        streamer_group=str(data.get("streamer_group") or "")[:80],
+        is_clip=bool(data.get("is_clip", False)),
+        related_game_title=str(data.get("related_game_title") or "")[:120],
+        related_anime_title=str(data.get("related_anime_title") or "")[:120],
+    )
+
+
 def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
     model = settings()["models"]["classify"]
-    if genre == "anime":
-        system = prompts.CLASSIFY_ANIME_SYSTEM
-        tax = taxonomy.ANIME_TAXONOMY
-    elif genre == "disney":
-        system = prompts.CLASSIFY_DISNEY_SYSTEM
-        tax = taxonomy.DISNEY_TAXONOMY
-    else:
-        system = prompts.CLASSIFY_GAMES_SYSTEM
-        tax = taxonomy.GAMES_TAXONOMY
+    system, tax = _genre_prompt(genre)
 
     user = prompts.CLASSIFY_USER_TEMPLATE.format(
         taxonomy=tax,
@@ -267,51 +328,7 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
             user=user,
             max_tokens=2048,
         )
-        flags = Flags(**_coerce_flags(data.get("flags")))
-        importance = data["importance"]
-        risk_level = data.get("risk_level", "low") if data.get("risk_level") in ("low", "middle", "high") else "low"
-        streamer = max(0, min(100, int(data.get("streamer_influence_score") or 0)))
-        virality = max(0, min(100, int(data.get("clip_virality_score") or 0)))
-        trend = max(0, min(100, int(data.get("game_trend_from_streamers_score") or 0)))
-        freshness = _freshness_score(item.timestamp)
-        # live_trend_score: Twitch コレクターが extra.viewer_count を入れている前提（live のみ非0）
-        live = _live_trend_score(item.extra.get("viewer_count") if item.extra else 0)
-        # video_trend_score: YouTube 急上昇等で view_count が取得できる場合のみ非0
-        video = _video_trend_score(
-            item.extra.get("view_count") if item.extra else 0,
-            item.timestamp,
-        )
-        final_pri = _final_priority(importance, freshness, streamer, virality, trend, live, video)
-        return ProcessedItem(
-            source_id=item.source_id,
-            raw_fingerprint=item.fingerprint,
-            timestamp=item.timestamp,
-            url=item.url,
-            author=item.author,
-            genre=genre if genre != "both" else "both",
-            subcategory_id=data["subcategory_id"],
-            category_name=data["category_name"],
-            importance=importance,
-            summary=data["summary"],
-            title_tags=data.get("title_tags", []),
-            entity_tags=data.get("entity_tags", []),
-            flags=flags,
-            dedup_key=data["dedup_key"],
-            raw_text=item.text[:500],
-            risk_level=risk_level,
-            streamer_influence_score=streamer,
-            clip_virality_score=virality,
-            game_trend_from_streamers_score=trend,
-            live_trend_score=live,
-            video_trend_score=video,
-            freshness_score=freshness,
-            final_priority=final_pri,
-            streamer_name=str(data.get("streamer_name") or "")[:80],
-            streamer_group=str(data.get("streamer_group") or "")[:80],
-            is_clip=bool(data.get("is_clip", False)),
-            related_game_title=str(data.get("related_game_title") or "")[:120],
-            related_anime_title=str(data.get("related_anime_title") or "")[:120],
-        )
+        return _build_processed(item, data, genre)
     except llm_client.QuotaExhausted:
         raise
     except Exception as e:  # noqa: BLE001
@@ -319,21 +336,170 @@ def classify_full(item: RawItem, genre: str) -> ProcessedItem | None:
         return None
 
 
+# ============================================================
+# バッチ LLM 呼び出し (コスト削減 2026-07-13)
+#
+# 1件1呼び出しだと判定ルール文 (filter 約570tok / classify は taxonomy 込み約1,140tok)
+# を毎件送ることになる。実測 (2026-07-06 / raw 730件) では classify 入力 1.20M tok の
+# うち 0.52M tok = 43% が taxonomy の再送だった。まとめて送れば入力が大幅に減る。
+#
+# 出力トークンは減らないので、削減効果は入力側のみ。
+# バッチが失敗したら必ず単件にフォールバックする（安さより落とさないことを優先）。
+# ============================================================
+def _batch_item_text(idx: int, item: RawItem, text_limit: int) -> str:
+    return prompts.BATCH_ITEM_TEMPLATE.format(
+        id=idx,
+        source=item.platform,
+        author=item.author,
+        account_type=item.account_type,
+        text=item.text[:text_limit],
+        url=item.url,
+        timestamp=item.timestamp.isoformat(),
+    )
+
+
+def _results_by_id(data: dict, n: int) -> dict[int, dict]:
+    """LLM の {"results":[{"id":..}]} を id -> dict に。範囲外 id は捨てる。"""
+    out: dict[int, dict] = {}
+    for row in data.get("results") or []:
+        if not isinstance(row, dict):
+            continue
+        raw_id = row.get("id")
+        if raw_id is None:
+            continue
+        try:
+            i = int(raw_id)
+        except (TypeError, ValueError):
+            continue
+        if 0 <= i < n:
+            out[i] = row
+    return out
+
+
+def filter_and_genre_batch(items: list[RawItem]) -> dict[int, FilterResult | None]:
+    """複数件を1回の LLM 呼び出しで filter。返らなかった件は欠番（呼び出し側が単件で埋める）。"""
+    if not items:
+        return {}
+    model = settings()["models"]["filter"]
+    body = "\n\n".join(_batch_item_text(i, it, 1500) for i, it in enumerate(items))
+    user = prompts.FILTER_BATCH_USER.format(n=len(items), items=body)
+    # 1件あたり約60tok + 余裕
+    max_tokens = min(8192, 200 * len(items) + 512)
+    data = llm_client.call_json(
+        model=model, system=prompts.FILTER_SYSTEM, user=user, max_tokens=max_tokens
+    )
+    rows = _results_by_id(data, len(items))
+    out: dict[int, FilterResult | None] = {}
+    for i, row in rows.items():
+        row.pop("id", None)
+        try:
+            out[i] = FilterResult(**row)
+        except Exception as e:  # noqa: BLE001
+            log.warning(f"filter batch: bad row id={i}: {e}")
+    return out
+
+
+def classify_full_batch(pairs: list[tuple[int, RawItem]], genre: str) -> dict[int, ProcessedItem]:
+    """同一 genre の複数件を1回の LLM 呼び出しで classify。taxonomy は1回だけ送る。
+
+    pairs は (呼び出し側のキー, item)。返らなかった件は欠番。
+    """
+    if not pairs:
+        return {}
+    model = settings()["models"]["classify"]
+    system, tax = _genre_prompt(genre)
+    items = [it for _, it in pairs]
+    body = "\n\n".join(_batch_item_text(i, it, 2000) for i, it in enumerate(items))
+    user = prompts.CLASSIFY_BATCH_USER_TEMPLATE.format(taxonomy=tax, n=len(items), items=body)
+    # 1件あたり実測 約250tok（processed 実績）。余裕を持って 600tok/件
+    max_tokens = min(32768, 600 * len(items) + 1024)
+    data = llm_client.call_json(model=model, system=system, user=user, max_tokens=max_tokens)
+    rows = _results_by_id(data, len(items))
+    out: dict[int, ProcessedItem] = {}
+    for i, row in rows.items():
+        key, item = pairs[i]
+        try:
+            out[key] = _build_processed(item, row, genre)
+        except Exception as e:  # noqa: BLE001
+            log.warning(f"classify batch: bad row id={i} ({item.fingerprint}): {e}")
+    return out
+
+
+def _chunks(seq: list, size: int):
+    for i in range(0, len(seq), size):
+        yield seq[i : i + size]
+
+
 def process(items: list[RawItem]) -> list[ProcessedItem]:
-    """Pipeline: filter -> classify. Gemini クォータ枯渇時は残りバッチを早期終了。"""
+    """Pipeline: filter -> classify. Gemini クォータ枯渇時は残りバッチを早期終了。
+
+    LLM 呼び出しはまとめて行い（コスト削減）、返らなかった件だけ単件で埋める。
+    settings の [cost] batch_llm = false で単件のみの旧挙動に戻せる。
+    """
+    cfg = settings()
+    cost_cfg = cfg.get("cost", {}) or {}
+    use_batch = bool(cost_cfg.get("batch_llm", True))
+    f_size = int(cost_cfg.get("filter_batch", 25))
+    c_size = int(cost_cfg.get("classify_batch", 10))
+
     out: list[ProcessedItem] = []
     skipped = 0
-    for idx, item in enumerate(items):
+    quota_dead = False
+
+    # ---- Stage 0: LLM 前の足切り ----
+    candidates: list[RawItem] = []
+    for item in items:
         if not should_classify(item):
             skipped += 1
             continue
-        try:
-            fr = filter_and_genre(item)
-        except llm_client.QuotaExhausted as e:
-            log.error(
-                f"Aborting classify batch at {idx}/{len(items)} due to Gemini quota exhaustion: {e}"
-            )
+        candidates.append(item)
+
+    # ---- Stage 1: filter (ヒューリスティック/pin で決まる分は LLM を呼ばない) ----
+    verdicts: dict[int, FilterResult | None] = {}
+    need_llm: list[int] = []
+    for i, item in enumerate(candidates):
+        pre = _filter_without_llm(item)
+        if pre is not None:
+            verdicts[i] = pre
+        else:
+            need_llm.append(i)
+
+    if use_batch and need_llm:
+        for group in _chunks(need_llm, f_size):
+            if quota_dead:
+                break
+            batch_items = [candidates[i] for i in group]
+            try:
+                f_got = filter_and_genre_batch(batch_items)
+            except llm_client.QuotaExhausted as e:
+                log.error(f"Aborting at filter batch due to Gemini quota exhaustion: {e}")
+                quota_dead = True
+                break
+            except Exception as e:  # noqa: BLE001
+                log.warning(f"filter batch failed ({len(group)} items); falling back to per-item: {e}")
+                f_got = {}
+            for local_i, gi in enumerate(group):
+                if local_i in f_got:
+                    verdicts[gi] = f_got[local_i]
+
+    # バッチで返らなかった / バッチ無効 の分を単件で埋める
+    for i in need_llm:
+        if quota_dead:
             break
+        if i in verdicts:
+            continue
+        try:
+            verdicts[i] = filter_and_genre(candidates[i])
+        except llm_client.QuotaExhausted as e:
+            log.error(f"Aborting at filter (single) due to Gemini quota exhaustion: {e}")
+            quota_dead = True
+            break
+
+    # ---- Stage 2: classify (genre ごとにまとめる = taxonomy を1回だけ送る) ----
+    by_genre: dict[str, list[tuple[int, RawItem]]] = {}
+    both_ids: set[int] = set()
+    for i, item in enumerate(candidates):
+        fr = verdicts.get(i)
         if not fr or fr.spam or fr.genre == "neither":
             continue
         # disney は単独 taxonomy で分類。both は games/anime のクロスのみ扱う
@@ -343,23 +509,60 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
             target = "anime"
         else:
             target = "games"
-        try:
-            proc = classify_full(item, target)
-        except llm_client.QuotaExhausted as e:
-            log.error(
-                f"Aborting classify batch at {idx}/{len(items)} due to Gemini quota exhaustion: {e}"
-            )
-            break
-        if proc:
-            # if "both", run anime classification too and pick the higher importance one
-            if fr.genre == "both":
+        by_genre.setdefault(target, []).append((i, item))
+        if fr.genre == "both":
+            both_ids.add(i)
+            # both は anime 側でも分類し、重要度の高い方を採る
+            by_genre.setdefault("anime", []).append((i, item))
+
+    results: dict[str, dict[int, ProcessedItem]] = {}
+    for genre, pairs in by_genre.items():
+        got: dict[int, ProcessedItem] = {}
+        if use_batch and not quota_dead:
+            for group in _chunks(pairs, c_size):
+                if quota_dead:
+                    break
                 try:
-                    alt = classify_full(item, "anime")
-                except llm_client.QuotaExhausted:
-                    alt = None
-                if alt and _imp_rank(alt.importance) > _imp_rank(proc.importance):
-                    proc = alt
+                    got.update(classify_full_batch(group, genre))
+                except llm_client.QuotaExhausted as e:
+                    log.error(f"Aborting at classify batch due to Gemini quota exhaustion: {e}")
+                    quota_dead = True
+                    break
+                except Exception as e:  # noqa: BLE001
+                    log.warning(
+                        f"classify batch failed (genre={genre}, {len(group)} items); "
+                        f"falling back to per-item: {e}"
+                    )
+        # 返らなかった分を単件で埋める
+        for key, item in pairs:
+            if quota_dead:
+                break
+            if key in got:
+                continue
+            try:
+                proc = classify_full(item, genre)
+            except llm_client.QuotaExhausted as e:
+                log.error(f"Aborting at classify (single) due to Gemini quota exhaustion: {e}")
+                quota_dead = True
+                break
+            if proc:
+                got[key] = proc
+        results[genre] = got
+
+    # ---- Stage 3: 元の順序で組み立て (both は重要度の高い方を採用) ----
+    for i in range(len(candidates)):
+        fr = verdicts.get(i)
+        if not fr or fr.spam or fr.genre == "neither":
+            continue
+        primary = "disney" if fr.genre == "disney" else ("anime" if fr.genre == "anime" else "games")
+        proc = results.get(primary, {}).get(i)
+        if i in both_ids:
+            alt = results.get("anime", {}).get(i)
+            if alt and (not proc or _imp_rank(alt.importance) > _imp_rank(proc.importance)):
+                proc = alt
+        if proc:
             out.append(proc)
+
     if skipped:
         log.info(f"Skipped {skipped} items before LLM classification")
     return out
