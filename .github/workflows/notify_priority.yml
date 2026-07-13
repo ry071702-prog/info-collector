@@ -1,14 +1,15 @@
 name: Notify Priority (S/A)
 on:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '30 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: notify-priority
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   notify:

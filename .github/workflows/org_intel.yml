@@ -4,7 +4,7 @@ name: Org Intelligence Brief
 # 安全策: SLACK_WEBHOOK_INTEL 未設定なら org_intel 側で投稿スキップ(誤爆防止)。
 on:
   schedule:
-    - cron: '0 23 * * *'   # JST 08:00
+    - cron: '20 23 * * *'   # JST 08:00
   workflow_dispatch:
     inputs:
       dry_run:
@@ -20,7 +20,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: org-intel
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   brief:

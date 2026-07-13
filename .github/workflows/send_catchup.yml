@@ -25,7 +25,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: send-catchup
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   send:

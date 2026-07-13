@@ -1,14 +1,15 @@
 name: Collect Regular (3h)
 on:
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '15 */3 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: collect-regular
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   collect:

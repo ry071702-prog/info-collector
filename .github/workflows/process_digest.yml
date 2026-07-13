@@ -1,7 +1,7 @@
 name: Process & Daily Digest
 on:
   schedule:
-    - cron: '0 10 * * *'  # JST 19:00 夕方ダイジェスト
+    - cron: '10 10 * * *'  # JST 19:00 夕方ダイジェスト
   workflow_run:
     # 朝便は「Collect Daily」完了後に走らせる。旧 '0 22' cron は collect_daily と
     # 同じ 22:00 UTC スロットで競合し、digest が collect より先に走ると raw 0 件で
@@ -24,7 +24,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: process-digest
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   process:

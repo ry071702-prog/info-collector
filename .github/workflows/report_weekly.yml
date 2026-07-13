@@ -1,11 +1,15 @@
 name: Weekly Report
 on:
   schedule:
-    - cron: '0 23 * * 0'  # JST Mon 08:00
+    - cron: '40 23 * * 0'  # JST Mon 08:00
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   report:

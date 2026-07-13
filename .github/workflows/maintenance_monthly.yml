@@ -1,11 +1,15 @@
 name: Monthly Maintenance
 on:
   schedule:
-    - cron: '0 0 1 * *'  # 1st of every month UTC
+    - cron: '50 0 1 * *'  # 1st of every month UTC
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   maintenance:

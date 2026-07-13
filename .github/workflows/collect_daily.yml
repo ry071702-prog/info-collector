@@ -1,11 +1,15 @@
 name: Collect Daily (low priority)
 on:
   schedule:
-    - cron: '0 22 * * *'  # JST 07:00
+    - cron: '45 21 * * *'  # JST 07:00
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: data-write
+  cancel-in-progress: false
 
 jobs:
   collect:
