@@ -1,7 +1,7 @@
 """Discord webhook notifier."""
 from __future__ import annotations
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import httpx
@@ -26,7 +26,7 @@ def _load_sent() -> dict[str, str]:
 
 
 def _save_sent(d: dict[str, str]) -> None:
-    cutoff = (datetime.utcnow() - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
     d = {k: v for k, v in d.items() if v >= cutoff}
     DEDUP_FILE.parent.mkdir(parents=True, exist_ok=True)
     write_json_atomic(DEDUP_FILE, d)
@@ -51,8 +51,8 @@ def notify_priority(items: list[ProcessedItem]) -> int:
         return 0
 
     sent = _load_sent()
-    now_iso = datetime.utcnow().isoformat()
-    cutoff = (datetime.utcnow() - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
+    now_iso = datetime.now(timezone.utc).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
     fresh = [it for it in items if it.dedup_key not in sent or sent.get(it.dedup_key, "") < cutoff]
     fresh = [it for it in fresh if it.importance in ("S", "A")]
 

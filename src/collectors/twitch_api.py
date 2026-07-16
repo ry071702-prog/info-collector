@@ -13,7 +13,7 @@ _token_cache: dict = {"token": None, "expires_at": None}
 
 
 def _get_token() -> str:
-    if _token_cache["token"] and _token_cache["expires_at"] and datetime.utcnow() < _token_cache["expires_at"]:
+    if _token_cache["token"] and _token_cache["expires_at"] and datetime.now(timezone.utc) < _token_cache["expires_at"]:
         return _token_cache["token"]
     cid = env("TWITCH_CLIENT_ID", required=True)
     csec = env("TWITCH_CLIENT_SECRET", required=True)
@@ -26,7 +26,7 @@ def _get_token() -> str:
     data = resp.json()
     from datetime import timedelta
     _token_cache["token"] = data["access_token"]
-    _token_cache["expires_at"] = datetime.utcnow() + timedelta(seconds=data["expires_in"] - 300)
+    _token_cache["expires_at"] = datetime.now(timezone.utc) + timedelta(seconds=data["expires_in"] - 300)
     return data["access_token"]
 
 

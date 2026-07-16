@@ -1,6 +1,6 @@
 """Weekly trend report job. Run on Mondays."""
 from __future__ import annotations
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from .. import logger
 from ..outputs import discord, markdown
@@ -11,7 +11,7 @@ log = logger.get(__name__)
 
 
 def main() -> None:
-    end = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     start = end - timedelta(days=7)
     log.info(f"Weekly report: {start.date()} → {end.date()}")
 

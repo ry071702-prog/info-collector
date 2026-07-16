@@ -9,7 +9,7 @@ Run via: `python -m src.admin.health`
 from __future__ import annotations
 import json
 from collections import Counter, defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .. import llm_client, logger, watchlist
@@ -43,7 +43,7 @@ def _human_size(n: int) -> str:
 
 
 def main() -> None:
-    end = datetime.utcnow()
+    end = datetime.now(timezone.utc)
     start = end - timedelta(days=WINDOW_DAYS)
 
     sources = watchlist.load()
