@@ -17,7 +17,7 @@ LOOKBACK_MINUTES = 45
 
 def main() -> None:
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=LOOKBACK_MINUTES)
-    date_str = datetime.utcnow().strftime("%Y-%m-%d")
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     raw_items = [it for it in read_raw(date_str) if it.timestamp >= cutoff]
     log.info(f"Notify check: {len(raw_items)} recent items")

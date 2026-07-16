@@ -6,6 +6,7 @@ __pycache__/
 .Python
 .venv/
 .venv-x/
+.venv-sentinel/
 venv/
 env/
 
