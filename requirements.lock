@@ -35,7 +35,7 @@ google-auth==2.55.2
     #   gspread
 google-auth-oauthlib==1.4.0
     # via gspread
-google-genai==2.11.0
+google-genai==2.12.1
     # via -r requirements.txt
 gspread==6.2.1
     # via -r requirements.txt
@@ -99,7 +99,7 @@ requests==2.34.2
     #   requests-oauthlib
 requests-oauthlib==2.0.0
     # via google-auth-oauthlib
-selectolax==0.4.10
+selectolax==0.4.11
     # via -r requirements.txt
 sgmllib3k==1.0.0
     # via feedparser
@@ -127,5 +127,5 @@ typing-inspection==0.4.2
     # via pydantic
 urllib3==2.7.0
     # via requests
-websockets==16.1
+websockets==16.1.1
     # via google-genai
