@@ -70,6 +70,8 @@ pillow==12.3.0
     # via -r requirements.txt
 pluggy==1.6.0
     # via pytest
+py-machineid==1.0.0
+    # via twscrape
 pyasn1==0.6.4
     # via pyasn1-modules
 pyasn1-modules==0.4.2
@@ -111,7 +113,7 @@ tenacity==9.1.4
     #   google-genai
 tomli==2.4.1
     # via -r requirements.txt
-twscrape==0.18.1
+twscrape==0.19.1
     # via -r requirements.txt
 typing-extensions==4.16.0
     # via
