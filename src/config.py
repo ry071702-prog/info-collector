@@ -31,7 +31,7 @@ def env(key: str, default: str | None = None, required: bool = False) -> str | N
     return val
 
 
-def env_json(key: str, default=None, required: bool = False):
+def env_json(key: str, default: object = None, required: bool = False) -> object:
     raw = env(key, required=required)
     if not raw:
         return default

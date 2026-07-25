@@ -32,6 +32,6 @@ def setup() -> None:
     _initialized = True
 
 
-def get(name: str):
+def get(name: str) -> object:
     setup()
     return logger.bind(module=name)
