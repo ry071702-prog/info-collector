@@ -21,6 +21,7 @@ from ..collectors import (
     youtube_trending,
 )
 from ..storage import write_raw
+from ..timeutil import utc_now
 
 log = logger.get(__name__)
 
@@ -42,7 +43,7 @@ def main(tier: str) -> None:
     log.info(f"[{tier}] {len(sources)} sources to collect")
 
     since = datetime.now(timezone.utc) - timedelta(hours=LOOKBACK[tier])
-    date_str = datetime.utcnow().strftime("%Y-%m-%d")
+    date_str = utc_now().strftime("%Y-%m-%d")
 
     # COLLECTORS でこの実行が回す collector を絞れる (カンマ区切り)。
     # 例: ローカル Mac (居住者IP) で X だけ回す → COLLECTORS=x,x_search

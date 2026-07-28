@@ -10,6 +10,7 @@ from .. import logger
 from ..outputs import discord
 from ..processors import classify
 from ..storage import read_raw
+from ..timeutil import utc_now
 
 log = logger.get(__name__)
 LOOKBACK_MINUTES = 45
@@ -17,7 +18,7 @@ LOOKBACK_MINUTES = 45
 
 def main() -> None:
     cutoff = datetime.now(timezone.utc) - timedelta(minutes=LOOKBACK_MINUTES)
-    date_str = datetime.utcnow().strftime("%Y-%m-%d")
+    date_str = utc_now().strftime("%Y-%m-%d")
 
     raw_items = [it for it in read_raw(date_str) if it.timestamp >= cutoff]
     log.info(f"Notify check: {len(raw_items)} recent items")

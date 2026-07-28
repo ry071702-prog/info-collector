@@ -1,7 +1,7 @@
 """Discord webhook notifier."""
 from __future__ import annotations
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import httpx
@@ -10,6 +10,7 @@ from .. import logger
 from ..config import cache_dir, env, is_dry_run
 from ..models import ProcessedItem
 from ..storage import write_json_atomic
+from ..timeutil import parse_utc, utc_now
 
 log = logger.get(__name__)
 DEDUP_FILE = cache_dir() / "discord_sent.json"
@@ -26,8 +27,9 @@ def _load_sent() -> dict[str, str]:
 
 
 def _save_sent(d: dict[str, str]) -> None:
-    cutoff = (datetime.utcnow() - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
-    d = {k: v for k, v in d.items() if v >= cutoff}
+    # 文字列比較だと tz 表記 (+00:00 の有無) が混ざったときに切り捨てを誤るので datetime で比べる
+    cutoff = utc_now() - timedelta(hours=DEDUP_WINDOW_HOURS)
+    d = {k: v for k, v in d.items() if parse_utc(v) >= cutoff}
     DEDUP_FILE.parent.mkdir(parents=True, exist_ok=True)
     write_json_atomic(DEDUP_FILE, d)
 
@@ -51,9 +53,13 @@ def notify_priority(items: list[ProcessedItem]) -> int:
         return 0
 
     sent = _load_sent()
-    now_iso = datetime.utcnow().isoformat()
-    cutoff = (datetime.utcnow() - timedelta(hours=DEDUP_WINDOW_HOURS)).isoformat()
-    fresh = [it for it in items if it.dedup_key not in sent or sent.get(it.dedup_key, "") < cutoff]
+    now_iso = utc_now().isoformat()
+    cutoff = utc_now() - timedelta(hours=DEDUP_WINDOW_HOURS)
+    fresh = [
+        it
+        for it in items
+        if it.dedup_key not in sent or parse_utc(sent[it.dedup_key]) < cutoff
+    ]
     fresh = [it for it in fresh if it.importance in ("S", "A")]
 
     count = 0

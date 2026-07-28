@@ -2,12 +2,13 @@
 from __future__ import annotations
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 from . import logger
 from .config import cache_dir
 from .storage import write_json_atomic
+from .timeutil import parse_utc, utc_now
 
 log = logger.get(__name__)
 STATE_FILE = cache_dir() / "circuit_breakers.json"
@@ -40,7 +41,8 @@ def is_open(name: str) -> bool:
     if not state or state.get("state") != "open":
         return False
     auto_reset_at = state.get("auto_reset_at")
-    if auto_reset_at and datetime.utcnow().isoformat() >= auto_reset_at:
+    # 文字列比較だと tz 表記 (+00:00 の有無) の違いで判定がずれるので datetime で比べる
+    if auto_reset_at and utc_now() >= parse_utc(auto_reset_at):
         clear(name)
         return False
     return True
@@ -50,10 +52,10 @@ def trip(name: str, reason: str, auto_reset_hours: int | None = None) -> None:
     state = _load()
     auto_reset_at = None
     if auto_reset_hours:
-        auto_reset_at = (datetime.utcnow() + timedelta(hours=auto_reset_hours)).isoformat()
+        auto_reset_at = (utc_now() + timedelta(hours=auto_reset_hours)).isoformat()
     state[name] = {
         "state": "open",
-        "tripped_at": datetime.utcnow().isoformat(),
+        "tripped_at": utc_now().isoformat(),
         "reason": reason,
         "auto_reset_at": auto_reset_at,
     }

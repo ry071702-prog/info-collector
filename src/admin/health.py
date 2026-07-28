@@ -15,6 +15,7 @@ from pathlib import Path
 from .. import llm_client, logger, watchlist
 from ..config import DATA_DIR
 from ..storage import read_processed_range
+from ..timeutil import utc_now
 
 log = logger.get(__name__)
 
@@ -43,7 +44,7 @@ def _human_size(n: int) -> str:
 
 
 def main() -> None:
-    end = datetime.utcnow()
+    end = utc_now()
     start = end - timedelta(days=WINDOW_DAYS)
 
     sources = watchlist.load()

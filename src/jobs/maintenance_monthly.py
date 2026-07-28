@@ -10,6 +10,7 @@ from .. import llm_client, logger
 from ..config import DATA_DIR, settings
 from ..outputs import discord, markdown
 from ..storage import read_processed_range
+from ..timeutil import utc_now
 
 log = logger.get(__name__)
 
@@ -18,7 +19,7 @@ def _prune_dated_subdirs(parent: Path, retain_days: int) -> int:
     """parent 配下の YYYY-MM-DD ディレクトリで cutoff より古いものを削除。返り値は削除件数。"""
     if not parent.exists():
         return 0
-    cutoff = datetime.utcnow().date() - timedelta(days=retain_days)
+    cutoff = utc_now().date() - timedelta(days=retain_days)
     removed = 0
     for entry in parent.iterdir():
         if not entry.is_dir():
@@ -37,7 +38,7 @@ def _prune_logs(parent: Path, retain_days: int) -> int:
     """data/logs/ 配下のファイルを mtime ベースで cutoff より古いものを削除。"""
     if not parent.exists():
         return 0
-    cutoff_ts = (datetime.utcnow() - timedelta(days=retain_days)).timestamp()
+    cutoff_ts = (utc_now() - timedelta(days=retain_days)).timestamp()
     removed = 0
     for entry in parent.rglob("*"):
         if entry.is_file() and entry.stat().st_mtime < cutoff_ts:
@@ -83,7 +84,7 @@ def _aggregate_stats(items):
 
 
 def main() -> None:
-    end = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
     start = end - timedelta(days=30)
     items = read_processed_range(start, end)
     log.info(f"Monthly: {len(items)} items in last 30 days")

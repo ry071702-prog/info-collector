@@ -6,12 +6,13 @@ from .. import logger
 from ..outputs import discord, markdown
 from ..processors import digest
 from ..storage import read_processed_range
+from ..timeutil import utc_now
 
 log = logger.get(__name__)
 
 
 def main() -> None:
-    end = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    end = utc_now().replace(hour=0, minute=0, second=0, microsecond=0)
     start = end - timedelta(days=7)
     log.info(f"Weekly report: {start.date()} → {end.date()}")
 
