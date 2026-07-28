@@ -20,9 +20,9 @@ jobs:
     # Cloudflare 側が停滞すると deploy が無限に待つ (2026-07-03〜09 に 45 分ハング × 6 回)。
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -32,7 +32,7 @@ jobs:
       - name: Build site data
         run: python scripts/build_site_data.py
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
