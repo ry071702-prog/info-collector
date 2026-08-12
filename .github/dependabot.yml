@@ -1,0 +1,19 @@
+# 月次・全依存を1PRにまとめる (ノイズ最小)
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      all-pip:
+        patterns: ["*"]
+    open-pull-requests-limit: 3
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      all-actions:
+        patterns: ["*"]
+    open-pull-requests-limit: 3
