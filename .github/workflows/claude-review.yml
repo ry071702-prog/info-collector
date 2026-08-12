@@ -1,0 +1,37 @@
+name: Claude Code Review
+
+# PR を開いたとき (+ draft 解除時) に1回だけ自動レビュー
+# synchronize を外してあるのは push のたびに従量課金が走るのを避けるため
+# 再レビューしたいときは PR に「@claude もう一度レビューして」等とコメントせず、
+# close→reopen で再発火させる (コメント応答モードはこのリポジトリでは無効)
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: ${{ !github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            この PR をレビューして、指摘を重大度順に PR コメントで返す
+            観点: バグ / セキュリティ / パフォーマンス / テスト欠落
+            確信のある指摘だけに絞り、スタイル・好みの指摘はしない
+            日本語で簡潔に  問題がなければ「LGTM」と一言だけ
