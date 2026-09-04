@@ -50,23 +50,35 @@ def _collect(sources: list[WatchSource], since: datetime) -> list[RawItem]:
 
 def _brief(items: list[RawItem]) -> str:
     listing = "\n".join(
-        f"- [{it.author}] {it.text.strip()[:220]} ({it.url})" for it in items[:40]
+        f"- [{it.author}] {it.text.strip()[:600]} ({it.url})" for it in items[:60]
     )
     model = str(settings().get("models", {}).get("digest", "gemini-2.5-flash"))
     system = (
         "あなたは事業会社の競合・業界インテリジェンス担当アナリストです。"
-        "収集された最新アイテム群から『前回から何が変わったか・注目すべき動き』だけを抽出し、"
+        "収集された最新アイテム群から『前回から何が変わったか・注目すべき動き』を抽出し、"
         "出典URLを必ず添えた Slack mrkdwn のブリーフを日本語で作成します。"
-        "憶測を避け事実ベースで、固有名詞は原文のまま保持してください。"
+        "読み手は毎朝これだけ読めば業界の動きを把握できる想定なので、"
+        "見出しの羅列で終わらせず、各トピックの中身・背景・意味合いまで書き切ってください。"
+        "憶測は避け、収集アイテムに書かれている事実だけを根拠にし、固有名詞・数値は原文のまま保持してください。"
+        "アイテムに書かれていない数値や推測は補わず、不明な点は触れないでください。"
     )
     user = (
-        "次の新規アイテムから、競合動向・業界トレンド・採用市場の観点で重要な変化を3〜6点にまとめてください。\n"
-        "視認性ルール:\n"
-        "- 各点は `• *見出し*` ＋ 1〜2行の要点 ＋ 末尾に `<URL|出典>`。\n"
-        "- 冒頭の前置きや締めの挨拶は書かない。いきなり最初の点から始める。\n\n"
+        "次の新規アイテムから、競合動向・業界トレンド・採用市場の観点で重要な変化を5〜8点にまとめてください。\n"
+        "構成:\n"
+        "1. 冒頭に `*今日の要点*` の行を置き、その下に全体の流れを2〜3行で書く。\n"
+        "2. 続けて各トピックを次の形式で書く。\n"
+        "   `• *見出し*`\n"
+        "   その下にインデントなしで3〜5行:\n"
+        "     - 何が起きたか(主体・時期・規模を具体的に)\n"
+        "     - 背景や前回からの変化(なぜ今これが起きたか)\n"
+        "     - 業界・採用市場への意味合い\n"
+        "   最終行の末尾に `<URL|出典>` を置く。複数ソースがあれば並べる。\n"
+        "3. 末尾に `*来週の注視点*` として2〜3行、続報を追うべき論点を書く。\n"
+        "分量の目安: 全体で1200〜2000字。1トピック150〜250字。\n"
+        "禁止: 挨拶・前置き・『以上です』等の締め・情報の水増しのための一般論。\n\n"
         f"{listing}"
     )
-    return call_text(model=model, system=system, user=user, max_tokens=1500, temperature=0.3).strip()
+    return call_text(model=model, system=system, user=user, max_tokens=8192, temperature=0.3).strip()
 
 
 def _post_slack(text: str) -> None:
@@ -102,7 +114,7 @@ def main(argv: list[str] | None = None) -> None:
         except Exception as e:  # noqa: BLE001
             log.error(f"brief generation failed: {e}; fall back to raw list")
             body = "\n".join(
-                f"• {it.author}: {it.text.strip()[:120]} <{it.url}|出典>" for it in fresh[:6]
+                f"• *{it.author}*\n{it.text.strip()[:400]} <{it.url}|出典>" for it in fresh[:10]
             )
     message = f"{header}\n\n{body}"
 
