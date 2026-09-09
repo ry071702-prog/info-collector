@@ -87,6 +87,8 @@ jobs:
           git config user.name "github-actions"
           git add data/processed docs/digests data/cache data/logs site/public/newspaper-img site/public/audio || true
           git diff --quiet --staged || git commit -m "digest $(date -u +%F)"
+          # コミット後に残った未追跡の生成物は pull をブロックするので捨てる
+          git ls-files --others --exclude-standard -z -- data docs site | xargs -0 -r rm -f
           pushed=""
           for i in 1 2 3; do
             if git pull --rebase --autostash -X theirs && git push; then pushed=1; break; fi

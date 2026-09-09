@@ -48,6 +48,10 @@ jobs:
       - name: Check requirements.lock is in sync with requirements.txt
         run: |
           pip install uv
+          # 既存 lock を種にして解決する。uv は出力先に既にある pin を「優先」として扱うため、
+          # これが無いと毎回まっさらに解決され、依存側が新版を出しただけで
+          # requirements.txt を触っていなくても差分が出て落ちる (時間経過で自然に腐る)。
+          cp requirements.lock /tmp/expected.lock
           uv pip compile requirements.txt -o /tmp/expected.lock --python-version 3.12 --quiet
           if ! diff -q <(grep -v '^#' requirements.lock) <(grep -v '^#' /tmp/expected.lock) > /dev/null; then
             echo "::error::requirements.lock が requirements.txt と乖離しています。'uv pip compile requirements.txt -o requirements.lock --python-version 3.12' を実行してコミットしてください"

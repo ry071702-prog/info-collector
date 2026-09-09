@@ -48,8 +48,10 @@ jobs:
         run: |
           git config user.email "actions@github.com"
           git config user.name "github-actions"
-          git add data/cache/org_baseline.json || true
+          git add data/cache/org_baseline.json data/logs || true
           git diff --quiet --staged || git commit -m "org-intel baseline $(date -u +%F)"
+          # コミット後に残った未追跡の生成物は pull をブロックするので捨てる
+          git ls-files --others --exclude-standard -z -- data docs site | xargs -0 -r rm -f
           pushed=""
           for i in 1 2 3; do
             if git pull --rebase --autostash -X theirs && git push; then pushed=1; break; fi
