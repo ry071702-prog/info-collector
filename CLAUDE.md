@@ -180,14 +180,21 @@ python -c "from src.llm_client import quota_status; import json; print(json.dump
 
 ### テスト・簡易確認
 
-現時点で pytest テストや専用テストディレクトリは見当たりません。
-変更後の最低限の確認には compileall を使います。
+pytest テストが `tests/` ディレクトリ配下にあります。
+テスト実行時には外部 API をモック化しています。
+
+```bash
+pytest tests/
+pytest tests/ -v  # 詳細出力
+pytest tests/test_config.py  # 特定ファイルのみ
+```
+
+外部 API キーがない環境では、一部 collector や output がスキップまたは失敗ログを出します。
+変更後の最低限の確認には compileall を使うこともできます。
 
 ```bash
 python -m compileall src scripts
 ```
-
-外部 API キーがない環境では、一部 collector や output がスキップまたは失敗ログを出します。
 
 ### サイト
 
