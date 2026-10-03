@@ -42,7 +42,21 @@ jobs:
           git config user.name "claude-bot"
           git config user.email "claude-bot@users.noreply.github.com"
 
+      - name: Skip while an earlier maintenance PR is still open
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 前回までの自動メンテ PR (claude/ ブランチ) が未マージのまま残っていたら、今回は実行しない
+          # 毎週「最低1本 PR を作る」ので、マージされないと同じテスト追加が積み上がるため
+          open=$(gh pr list --state open --json headRefName -q '[.[] | select(.headRefName | startswith("claude/"))] | length')
+          echo "open=${open}" >> "$GITHUB_OUTPUT"
+          if [ "${open}" -gt 0 ]; then
+            echo "未マージの自動メンテ PR が ${open} 本あるので、今回はスキップします"
+          fi
+
       - name: Run maintenance
+        if: steps.gate.outputs.open == '0'
         # ベストエフォートの自動メンテ。エージェントが制限ターン内に PR を
         # 作れず exit 1 で終わってもワークフローを失敗扱いにせず通知を出さない。
         continue-on-error: true
