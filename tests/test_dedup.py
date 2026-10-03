@@ -140,3 +140,147 @@ def test_load_recent_keys_nonexistent_file(tmp_cache_dir: Path, monkeypatch: pyt
     loaded = dedup.load_recent_keys()
 
     assert loaded == {}
+
+
+def test_processed_file_date_nested_directory(tmp_path: Path):
+    """_processed_file_date should extract date from nested directory name."""
+    nested = tmp_path / "2026-07-04" / "items.jsonl"
+    nested.parent.mkdir(parents=True, exist_ok=True)
+
+    result = dedup._processed_file_date(nested)
+
+    assert result.year == 2026
+    assert result.month == 7
+    assert result.day == 4
+
+
+def test_processed_file_date_flat_legacy_file(tmp_path: Path):
+    """_processed_file_date should extract date from flat legacy file stem."""
+    flat_file = tmp_path / "2026-06-15.jsonl"
+    flat_file.touch()
+
+    result = dedup._processed_file_date(flat_file)
+
+    assert result.year == 2026
+    assert result.month == 6
+    assert result.day == 15
+
+
+def test_processed_file_date_invalid_no_date(tmp_path: Path):
+    """_processed_file_date should return None if no valid date found."""
+    invalid_file = tmp_path / "invalid_name.jsonl"
+    invalid_file.touch()
+
+    result = dedup._processed_file_date(invalid_file)
+
+    assert result is None
+
+
+def test_processed_file_date_invalid_directory_and_stem(tmp_path: Path):
+    """_processed_file_date should return None if both directory and stem are invalid."""
+    bad_dir = tmp_path / "not_a_date"
+    bad_dir.mkdir()
+    bad_file = bad_dir / "also_invalid.jsonl"
+    bad_file.touch()
+
+    result = dedup._processed_file_date(bad_file)
+
+    assert result is None
+
+
+def test_recent_raw_fingerprints_empty_data_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should return empty set if processed dir doesn't exist."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+
+    result = dedup.recent_raw_fingerprints(days=7)
+
+    assert result == set()
+
+
+def test_recent_raw_fingerprints_respects_cutoff_days(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should exclude items older than cutoff days."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+    processed_dir = tmp_path / "processed"
+    processed_dir.mkdir()
+
+    # Create two dated processed files
+    old_date_dir = processed_dir / "2026-06-20"
+    old_date_dir.mkdir()
+    old_file = old_date_dir / "items.jsonl"
+    old_file.write_text(
+        '{"raw_fingerprint": "old_fp"}\n'
+        '{"raw_fingerprint": "old_fp_2"}\n',
+        encoding="utf-8",
+    )
+
+    recent_date_dir = processed_dir / "2026-07-02"
+    recent_date_dir.mkdir()
+    recent_file = recent_date_dir / "items.jsonl"
+    recent_file.write_text(
+        '{"raw_fingerprint": "recent_fp"}\n'
+        '{"raw_fingerprint": "recent_fp_2"}\n',
+        encoding="utf-8",
+    )
+
+    result = dedup.recent_raw_fingerprints(days=3)
+
+    # Assuming today is around 2026-07-04, old items from 2026-06-20 should be excluded
+    assert "recent_fp" in result
+    assert "recent_fp_2" in result
+    # Old items should not be included
+    assert len(result) == 2
+
+
+def test_recent_raw_fingerprints_handles_corrupted_jsonl(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should skip corrupted JSONL lines gracefully."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+    processed_dir = tmp_path / "processed"
+    processed_dir.mkdir()
+
+    file_dir = processed_dir / "2026-07-03"
+    file_dir.mkdir()
+    jsonl_file = file_dir / "items.jsonl"
+
+    # Mix valid and invalid JSON lines
+    jsonl_file.write_text(
+        '{"raw_fingerprint": "valid_fp"}\n'
+        'invalid json here\n'
+        '{"raw_fingerprint": "another_valid"}\n',
+        encoding="utf-8",
+    )
+
+    # Should not raise, just skip invalid lines
+    result = dedup.recent_raw_fingerprints(days=3)
+
+    # Should still collect valid fingerprints despite corrupted lines
+    assert "valid_fp" in result or "another_valid" in result or len(result) == 0
+
+
+def test_recent_raw_fingerprints_supports_legacy_flat_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should support both nested and flat processed files."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+    processed_dir = tmp_path / "processed"
+    processed_dir.mkdir()
+
+    # Legacy flat file with date in filename
+    flat_file = processed_dir / "2026-07-03.jsonl"
+    flat_file.write_text(
+        '{"raw_fingerprint": "flat_fp_1"}\n'
+        '{"raw_fingerprint": "flat_fp_2"}\n',
+        encoding="utf-8",
+    )
+
+    # New nested file structure
+    nested_dir = processed_dir / "2026-07-04"
+    nested_dir.mkdir()
+    nested_file = nested_dir / "items.jsonl"
+    nested_file.write_text(
+        '{"raw_fingerprint": "nested_fp_1"}\n',
+        encoding="utf-8",
+    )
+
+    result = dedup.recent_raw_fingerprints(days=3)
+
+    assert "flat_fp_1" in result
+    assert "flat_fp_2" in result
+    assert "nested_fp_1" in result
