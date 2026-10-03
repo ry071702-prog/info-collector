@@ -157,3 +157,72 @@ def test_importance_values():
             dedup_key="key",
         )
         assert item.importance == importance
+
+
+def test_processed_item_scoring_fields():
+    """ProcessedItem scoring fields should initialize with correct defaults."""
+    flags = Flags(source_role="公式")
+    item = ProcessedItem(
+        source_id="src1",
+        raw_fingerprint="fp123",
+        timestamp=datetime(2026, 5, 11, 10, 0, 0),
+        url="https://example.com",
+        author="author1",
+        genre="games",
+        subcategory_id="cat_game_01",
+        category_name="ゲーム発表",
+        importance="A",
+        summary="Summary",
+        flags=flags,
+        dedup_key="dedup_key_123",
+    )
+    assert item.risk_level == "low"
+    assert item.streamer_influence_score == 0
+    assert item.clip_virality_score == 0
+    assert item.game_trend_from_streamers_score == 0
+    assert item.video_trend_score == 0
+    assert item.live_trend_score == 0
+    assert item.freshness_score == 0
+    assert item.final_priority == "C"
+    assert item.streamer_name == ""
+    assert item.streamer_group == ""
+    assert item.is_clip is False
+    assert item.related_game_title == ""
+    assert item.related_anime_title == ""
+
+
+def test_processed_item_with_custom_scores():
+    """ProcessedItem should accept custom scoring values."""
+    flags = Flags(source_role="メディア")
+    item = ProcessedItem(
+        source_id="src2",
+        raw_fingerprint="fp456",
+        timestamp=datetime(2026, 6, 13, 15, 30, 0),
+        url="https://example.com/post",
+        author="author2",
+        genre="anime",
+        subcategory_id="cat_anime_01",
+        category_name="アニメ発表",
+        importance="S",
+        summary="Important anime announcement",
+        flags=flags,
+        dedup_key="dedup_key_456",
+        risk_level="middle",
+        streamer_influence_score=85,
+        clip_virality_score=72,
+        game_trend_from_streamers_score=45,
+        video_trend_score=92,
+        live_trend_score=60,
+        freshness_score=88,
+        final_priority="A",
+        streamer_name="配信者A",
+        streamer_group="VTuber事務所",
+        is_clip=True,
+        related_anime_title="进击的巨人",
+    )
+    assert item.risk_level == "middle"
+    assert item.streamer_influence_score == 85
+    assert item.clip_virality_score == 72
+    assert item.is_clip is True
+    assert item.streamer_name == "配信者A"
+    assert item.final_priority == "A"
