@@ -140,3 +140,136 @@ def test_load_recent_keys_nonexistent_file(tmp_cache_dir: Path, monkeypatch: pyt
     loaded = dedup.load_recent_keys()
 
     assert loaded == {}
+
+
+def test_processed_file_date_nested_directory(tmp_path: Path):
+    """_processed_file_date should extract date from parent directory name."""
+    nested_path = tmp_path / "2026-07-15" / "items.jsonl"
+    result = dedup._processed_file_date(nested_path)
+    assert result is not None
+    assert result.year == 2026
+    assert result.month == 7
+    assert result.day == 15
+
+
+def test_processed_file_date_flat_filename(tmp_path: Path):
+    """_processed_file_date should extract date from flat filename."""
+    flat_path = tmp_path / "2026-06-20.jsonl"
+    result = dedup._processed_file_date(flat_path)
+    assert result is not None
+    assert result.year == 2026
+    assert result.month == 6
+    assert result.day == 20
+
+
+def test_processed_file_date_invalid_format(tmp_path: Path):
+    """_processed_file_date should return None for invalid date format."""
+    invalid_path = tmp_path / "invalid" / "notadate.jsonl"
+    result = dedup._processed_file_date(invalid_path)
+    assert result is None
+
+
+def test_recent_raw_fingerprints_no_processed_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should return empty set if processed dir doesn't exist."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+    result = dedup.recent_raw_fingerprints()
+    assert result == set()
+
+
+def test_recent_raw_fingerprints_from_nested_files(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, tmp_cache_dir: Path):
+    """recent_raw_fingerprints should collect fingerprints from nested processed JSONL files."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+
+    processed_dir = tmp_path / "processed"
+    today_dir = processed_dir / "2026-07-11"
+    today_dir.mkdir(parents=True)
+
+    flags = Flags(source_role="公式")
+    item1 = ProcessedItem(
+        source_id="src1",
+        raw_fingerprint="fp_nested_1",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/1",
+        author="user1",
+        genre="games",
+        subcategory_id="cat1",
+        category_name="Category",
+        importance="A",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key1",
+    )
+    item2 = ProcessedItem(
+        source_id="src2",
+        raw_fingerprint="fp_nested_2",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/2",
+        author="user2",
+        genre="anime",
+        subcategory_id="cat2",
+        category_name="Category",
+        importance="B",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key2",
+    )
+
+    items_file = today_dir / "items.jsonl"
+    with items_file.open("w", encoding="utf-8") as f:
+        f.write(item1.model_dump_json() + "\n")
+        f.write(item2.model_dump_json() + "\n")
+
+    result = dedup.recent_raw_fingerprints(days=30)
+    assert "fp_nested_1" in result
+    assert "fp_nested_2" in result
+    assert len(result) == 2
+
+
+def test_recent_raw_fingerprints_respects_days_window(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should only include items within days window."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_path)
+
+    processed_dir = tmp_path / "processed"
+    old_dir = processed_dir / "2026-06-10"
+    recent_dir = processed_dir / "2026-07-11"
+    old_dir.mkdir(parents=True)
+    recent_dir.mkdir(parents=True)
+
+    flags = Flags(source_role="公式")
+    old_item = ProcessedItem(
+        source_id="src_old",
+        raw_fingerprint="fp_old",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/old",
+        author="user_old",
+        genre="games",
+        subcategory_id="cat1",
+        category_name="Category",
+        importance="A",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key_old",
+    )
+    recent_item = ProcessedItem(
+        source_id="src_recent",
+        raw_fingerprint="fp_recent",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/recent",
+        author="user_recent",
+        genre="anime",
+        subcategory_id="cat2",
+        category_name="Category",
+        importance="B",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key_recent",
+    )
+
+    with (old_dir / "items.jsonl").open("w", encoding="utf-8") as f:
+        f.write(old_item.model_dump_json() + "\n")
+    with (recent_dir / "items.jsonl").open("w", encoding="utf-8") as f:
+        f.write(recent_item.model_dump_json() + "\n")
+
+    result = dedup.recent_raw_fingerprints(days=7)
+    assert "fp_recent" in result
+    assert "fp_old" not in result
