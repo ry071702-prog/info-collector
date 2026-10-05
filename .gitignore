@@ -60,3 +60,6 @@ site/public/newspaper-img/*.preview.png
 _fix_report.txt
 site/.dev.vars
 site/design-mocks/_*.png
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
