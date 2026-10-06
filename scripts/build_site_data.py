@@ -14,7 +14,7 @@ from urllib.parse import urljoin, urlparse
 
 import httpx
 from loguru import logger
-from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -172,7 +172,7 @@ def cache_filename(url: str) -> str:
 
 def extract_meta_image(html: str, base_url: str) -> Optional[str]:
     """Extract an OG/Twitter/image_src URL from HTML."""
-    tree = HTMLParser(html)
+    tree = LexborHTMLParser(html)
     selectors = [
         'meta[property="og:image"]',
         'meta[property="og:image:secure_url"]',
