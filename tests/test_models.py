@@ -157,3 +157,105 @@ def test_importance_values():
             dedup_key="key",
         )
         assert item.importance == importance
+
+
+def test_watch_source_disabled():
+    """WatchSource should support disabled flag."""
+    source = WatchSource(
+        id="disabled_src",
+        name="Disabled Source",
+        platform="Twitch",
+        genre="games",
+        source_type="VTuber",
+        enabled=False,
+    )
+    assert source.enabled is False
+
+
+def test_raw_item_with_extra_data():
+    """RawItem should accept and preserve extra metadata."""
+    extra_data = {"view_count": 1000, "retweet_count": 50}
+    item = RawItem(
+        source_id="src2",
+        platform="YouTube",
+        author="channel1",
+        account_type="公式",
+        text="Video description",
+        url="https://youtube.com/watch?v=abc123",
+        timestamp=datetime(2026, 9, 19, 15, 30, 0),
+        extra=extra_data,
+    )
+    assert item.extra == extra_data
+    assert item.extra["view_count"] == 1000
+
+
+def test_flags_cross_genre_options():
+    """Flags should support all cross_genre combinations."""
+    cross_genre_values = [
+        "ゲーム単独",
+        "アニメ単独",
+        "Disney単独",
+        "両方",
+        "ゲーム+Disney",
+        "アニメ+Disney",
+        "その他",
+    ]
+    for genre in cross_genre_values:
+        flags = Flags(source_role="個人", cross_genre=genre)
+        assert flags.cross_genre == genre
+
+
+def test_processed_item_scoring_fields():
+    """ProcessedItem should accept all scoring fields."""
+    flags = Flags(source_role="メディア")
+    item = ProcessedItem(
+        source_id="scored_src",
+        raw_fingerprint="fp_scored",
+        timestamp=datetime(2026, 9, 19, 12, 0, 0),
+        url="https://example.com/article",
+        author="news_outlet",
+        genre="games",
+        subcategory_id="cat_gamedebut",
+        category_name="ゲーム新情報",
+        importance="S",
+        summary="Big announcement",
+        flags=flags,
+        dedup_key="dedup_scored",
+        streamer_influence_score=85,
+        clip_virality_score=72,
+        game_trend_from_streamers_score=90,
+        live_trend_score=65,
+        video_trend_score=78,
+        freshness_score=95,
+        final_priority="A",
+        risk_level="high",
+        streamer_name="SHAKA",
+        streamer_group="Crazy Raccoon",
+        is_clip=True,
+        related_game_title="Valorant",
+    )
+    assert item.streamer_influence_score == 85
+    assert item.clip_virality_score == 72
+    assert item.game_trend_from_streamers_score == 90
+    assert item.live_trend_score == 65
+    assert item.video_trend_score == 78
+    assert item.freshness_score == 95
+    assert item.final_priority == "A"
+    assert item.risk_level == "high"
+    assert item.streamer_name == "SHAKA"
+    assert item.is_clip is True
+
+
+def test_raw_item_fingerprint_empty_string_url():
+    """RawItem.fingerprint should treat empty string URL as no URL."""
+    item = RawItem(
+        source_id="src3",
+        platform="RSS",
+        author="rss_feed",
+        account_type="メディア",
+        text="Article content",
+        url="",
+        timestamp=datetime(2026, 9, 19, 10, 15, 0),
+    )
+    expected = "rss_feed|2026-09-19T10:15:00"
+    assert item.fingerprint == expected
