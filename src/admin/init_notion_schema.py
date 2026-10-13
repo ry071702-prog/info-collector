@@ -11,7 +11,7 @@ from notion_client import Client
 
 from .. import logger
 from ..config import env
-from ..outputs.notion import normalize_db_id
+from ..outputs.notion import NOTION_API_VERSION, normalize_db_id
 
 log = logger.get(__name__)
 
@@ -65,7 +65,7 @@ def ensure_props(client: Client, db_id: str, label: str) -> None:
 
 def main() -> int:
     token = env("NOTION_TOKEN", required=True)
-    client = Client(auth=token)
+    client = Client(auth=token, notion_version=NOTION_API_VERSION)
     targets = [
         ("GAMES", env("NOTION_DATABASE_ID_GAMES")),
         ("ANIME", env("NOTION_DATABASE_ID_ANIME")),
