@@ -140,3 +140,120 @@ def test_load_recent_keys_nonexistent_file(tmp_cache_dir: Path, monkeypatch: pyt
     loaded = dedup.load_recent_keys()
 
     assert loaded == {}
+
+
+def test_processed_file_date_nested_dir(tmp_cache_dir: Path):
+    """_processed_file_date should extract date from parent directory name."""
+    path = tmp_cache_dir / "2026-10-15" / "items.jsonl"
+    date = dedup._processed_file_date(path)
+    assert date is not None
+    assert date.year == 2026
+    assert date.month == 10
+    assert date.day == 15
+
+
+def test_processed_file_date_flat_filename(tmp_cache_dir: Path):
+    """_processed_file_date should extract date from filename stem."""
+    path = tmp_cache_dir / "2026-10-20.jsonl"
+    date = dedup._processed_file_date(path)
+    assert date is not None
+    assert date.year == 2026
+    assert date.month == 10
+    assert date.day == 20
+
+
+def test_processed_file_date_invalid_format(tmp_cache_dir: Path):
+    """_processed_file_date should return None for unparseable dates."""
+    path = tmp_cache_dir / "invalid" / "data.jsonl"
+    date = dedup._processed_file_date(path)
+    assert date is None
+
+
+def test_recent_raw_fingerprints_no_processed_dir(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should return empty set when processed dir doesn't exist."""
+    monkeypatch.setattr(dedup, "DATA_DIR", tmp_cache_dir)
+
+    fingerprints = dedup.recent_raw_fingerprints()
+
+    assert fingerprints == set()
+
+
+def test_recent_raw_fingerprints_reads_recent_files(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should load fingerprints from recent processed files."""
+    data_dir = tmp_cache_dir / "data"
+    processed_dir = data_dir / "processed" / "2026-10-15"
+    processed_dir.mkdir(parents=True, exist_ok=True)
+
+    flags = Flags(source_role="公式")
+    item1 = ProcessedItem(
+        source_id="src1",
+        raw_fingerprint="fp_recent_1",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/1",
+        author="user1",
+        genre="games",
+        subcategory_id="cat1",
+        category_name="Category",
+        importance="A",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key1",
+    )
+    item2 = ProcessedItem(
+        source_id="src2",
+        raw_fingerprint="fp_recent_2",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/2",
+        author="user2",
+        genre="anime",
+        subcategory_id="cat2",
+        category_name="Category",
+        importance="B",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key2",
+    )
+
+    items_file = processed_dir / "items.jsonl"
+    items_file.write_text(item1.model_dump_json() + "\n" + item2.model_dump_json() + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(dedup, "DATA_DIR", data_dir)
+
+    fingerprints = dedup.recent_raw_fingerprints(days=30)
+
+    assert "fp_recent_1" in fingerprints
+    assert "fp_recent_2" in fingerprints
+
+
+def test_recent_raw_fingerprints_ignores_old_files(tmp_cache_dir: Path, monkeypatch: pytest.MonkeyPatch):
+    """recent_raw_fingerprints should ignore files older than specified days."""
+    data_dir = tmp_cache_dir / "data"
+
+    old_date = (datetime.now(timezone.utc) - timedelta(days=40)).strftime("%Y-%m-%d")
+    old_dir = data_dir / "processed" / old_date
+    old_dir.mkdir(parents=True, exist_ok=True)
+
+    flags = Flags(source_role="公式")
+    old_item = ProcessedItem(
+        source_id="src1",
+        raw_fingerprint="fp_old",
+        timestamp=datetime.now(timezone.utc),
+        url="https://example.com/1",
+        author="user1",
+        genre="games",
+        subcategory_id="cat1",
+        category_name="Category",
+        importance="A",
+        summary="Summary",
+        flags=flags,
+        dedup_key="key1",
+    )
+
+    old_file = old_dir / "items.jsonl"
+    old_file.write_text(old_item.model_dump_json() + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(dedup, "DATA_DIR", data_dir)
+
+    fingerprints = dedup.recent_raw_fingerprints(days=30)
+
+    assert "fp_old" not in fingerprints
