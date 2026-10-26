@@ -12,6 +12,7 @@ on:
       - "scripts/**"
       - "requirements*.txt"
       - "requirements.lock"
+      - "mypy.ini"
       - ".github/workflows/test.yml"
   pull_request:
     paths:
@@ -20,6 +21,7 @@ on:
       - "scripts/**"
       - "requirements*.txt"
       - "requirements.lock"
+      - "mypy.ini"
 
 permissions:
   contents: read
@@ -44,6 +46,12 @@ jobs:
 
       - name: Run tests
         run: python -m pytest -q
+
+      # 対象・除外設定は mypy.ini。mypy は本番依存ではないので lock には入れずここで pin する
+      - name: Type check (mypy)
+        run: |
+          pip install mypy==2.4.0
+          python -m mypy
 
       - name: Check requirements.lock is in sync with requirements.txt
         run: |

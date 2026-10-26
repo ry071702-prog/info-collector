@@ -4,6 +4,7 @@ import json
 import os
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal, overload
 
 import tomli
 from dotenv import load_dotenv
@@ -24,6 +25,12 @@ def settings() -> dict:
         return tomli.load(f)
 
 
+@overload
+def env(key: str, default: str, required: bool = False) -> str: ...
+@overload
+def env(key: str, default: str | None = None, *, required: Literal[True]) -> str: ...
+@overload
+def env(key: str, default: str | None = None, required: bool = False) -> str | None: ...
 def env(key: str, default: str | None = None, required: bool = False) -> str | None:
     val = os.environ.get(key, default)
     if required and not val:

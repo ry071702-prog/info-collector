@@ -6,6 +6,7 @@ Required env: NOTION_TOKEN + at least one of NOTION_DATABASE_ID_{GAMES,ANIME,DIS
 """
 from __future__ import annotations
 import sys
+from typing import cast
 
 from notion_client import Client
 
@@ -52,7 +53,8 @@ BETA_PROPS: dict[str, dict] = {
 
 
 def ensure_props(client: Client, db_id: str, label: str) -> None:
-    schema = client.databases.retrieve(database_id=db_id)
+    # 同期 Client なので戻り値は dict (型定義上は Awaitable との Union)
+    schema = cast(dict, client.databases.retrieve(database_id=db_id))
     existing = set(schema.get("properties", {}).keys())
     to_add = {k: v for k, v in BETA_PROPS.items() if k not in existing}
     if not to_add:

@@ -27,6 +27,10 @@ import sys
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 DIGEST_DIR = ROOT / "docs" / "digests"
@@ -344,7 +348,7 @@ def text_size(
     font: "ImageFont.FreeTypeFont",
 ) -> tuple[int, int]:
     bbox = draw.textbbox((0, 0), text or "国", font=font, anchor="lt")
-    return bbox[2] - bbox[0], bbox[3] - bbox[1]
+    return int(bbox[2] - bbox[0]), int(bbox[3] - bbox[1])
 
 
 def truncate_to_width(
@@ -442,8 +446,8 @@ def draw_vertical_text(
             cursor = y
             continue
         bbox = draw.textbbox((0, 0), char, font=font)
-        width = bbox[2] - bbox[0]
-        height = bbox[3] - bbox[1]
+        width = int(bbox[2] - bbox[0])
+        height = int(bbox[3] - bbox[1])
         draw.text((x - width // 2, cursor), char, font=font, fill=fill)
         cursor += height + spacing
     return cursor
@@ -556,7 +560,9 @@ def generate_background_with_gemini(api_key: str, model: str, prompt: str) -> by
     response = client.models.generate_content(model=model, contents=prompt)
 
     image_bytes = None
-    for part in response.candidates[0].content.parts:
+    candidates = response.candidates or []
+    content = candidates[0].content if candidates else None
+    for part in (content.parts if content else None) or []:
         inline = getattr(part, "inline_data", None)
         if inline and inline.data:
             image_bytes = normalize_inline_image_data(inline.data)

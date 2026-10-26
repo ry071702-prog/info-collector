@@ -163,7 +163,9 @@ def main() -> None:
     )
 
     pcm = None
-    for part in response.candidates[0].content.parts:
+    candidates = response.candidates or []
+    content = candidates[0].content if candidates else None
+    for part in (content.parts if content else None) or []:
         inline = getattr(part, "inline_data", None)
         if inline and inline.data:
             pcm = inline.data
