@@ -62,8 +62,7 @@ def purge_processed(source_ids: set[str]) -> list[str]:
             p.write_text(("\n".join(kept) + "\n") if kept else "", encoding="utf-8")
             log.info(f"{p}: removed matching items, {len(kept)} remain")
     # dedup URLs preserving order
-    seen: set[str] = set()
-    uniq = [u for u in urls if not (u in seen or seen.add(u))]
+    uniq = list(dict.fromkeys(urls))
     log.info(f"processed から {removed} 件除去 / unique URL {len(uniq)} 件")
     return uniq
 
@@ -83,8 +82,7 @@ def collect_urls_from_raw(source_ids: set[str]) -> list[str]:
                     continue
                 if o.get("url"):
                     urls.append(o["url"])
-    seen: set[str] = set()
-    return [u for u in urls if not (u in seen or seen.add(u))]
+    return list(dict.fromkeys(urls))
 
 
 def main(argv: list[str]) -> int:

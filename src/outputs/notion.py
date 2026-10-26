@@ -2,6 +2,7 @@
 from __future__ import annotations
 import re
 from datetime import datetime
+from typing import overload
 
 import httpx
 
@@ -57,6 +58,10 @@ def _disney_category_label(subcategory_id: str) -> str | None:
     return DISNEY_GROUP_LABELS.get(subcategory_id[:2].upper()) if subcategory_id else None
 
 
+@overload
+def normalize_db_id(raw: str) -> str: ...
+@overload
+def normalize_db_id(raw: None) -> None: ...
 def normalize_db_id(raw: str | None) -> str | None:
     """secret に URL がまるごと入っているケースを救済して UUID 形式に整形。"""
     if not raw:

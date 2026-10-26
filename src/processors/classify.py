@@ -4,6 +4,7 @@ import json
 import re
 from collections import Counter
 from datetime import datetime, timezone
+from typing import Literal
 
 from .. import dedup, llm_client, logger, prompts, taxonomy
 from ..config import settings
@@ -263,7 +264,7 @@ def _build_processed(item: RawItem, data: dict, genre: str) -> ProcessedItem:
     """
     flags = Flags(**_coerce_flags(data.get("flags")))
     importance = data["importance"]
-    risk_level = data.get("risk_level", "low") if data.get("risk_level") in ("low", "middle", "high") else "low"
+    risk_level: Literal["low", "middle", "high"] = data.get("risk_level", "low") if data.get("risk_level") in ("low", "middle", "high") else "low"
     streamer = max(0, min(100, int(data.get("streamer_influence_score") or 0)))
     virality = max(0, min(100, int(data.get("clip_virality_score") or 0)))
     trend = max(0, min(100, int(data.get("game_trend_from_streamers_score") or 0)))

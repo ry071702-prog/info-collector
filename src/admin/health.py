@@ -36,11 +36,12 @@ def _dir_stats(path: Path) -> tuple[int, int]:
 
 
 def _human_size(n: int) -> str:
+    size = float(n)
     for unit in ("B", "KB", "MB", "GB"):
-        if n < 1024:
-            return f"{n:.1f}{unit}"
-        n /= 1024
-    return f"{n:.1f}TB"
+        if size < 1024:
+            return f"{size:.1f}{unit}"
+        size /= 1024
+    return f"{size:.1f}TB"
 
 
 def main() -> None:
@@ -77,10 +78,10 @@ def main() -> None:
             print(f"    ... and {len(names) - 10} more")
 
     print(f"\n=== Top 10 productive sources ===")
-    for sid, n in by_source_id.most_common(10):
+    for sid, count in by_source_id.most_common(10):
         src = next((s for s in enabled if s.id == sid), None)
         name = src.name if src else "(unknown)"
-        print(f"  {sid:6} {n:4} items  {name}")
+        print(f"  {sid:6} {count:4} items  {name}")
 
     print(f"\n=== Storage ===")
     for sub in ("raw", "cache", "logs", "processed"):

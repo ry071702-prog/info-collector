@@ -42,7 +42,7 @@ def _collect_channel(source: WatchSource, since: datetime) -> list[RawItem]:
     limit = settings()["collectors"]["youtube"]["rss_entries_max"]
     items: list[RawItem] = []
     for entry in feed.entries[:limit]:
-        published = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+        published = datetime(*entry.published_parsed[:6]).replace(tzinfo=timezone.utc)
         if published < since:
             continue
         text = f"{entry.title}\n{getattr(entry, 'summary', '')}"

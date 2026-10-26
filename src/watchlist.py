@@ -76,7 +76,7 @@ def _sync_csv_to_sheets(sources: list[WatchSource]) -> None:
             values.append([row.get(field, "") for field in fieldnames])
 
         ws.clear()
-        ws.update("A1", values)
+        ws.update(values=values, range_name="A1")
         log.info(f"Synced {len(sources)} sources from local CSV to Google Sheets")
     except Exception as e:  # noqa: BLE001
         log.warning(f"Sheets sync failed ({e}); continuing with local CSV")

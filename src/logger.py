@@ -3,8 +3,12 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from loguru import logger
+
+if TYPE_CHECKING:
+    from loguru import Logger
 
 from .config import logs_dir
 
@@ -32,6 +36,6 @@ def setup() -> None:
     _initialized = True
 
 
-def get(name: str) -> object:
+def get(name: str) -> Logger:
     setup()
     return logger.bind(module=name)
