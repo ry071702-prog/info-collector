@@ -70,11 +70,39 @@ def _items_to_json(items: list[ProcessedItem]) -> str:
     return json.dumps(payload, ensure_ascii=False, indent=1)
 
 
+def _digest_items_json(items: list[ProcessedItem]) -> str:
+    """daily_digest 用  DIGEST_USER_TEMPLATE が使う項目だけを詰めて送る。
+
+    _items_to_json (全項目・indent=1) だと 403件で入力が約20万トークンになり、
+    ダイジェスト1本で1日 約¥11 かかっていた (2026-10-28 実測)。
+    スコア類・配信者メタは指示文で使っていないので落とす。
+    """
+    payload = []
+    for it in items:
+        payload.append({
+            "url": it.url,
+            "author": it.author,
+            "timestamp": it.timestamp.isoformat(timespec="minutes"),
+            "genre": it.genre,
+            "category_name": it.category_name,
+            "importance": it.importance,
+            "risk_level": it.risk_level,
+            "summary": it.summary,
+            "title_tags": it.title_tags,
+            "entity_tags": it.entity_tags,
+            # 速報件数・発信元別・[ネタバレ] の判定に使う
+            "speed": it.flags.speed,
+            "source_role": it.flags.source_role,
+            "spoiler": it.flags.spoiler,
+        })
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+
+
 def daily_digest(items: list[ProcessedItem], date_str: str) -> str:
     model = settings()["models"]["digest"]
     user = prompts.DIGEST_USER_TEMPLATE.format(
         date=date_str,
-        items_json=_items_to_json(items),
+        items_json=_digest_items_json(items),
     )
     return llm_client.call_text(
         model=model,
