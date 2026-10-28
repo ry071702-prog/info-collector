@@ -170,16 +170,19 @@ DIGEST_USER_TEMPLATE = """以下の {date} の収集データを、Markdown形�
 
 ## 🔥 速報・重要 (S/A)
 - importance が S か A で、risk_level が high でない item、時系列順
+- この欄の item は {top_count}件  全部載せる（同じ出来事を1行にまとめた分だけ減ってよい）
 - 各項目: 1行（タイトル＋要約60-80文字＋ソース＋短いリンク）
+- also がある item は、ソースの後に「（ほか 媒体名、媒体名）」と続ける  also は同じ作品を報じた別の媒体
+- 別々の item が同じ出来事を報じていたら（作品名の表記違いなど）、その item 同士だけ1行にまとめてソースを並べる
 - 集計の「S/Aで載せなかった件数」が1以上なら、末尾に「ほか N件」と1行で書く
 
 ## 🎮 ゲーム & esports
-- importance が B で genre が games の item  小見出しは付けずに1つの箇条書きにする
-- 各項目の先頭に【category_name の値】を付ける
+- importance が B で genre が games の item {games_count}件  小見出しは付けずに1つの箇条書きにする
+- 各項目の先頭に【category_name の値】を付ける  also の書き方は上と同じ
 
 ## 📺 アニメ & 漫画
-- importance が B で genre が anime の item  小見出しは付けずに1つの箇条書きにする
-- 各項目の先頭に【category_name の値】を付ける
+- importance が B で genre が anime の item {anime_count}件  小見出しは付けずに1つの箇条書きにする
+- 各項目の先頭に【category_name の値】を付ける  also の書き方は上と同じ
 
 ## 📊 今日のサマリー
 - 速報件数 / 重要件数 / 通常件数 / 発信元別 / 注目タグTOP5
