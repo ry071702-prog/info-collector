@@ -2,7 +2,7 @@
 from __future__ import annotations
 import json
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from .. import llm_client, logger, prompts
 from ..config import settings
@@ -98,11 +98,61 @@ def _digest_items_json(items: list[ProcessedItem]) -> str:
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
+# ダイジェストに載せる件数の上限  出力上限 4096 トークンに収めるため (1行 約70トークン)
+# S/A を全部並べると 2026-10-28 は 214件中 45〜49件で途切れ、後半のセクションとサマリーが出なかった
+# 指示文で上限だけ伝えると、S が 32件あるのに A を15件選んだので、選ぶのはコードでやる
+DIGEST_TOP_MAX = 15
+DIGEST_GENRE_MAX = 5
+DIGEST_RISK_MAX = 5
+_RANK = {"S": 0, "A": 1, "B": 2, "C": 3}
+
+
+def _newest_first(it: ProcessedItem) -> float:
+    ts = it.timestamp if it.timestamp.tzinfo else it.timestamp.replace(tzinfo=timezone.utc)
+    return -ts.timestamp()
+
+
+def _digest_pick(items: list[ProcessedItem]) -> dict[str, list[ProcessedItem]]:
+    """セクションごとに載せる item を選ぶ  上段は S→A、同じ重要度なら速報→新しい順  高リスクは別枠"""
+    seen: set[str] = set()
+    pool: list[ProcessedItem] = []
+    for it in items:
+        if it.dedup_key in seen:
+            continue
+        seen.add(it.dedup_key)
+        pool.append(it)
+    pool.sort(key=lambda it: (_RANK.get(it.importance, 3), it.flags.speed != "速報", _newest_first(it)))
+    safe = [it for it in pool if it.risk_level != "high"]
+    return {
+        "top": [it for it in safe if it.importance in ("S", "A")][:DIGEST_TOP_MAX],
+        "games": [it for it in safe if it.importance == "B" and it.genre == "games"][:DIGEST_GENRE_MAX],
+        "anime": [it for it in safe if it.importance == "B" and it.genre == "anime"][:DIGEST_GENRE_MAX],
+        "risk": [it for it in pool if it.risk_level == "high"][:DIGEST_RISK_MAX],
+    }
+
+
+def _digest_stats(items: list[ProcessedItem], picked: dict[str, list[ProcessedItem]]) -> dict:
+    """サマリー用の件数  載せなかった分も含めて全件で数える"""
+    important = sum(1 for it in items if it.importance in ("S", "A") and it.risk_level != "high")
+    tags: Counter[str] = Counter(t for it in items if it.risk_level != "high" for t in it.title_tags)
+    return {
+        "総件数": len(items),
+        "速報件数": sum(1 for it in items if it.flags.speed == "速報"),
+        "重要件数(S/A)": important,
+        "通常件数": sum(1 for it in items if it.flags.speed == "通常"),
+        "S/Aで載せなかった件数": important - len(picked["top"]),
+        "発信元別": dict(Counter(it.flags.source_role for it in items).most_common()),
+        "注目タグTOP5": [[t, n] for t, n in tags.most_common(5)],
+    }
+
+
 def daily_digest(items: list[ProcessedItem], date_str: str) -> str:
     model = settings()["models"]["digest"]
+    picked = _digest_pick(items)
     user = prompts.DIGEST_USER_TEMPLATE.format(
         date=date_str,
-        items_json=_digest_items_json(items),
+        items_json=_digest_items_json([it for section in picked.values() for it in section]),
+        stats_json=json.dumps(_digest_stats(items, picked), ensure_ascii=False, separators=(",", ":")),
     )
     return llm_client.call_text(
         model=model,
