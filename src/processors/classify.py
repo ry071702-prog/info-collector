@@ -484,6 +484,7 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
                     verdicts[gi] = f_got[local_i]
 
     # バッチで返らなかった / バッチ無効 の分を単件で埋める
+    refilled = 0
     for i in need_llm:
         if quota_dead:
             break
@@ -495,6 +496,10 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
             log.error(f"Aborting at filter (single) due to Gemini quota exhaustion: {e}")
             quota_dead = True
             break
+        refilled += 1
+    if use_batch and refilled:
+        # 増えるほど課金が単件時代に戻る。黙って戻らないよう件数を残す
+        log.warning(f"filter: バッチで返らなかった {refilled}/{len(need_llm)} 件を単件で送り直した")
 
     # ---- Stage 2: classify (genre ごとにまとめる = taxonomy を1回だけ送る) ----
     by_genre: dict[str, list[tuple[int, RawItem]]] = {}
@@ -535,6 +540,7 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
                         f"falling back to per-item: {e}"
                     )
         # 返らなかった分を単件で埋める
+        refilled = 0
         for key, item in pairs:
             if quota_dead:
                 break
@@ -546,8 +552,11 @@ def process(items: list[RawItem]) -> list[ProcessedItem]:
                 log.error(f"Aborting at classify (single) due to Gemini quota exhaustion: {e}")
                 quota_dead = True
                 break
+            refilled += 1
             if proc:
                 got[key] = proc
+        if use_batch and refilled:
+            log.warning(f"classify[{genre}]: バッチで返らなかった {refilled}/{len(pairs)} 件を単件で送り直した")
         results[genre] = got
 
     # ---- Stage 3: 元の順序で組み立て (both は重要度の高い方を採用) ----
