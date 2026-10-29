@@ -165,7 +165,7 @@ def _count_writes(monkeypatch: pytest.MonkeyPatch, target: Path) -> list[int]:
 
 
 def test_checkpoint_flush_writes_kept_plus_remainder(env, monkeypatch):
-    """50 件ごとの checkpoint で kept + 未処理分が書き出される。"""
+    """50 件ごとの checkpoint で kept + 未処理分が書き出される"""
     items = [_item(i, "media") for i in range(52)]
     _write(env.path, items)
     original = env.path.read_text(encoding="utf-8")
