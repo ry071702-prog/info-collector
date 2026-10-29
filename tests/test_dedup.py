@@ -142,9 +142,9 @@ def test_load_recent_keys_nonexistent_file(tmp_cache_dir: Path, monkeypatch: pyt
     assert loaded == {}
 
 
-def test_processed_file_date_nested_dir(tmp_cache_dir: Path):
+def test_processed_file_date_nested_dir():
     """_processed_file_date should extract date from parent directory name."""
-    path = tmp_cache_dir / "2026-10-15" / "items.jsonl"
+    path = Path("processed") / "2026-10-15" / "items.jsonl"
     date = dedup._processed_file_date(path)
     assert date is not None
     assert date.year == 2026
@@ -152,9 +152,9 @@ def test_processed_file_date_nested_dir(tmp_cache_dir: Path):
     assert date.day == 15
 
 
-def test_processed_file_date_flat_filename(tmp_cache_dir: Path):
+def test_processed_file_date_flat_filename():
     """_processed_file_date should extract date from filename stem."""
-    path = tmp_cache_dir / "2026-10-20.jsonl"
+    path = Path("processed") / "2026-10-20.jsonl"
     date = dedup._processed_file_date(path)
     assert date is not None
     assert date.year == 2026
@@ -162,9 +162,9 @@ def test_processed_file_date_flat_filename(tmp_cache_dir: Path):
     assert date.day == 20
 
 
-def test_processed_file_date_invalid_format(tmp_cache_dir: Path):
+def test_processed_file_date_invalid_format():
     """_processed_file_date should return None for unparseable dates."""
-    path = tmp_cache_dir / "invalid" / "data.jsonl"
+    path = Path("processed") / "invalid" / "data.jsonl"
     date = dedup._processed_file_date(path)
     assert date is None
 
@@ -254,8 +254,16 @@ def test_recent_raw_fingerprints_ignores_old_files(tmp_cache_dir: Path, monkeypa
     old_file = old_dir / "items.jsonl"
     old_file.write_text(old_item.model_dump_json() + "\n", encoding="utf-8")
 
+    # 窓内のファイルも置き、「何も読めていないから fp_old が無い」ケースと区別する
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    recent_dir = data_dir / "processed" / today
+    recent_dir.mkdir(parents=True, exist_ok=True)
+    recent_item = old_item.model_copy(update={"raw_fingerprint": "fp_recent", "dedup_key": "key2"})
+    (recent_dir / "items.jsonl").write_text(recent_item.model_dump_json() + "\n", encoding="utf-8")
+
     monkeypatch.setattr(dedup, "DATA_DIR", data_dir)
 
     fingerprints = dedup.recent_raw_fingerprints(days=30)
 
+    assert "fp_recent" in fingerprints
     assert "fp_old" not in fingerprints
