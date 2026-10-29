@@ -316,9 +316,11 @@ def test_main_invalid_process_as_of_falls_back_to_now(env, monkeypatch: pytest.M
     monkeypatch.setenv("PROCESS_AS_OF", "not-a-date")
     seen: list[str] = []
     monkeypatch.setattr(pd, "read_raw", lambda d: seen.append(d) or [])
+    # main() の実行中に UTC の日付が変わっても落ちないよう、前後どちらの日付も許容する
+    before = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     pd.main()
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    assert today in seen
+    after = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    assert before in seen or after in seen
 
 
 def test_main_naive_process_as_of_is_treated_as_utc(env, monkeypatch: pytest.MonkeyPatch):

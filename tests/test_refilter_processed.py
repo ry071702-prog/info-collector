@@ -149,20 +149,27 @@ def test_empty_file_is_left_untouched(env):
     assert not env.path.with_suffix(".jsonl.bak").exists()
 
 
-def test_checkpoint_flush_writes_kept_plus_remainder(env, monkeypatch):
-    """50 件ごとの checkpoint で kept + 未処理分が書き出される。"""
-    items = [_item(i, "media") for i in range(52)]
-    _write(env.path, items)
-    snapshots: list[int] = []
+def _count_writes(monkeypatch: pytest.MonkeyPatch, target: Path) -> list[int]:
+    """target を書き込みモードで開いた回数を記録する spy を仕込む"""
+    writes: list[int] = []
     real_open = Path.open
 
     def spy_open(self, mode="r", *args, **kwargs):
         fh = real_open(self, mode, *args, **kwargs)
-        if self == env.path and "w" in mode:
-            snapshots.append(-1)  # 書き込み回数の記録
+        if self == target and "w" in mode:
+            writes.append(1)
         return fh
 
     monkeypatch.setattr(Path, "open", spy_open)
+    return writes
+
+
+def test_checkpoint_flush_writes_kept_plus_remainder(env, monkeypatch):
+    """50 件ごとの checkpoint で kept + 未処理分が書き出される。"""
+    items = [_item(i, "media") for i in range(52)]
+    _write(env.path, items)
+    original = env.path.read_text(encoding="utf-8")
+    snapshots = _count_writes(monkeypatch, env.path)
 
     # 偶数番号は spam として落とす
     def responder(kw):
@@ -176,18 +183,43 @@ def test_checkpoint_flush_writes_kept_plus_remainder(env, monkeypatch):
     assert len(snapshots) == 2
     result = _read(env.path)
     assert [it.raw_fingerprint for it in result] == [f"fp{i}" for i in range(52) if i % 2 == 1]
+    # .bak は checkpoint で上書きされる前の元データであること
+    assert env.path.with_suffix(".jsonl.bak").read_text(encoding="utf-8") == original
 
 
-def test_checkpoint_flush_on_failure_path(env):
+def test_checkpoint_flush_on_failure_path(env, monkeypatch):
     items = [_item(i, "media") for i in range(50)]
     _write(env.path, items)
+    writes = _count_writes(monkeypatch, env.path)
 
     def boom(kw):
         raise RuntimeError("down")
 
     env.install(boom)
     rp.main("2026-05-01")
+    # 失敗経路の checkpoint (rechecked=50) で1回 + 最終書き戻しで1回
+    assert len(writes) == 2
     assert len(_read(env.path)) == 50
+
+
+def test_backup_survives_interrupted_run(env):
+    """checkpoint 後に落ちても .bak に元データが残る"""
+    items = [_item(i, "media") for i in range(60)]
+    _write(env.path, items)
+    original = env.path.read_text(encoding="utf-8")
+
+    def responder(kw):
+        n = int(kw["user"].split("https://example.com/")[1].split()[0])
+        if n == 55:
+            raise KeyboardInterrupt  # 途中キャンセル相当 (Exception ではないので握られない)
+        return {"spam": True, "genre": "games", "confidence": 1.0}
+
+    env.install(responder)
+    with pytest.raises(KeyboardInterrupt):
+        rp.main("2026-05-01")
+    # checkpoint で items.jsonl は途中結果 (kept 0 件 + 未処理 10 件) になっている
+    assert len(_read(env.path)) == 10
+    assert env.path.with_suffix(".jsonl.bak").read_text(encoding="utf-8") == original
 
 
 def test_build_filter_user_includes_item_fields():

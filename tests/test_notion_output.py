@@ -18,6 +18,25 @@ DB_ANIME = "22222222222222222222222222222222"
 DB_DISNEY = "33333333333333333333333333333333"
 
 
+@pytest.fixture(autouse=True)
+def _no_real_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """fake を差し忘れたテストや src 側の早期 return が崩れた場合でも実 API に出ないための安全網
+    個々のテストが monkeypatch で fake を入れればそちらが優先される
+    """
+    import notion_client
+
+    def _blocked(*a: Any, **k: Any) -> Any:
+        pytest.fail("実ネットワーク呼び出しは禁止 (fake を差し替えてください)")
+
+    class _BlockedClient:
+        def __init__(self, *a: Any, **k: Any) -> None:
+            _blocked()
+
+    monkeypatch.setattr(notion_client, "Client", _BlockedClient)
+    for name in ("get", "post", "patch", "put", "delete", "request"):
+        monkeypatch.setattr(httpx, name, _blocked)
+
+
 def _dashed(h: str) -> str:
     return f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
 

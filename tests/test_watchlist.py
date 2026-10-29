@@ -235,6 +235,8 @@ def test_sync_swallows_errors(fake_sheets: dict, monkeypatch: pytest.MonkeyPatch
     monkeypatch.setattr(fake_sheets["ws"], "clear", boom)
     # 例外は握りつぶされ、呼び出し側に伝播しない
     watchlist._sync_csv_to_sheets([_src("a", "6h")])
+    # シートを開くところまでは進み、clear で落ちた後に update へ進んでいないこと
+    assert fake_sheets["opened"] == ["sheet-123"]
     assert fake_sheets["ws"].calls == []
 
 
