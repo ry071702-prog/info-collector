@@ -1,5 +1,17 @@
 [
   {
+    "timestamp": "2026-10-29T01:32:11.683891+00:00",
+    "classified": 366,
+    "raw_window_count": 406,
+    "stopped_early": false
+  },
+  {
+    "timestamp": "2026-10-28T01:03:59.803188+00:00",
+    "classified": 403,
+    "raw_window_count": 462,
+    "stopped_early": false
+  },
+  {
     "timestamp": "2026-10-27T01:10:06.256229+00:00",
     "classified": 414,
     "raw_window_count": 491,
@@ -45,18 +57,6 @@
     "timestamp": "2026-10-20T00:57:50.380039+00:00",
     "classified": 336,
     "raw_window_count": 390,
-    "stopped_early": false
-  },
-  {
-    "timestamp": "2026-10-18T23:52:36.766279+00:00",
-    "classified": 268,
-    "raw_window_count": 334,
-    "stopped_early": false
-  },
-  {
-    "timestamp": "2026-10-17T23:40:44.074137+00:00",
-    "classified": 302,
-    "raw_window_count": 381,
     "stopped_early": false
   }
 ]
