@@ -4,7 +4,7 @@ import json
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal, overload
+from typing import Any, Literal, overload
 
 import tomli
 from dotenv import load_dotenv
@@ -38,7 +38,7 @@ def env(key: str, default: str | None = None, required: bool = False) -> str | N
     return val
 
 
-def env_json(key: str, default: object = None, required: bool = False) -> object:
+def env_json(key: str, default: Any = None, required: bool = False) -> Any:
     raw = env(key, required=required)
     if not raw:
         return default
