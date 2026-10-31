@@ -101,6 +101,19 @@ def test_recent_candidates_reads_today_and_yesterday_and_filters_by_lookback(
     assert [i.dedup_key for i in out] == ["recent", "naive"]
 
 
+def test_recent_candidates_covers_daily_gap_at_noon_run(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # 1日1便 (JST 11:40 = UTC 02:40) では前日の処理分 (約25時間前) を拾えること
+    now = datetime(2026, 10, 26, 2, 40, tzinfo=timezone.utc)
+    yesterday_run = _item("yesterday", ts=datetime(2026, 10, 25, 1, 30, tzinfo=timezone.utc))
+    monkeypatch.setattr(
+        sc, "read_processed",
+        lambda d: [yesterday_run] if d == "2026-10-25" else [],
+    )
+    assert [i.dedup_key for i in sc._recent_candidates(now)] == ["yesterday"]
+
+
 # --- _select ------------------------------------------------------------------
 
 def test_select_excludes_sent_high_risk_low_priority_and_duplicates() -> None:
