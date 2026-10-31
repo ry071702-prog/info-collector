@@ -65,9 +65,9 @@ def cleanup() -> dict[str, int]:
 
 
 def _aggregate_stats(items):
-    by_source = Counter()
-    by_source_importance = defaultdict(Counter)
-    by_source_genre = defaultdict(Counter)
+    by_source: Counter[str] = Counter()
+    by_source_importance: defaultdict[str, Counter[str]] = defaultdict(Counter)
+    by_source_genre: defaultdict[str, Counter[str]] = defaultdict(Counter)
     for it in items:
         by_source[it.author] += 1
         by_source_importance[it.author][it.importance] += 1

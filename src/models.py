@@ -66,7 +66,8 @@ class FilterResult(BaseModel):
     """Step 1+2 output."""
     spam: bool
     genre: Genre
-    confidence: float
+    # バッチ応答で欠けることがある。判定には使っていないので欠けても行は捨てない
+    confidence: float = 0.0
     reason: str = ""
 
 

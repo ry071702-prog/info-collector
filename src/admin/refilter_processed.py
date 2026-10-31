@@ -62,6 +62,14 @@ def main(date_str: str | None = None) -> int:
                     log.warning(f"skip bad json line: {e}")
     log.info(f"loaded {len(items)} items")
 
+    # backup original
+    # ループ中の checkpoint (_flush) が items.jsonl を上書きするので、元データの退避はループ前に行う
+    # (ループ後だと 50 件以上の再判定で .bak が途中結果になり、途中キャンセル時は .bak 自体が残らない)
+    backup = items_path.with_suffix(".jsonl.bak")
+    if items and not backup.exists():
+        backup.write_text(items_path.read_text(encoding="utf-8"), encoding="utf-8")
+        log.info(f"backup written: {backup}")
+
     model = settings()["models"]["filter"]
     kept: list[ProcessedItem] = []
     rechecked = 0
@@ -126,12 +134,6 @@ def main(date_str: str | None = None) -> int:
 
     if not items:
         return 0
-
-    # backup original
-    backup = items_path.with_suffix(".jsonl.bak")
-    if not backup.exists():
-        backup.write_text(items_path.read_text(encoding="utf-8"), encoding="utf-8")
-        log.info(f"backup written: {backup}")
 
     # write back
     with items_path.open("w", encoding="utf-8") as f:

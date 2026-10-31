@@ -261,8 +261,10 @@ _CLASSIFY_RULES = CLASSIFY_USER_TEMPLATE.split("【入力】")[0].replace(
 # 元テンプレは .format() 用にブレースが {{ }} と二重化されているので、
 # そのまま (二重化を保ったまま) 連結する。ここで {{ を { に戻すと、
 # 後段の .format() がスキーマのキー名をフィールド名と誤解して KeyError になる。
+# 先頭に "id" を足す。無いとモデルはこのスキーマ例に合わせて id を省き、
+# _results_by_id が全行を捨てて全件が単件の送り直しになる (2026-10-28 実測)。
 _CLASSIFY_SINGLE_SCHEMA = CLASSIFY_USER_TEMPLATE.split("【出力フォーマット", 1)[1]
-_CLASSIFY_SCHEMA_BODY = "{{" + _CLASSIFY_SINGLE_SCHEMA.split("{{", 1)[1]
+_CLASSIFY_SCHEMA_BODY = '{{\n  "id": 0,' + _CLASSIFY_SINGLE_SCHEMA.split("{{", 1)[1]
 
 CLASSIFY_BATCH_USER_TEMPLATE = _CLASSIFY_RULES + """【入力（{n}件）】
 {items}
