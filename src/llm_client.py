@@ -227,7 +227,7 @@ def call_json(
             # 5xx と一時的な 429 は tenacity (_should_retry) が指数バックオフで再試行する
             raise
     text = (resp.text or "").strip()
-    _track_usage(model, key_idx)
+    _track_usage(model, key_idx, resp)
     return _parse_json(text)
 
 
@@ -268,7 +268,7 @@ def call_text(
                 continue
             # 5xx と一時的な 429 は tenacity (_should_retry) が指数バックオフで再試行する
             raise
-    _track_usage(model, key_idx)
+    _track_usage(model, key_idx, resp)
     return resp.text or ""
 
 
@@ -285,12 +285,31 @@ def _parse_json(text: str) -> dict[str, Any]:
 
 
 # ---- Usage tracking (request count vs free quota) ----
-def _track_usage(model: str, key_idx: int) -> None:
+_TOKEN_FIELDS = {
+    "prompt_tokens": "prompt_token_count",
+    "output_tokens": "candidates_token_count",
+    "thinking_tokens": "thoughts_token_count",
+}
+
+
+def _usage_tokens(resp: Any) -> dict[str, int]:
+    """usage_metadata からトークン数を取り出す (料金を実測で出すため)。
+
+    無い項目は 0 にする。usage_metadata 自体が無ければ空 dict。
+    """
+    meta = getattr(resp, "usage_metadata", None)
+    if meta is None:
+        return {}
+    return {k: getattr(meta, attr, None) or 0 for k, attr in _TOKEN_FIELDS.items()}
+
+
+def _track_usage(model: str, key_idx: int, resp: Any = None) -> None:
     path = cache_dir() / "api_usage.jsonl"
     record = {
         "model": model,
         "key_index": key_idx + 1,
         "timestamp": _utc_now().isoformat(),
+        **_usage_tokens(resp),
     }
     with path.open("a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")

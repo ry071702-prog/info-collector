@@ -13,10 +13,12 @@ site/public/audio/<date>.wav に保存 → publish_site でサイト配信され
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
 import wave
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -109,6 +111,19 @@ def _write_wav(path: Path, pcm: bytes, *, rate: int = 24000) -> None:
         wf.writeframes(pcm)
 
 
+def _track_usage(model: str, response) -> None:
+    """src/llm_client._track_usage と同じ形式で api_usage.jsonl に追記する (料金の実測用)。"""
+    meta = getattr(response, "usage_metadata", None)
+    record: dict[str, object] = {"model": model, "timestamp": datetime.now(timezone.utc).isoformat()}
+    if meta is not None:
+        record["prompt_tokens"] = getattr(meta, "prompt_token_count", None) or 0
+        record["output_tokens"] = getattr(meta, "candidates_token_count", None) or 0
+    path = ROOT / "data" / "cache" / "api_usage.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record) + "\n")
+
+
 def main() -> None:
     try:
         from dotenv import load_dotenv
@@ -161,6 +176,8 @@ def main() -> None:
             ),
         ),
     )
+
+    _track_usage(model, response)  # 音声が空でも課金はされるので先に記録する
 
     pcm = None
     candidates = response.candidates or []
