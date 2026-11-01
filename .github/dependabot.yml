@@ -9,6 +9,10 @@ updates:
       all-pip:
         patterns: ["*"]
     open-pull-requests-limit: 3
+    ignore:
+      # google-genai が tenacity<9.2.0 を要求している (2.34.0 時点)  上げると requirements.lock が解決できない  外れたら消す
+      - dependency-name: "tenacity"
+        versions: [">=9.2"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
