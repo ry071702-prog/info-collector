@@ -9,7 +9,9 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import pytest
+from loguru import logger as _loguru
 
+from src import prompts
 from src.models import RawItem
 from src.processors import classify
 
@@ -172,3 +174,59 @@ def test_batch_llm_false_restores_per_item(spy, monkeypatch):
 
     assert len(out) == 3
     assert len(calls) == 6, f"3件 x (filter+classify) = 6回のはずが {len(calls)} 回"
+
+
+def test_classify_batch_schema_asks_for_id():
+    """各要素のスキーマ例に id が無いと、モデルは id を省き全行が捨てられる。
+
+    2026-10-28 に実データで確かめたら classify バッチの返り値は全行 id 無しで、
+    445件の処理に487回呼んでいた (ほぼ全件を単件で送り直していた)。
+    """
+    user = prompts.CLASSIFY_BATCH_USER_TEMPLATE.format(taxonomy="T", n=2, items="I")
+    schema = user.split("各要素は次のスキーマに従う", 1)[1]
+    assert '"id": 0' in schema
+
+
+def test_filter_row_without_confidence_stays_in_batch(spy):
+    """confidence が欠けた行も捨てずに使う (判定には使っていない値なので単件で送り直さない)。"""
+    items = [_item(i) for i in range(20)]
+
+    def handler(user, _n):
+        n = user.count("--- [")
+        if _is_filter_call(user):
+            rows = [_filter_row(i) for i in range(n)]
+            for r in rows:
+                r.pop("confidence")
+            return {"results": rows}
+        return {"results": [_classify_row(i) for i in range(n)]}
+
+    calls = spy(handler)
+    out = classify.process(items)
+
+    assert len(out) == 20
+    assert len(calls) == 2, f"confidence 欠けで単件に落ち {len(calls)} 回呼ばれた"
+
+
+def test_per_item_refill_is_warned(spy):
+    """バッチで返らず単件で送り直した件数を warning に出す (黙って呼び出しが増えないように)。"""
+    items = [_item(i) for i in range(5)]
+
+    def handler(user, _n):
+        n = user.count("--- [")
+        rows = _filter_row if _is_filter_call(user) else _classify_row
+        if n > 1:
+            return {"results": [rows(i) for i in range(n - 1)]}
+        r = rows(0)
+        r.pop("id")
+        return r
+
+    spy(handler)
+    msgs: list[str] = []
+    hid = _loguru.add(lambda m: msgs.append(m.record["message"]), level="WARNING")
+    try:
+        classify.process(items)
+    finally:
+        _loguru.remove(hid)
+
+    assert any(m.startswith("filter:") and "1/5" in m for m in msgs), msgs
+    assert any(m.startswith("classify[games]:") and "1/5" in m for m in msgs), msgs

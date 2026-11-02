@@ -174,6 +174,16 @@ def _mark_key_exhausted(model: str, key_idx: int, exc: Exception) -> None:
     _ACTIVE_KEY_IDX = (key_idx + 1) % len(keys)
 
 
+def _thinking_config(model: str) -> types.ThinkingConfig | None:
+    """2.5-flash だけ思考を切る。思考トークンは max_output_tokens に数えられ、
+    digest (4096) は思考で使い切って本文が数百文字で途切れていた (2026-10-28 実測)。
+    flash-lite は既定でオフ、pro は 0 を受け付けないので触らない。
+    """
+    if model == "gemini-2.5-flash":
+        return types.ThinkingConfig(thinking_budget=0)
+    return None
+
+
 def _throttle(model: str, key_idx: int) -> None:
     """Sleep if we're about to exceed RPM."""
     rpm = RPM_LIMITS.get(model, 10)
@@ -217,6 +227,7 @@ def call_json(
                     max_output_tokens=max_tokens,
                     temperature=temperature,
                     response_mime_type="application/json",
+                    thinking_config=_thinking_config(model),
                 ),
             )
             break
@@ -259,6 +270,7 @@ def call_text(
                     system_instruction=system,
                     max_output_tokens=max_tokens,
                     temperature=temperature,
+                    thinking_config=_thinking_config(model),
                 ),
             )
             break
