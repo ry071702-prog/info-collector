@@ -87,7 +87,8 @@ recent_videos_max = 5
 
 [collectors.youtube_search]
 # search.list 1 回 = 100 quota units（YouTube Data API v3 free tier 10000/日）
-max_results = 25      # 1 クエリあたり取得件数（最大 50）
+# 2026-10-31 に 25→10  YouTube 検索が raw の約56% (10/28 実測 456/809件) を占め LLM 費用を押し上げていたため
+max_results = 10      # 1 クエリあたり取得件数（最大 50）
 order = "date"        # date | relevance | viewCount | rating
 
 [collectors.youtube_trending]
