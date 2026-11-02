@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# launchd から定時(7:40/11:40/17:40 JST)に呼ばれ、GitHub の send_catchup
+# launchd から定時(11:40 JST の1日1便)に呼ばれ、GitHub の send_catchup
 # workflow を即時トリガーする (workflow_dispatch)。
 #
 # なぜ launchd→dispatch か:
@@ -12,16 +12,21 @@
 set -euo pipefail
 source "$HOME/.claude/lib/automation-stamp.sh"   # 成功/失敗を記録 (automation-health.sh が見る)
 JOB="info-catchup"
-GH=/opt/homebrew/bin/gh
+GH="${GH:-/opt/homebrew/bin/gh}"
 REPO=ry071702-prog/info-collector
 
-# ローカル(JST)時で便を決める。launchd 発火時刻なら境界に余裕がある:
-#   7:40→morning / 11:40→noon / 17:40→evening (send_catchup の <10/<15/else と一致)
-# 10# は date が返す 08/09 を8進数解釈してエラーになるのを防ぐ(遅延起床対策)。
-h=$((10#$(date +%H)))
-if   [ "$h" -lt 10 ]; then slot=morning
-elif [ "$h" -lt 15 ]; then slot=noon
-else                       slot=evening
+# 1日1便なので便は常に noon (dedup は便×日付単位  別の便名で送ると同じ日に2通届く)
+slot=noon
+
+# 11:40 より前に起動されたら送らない (当日 11:40 の発火と GitHub の cron に任せる)
+#   起動されうる経路: 寝ている間に過ぎた発火を launchd が起床時にまとめて1回走らせる / 自己修復 (automation-selfheal) が起動し直す
+#   2026-11-02 9:16 に自己修復が起動し直し、時刻から morning 便と判定されて昼便と合わせて2通届いた
+# 10# は date が返す 0916 などを8進数として解釈させないため
+hm=$((10#$(date +%H%M)))
+if [ "$hm" -lt 1140 ]; then
+  echo "$(date '+%F %T') 11:40 前の起動なので送らない"
+  auto_ok "$JOB" "skip (11:40 前の起動)"
+  exit 0
 fi
 
 # dispatch は起床直後にネット未確立で落ちることがある  数回リトライしてから諦める
