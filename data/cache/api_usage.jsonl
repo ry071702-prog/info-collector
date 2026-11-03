@@ -68204,3 +68204,37 @@
 {"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-02T01:08:45.532206+00:00"}
 {"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-02T01:08:57.191098+00:00"}
 {"model": "gemini-2.5-flash", "key_index": 1, "timestamp": "2026-11-02T01:09:19.137546+00:00"}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:06:06.909902+00:00", "prompt_tokens": 4660, "output_tokens": 1343, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:06:08.930775+00:00", "prompt_tokens": 7161, "output_tokens": 1040, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:06:13.534345+00:00", "prompt_tokens": 3066, "output_tokens": 1839, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:06:19.846607+00:00", "prompt_tokens": 3596, "output_tokens": 3066, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:06:35.866133+00:00", "prompt_tokens": 5400, "output_tokens": 7486, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:06:49.031387+00:00", "prompt_tokens": 7894, "output_tokens": 6026, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:07:14.700225+00:00", "prompt_tokens": 6433, "output_tokens": 1481, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:07:17.611162+00:00", "prompt_tokens": 4808, "output_tokens": 1225, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:07:35.419395+00:00", "prompt_tokens": 7245, "output_tokens": 7356, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:07:41.456960+00:00", "prompt_tokens": 4136, "output_tokens": 2632, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:07:47.480072+00:00", "prompt_tokens": 3094, "output_tokens": 2579, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:07:58.986846+00:00", "prompt_tokens": 5096, "output_tokens": 4758, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:08:18.048396+00:00", "prompt_tokens": 5247, "output_tokens": 1304, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:08:21.014377+00:00", "prompt_tokens": 5853, "output_tokens": 1365, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:08:28.076144+00:00", "prompt_tokens": 3646, "output_tokens": 3168, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:08:44.561715+00:00", "prompt_tokens": 6181, "output_tokens": 7393, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:08:59.071538+00:00", "prompt_tokens": 6733, "output_tokens": 6813, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:09:00.280093+00:00", "prompt_tokens": 2166, "output_tokens": 359, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:09:20.171660+00:00", "prompt_tokens": 6204, "output_tokens": 1344, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:09:22.413490+00:00", "prompt_tokens": 3495, "output_tokens": 869, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:09:37.778534+00:00", "prompt_tokens": 6799, "output_tokens": 6878, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:09:42.815856+00:00", "prompt_tokens": 3188, "output_tokens": 2155, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:09:50.298168+00:00", "prompt_tokens": 3588, "output_tokens": 3595, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:10:05.606902+00:00", "prompt_tokens": 3809, "output_tokens": 1303, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:10:08.043199+00:00", "prompt_tokens": 3950, "output_tokens": 1149, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:10:23.996405+00:00", "prompt_tokens": 4552, "output_tokens": 6815, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:10:32.510167+00:00", "prompt_tokens": 3539, "output_tokens": 4068, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:10:44.648473+00:00", "prompt_tokens": 4561, "output_tokens": 5550, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:11:04.499776+00:00", "prompt_tokens": 3878, "output_tokens": 1083, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:11:05.204704+00:00", "prompt_tokens": 998, "output_tokens": 175, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:11:19.381650+00:00", "prompt_tokens": 4753, "output_tokens": 6810, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-03T03:11:25.964924+00:00", "prompt_tokens": 3375, "output_tokens": 2691, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash", "key_index": 1, "timestamp": "2026-11-03T03:11:44.939059+00:00", "prompt_tokens": 5770, "output_tokens": 2031, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-preview-tts", "timestamp": "2026-11-03T03:12:24.028120+00:00", "prompt_tokens": 180, "output_tokens": 1280}
