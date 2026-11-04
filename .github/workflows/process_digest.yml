@@ -1,7 +1,8 @@
 name: Process & Daily Digest
 on:
-  schedule:
-    - cron: '10 10 * * *'  # JST 19:00 夕方ダイジェスト
+  # 夕方便 (旧 cron '10 10 * * *' = JST 19:10) は 2026-11 に撤去した
+  # GitHub の cron が6〜9時間遅れて深夜に起動し、12時間の窓に raw が入らず毎回 0 件で終わっていた
+  # (PM のダイジェストは 2026-08-07 が最後)  19:10 に正しく起動すると分類が増えて Gemini の費用が上がるため、復活させない判断
   workflow_run:
     # 朝便は「Collect Daily」完了後に走らせる。旧 '0 22' cron は collect_daily と
     # 同じ 22:00 UTC スロットで競合し、digest が collect より先に走ると raw 0 件で
@@ -31,7 +32,7 @@ jobs:
   process:
     runs-on: ubuntu-latest
     # workflow_run 起動時は Collect Daily が成功したときだけ処理する
-    # (schedule / 手動実行は常に処理する)。
+    # (手動実行は常に処理する)。
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 90
     steps:
