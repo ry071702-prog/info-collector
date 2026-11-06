@@ -68321,3 +68321,37 @@
 {"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-05T01:55:47.401421+00:00", "prompt_tokens": 3525, "output_tokens": 3525, "thinking_tokens": 0}
 {"model": "gemini-2.5-flash", "key_index": 1, "timestamp": "2026-11-05T01:56:01.275253+00:00", "prompt_tokens": 6211, "output_tokens": 2289, "thinking_tokens": 0}
 {"model": "gemini-2.5-flash-preview-tts", "timestamp": "2026-11-05T01:56:30.913810+00:00", "prompt_tokens": 188, "output_tokens": 1169}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:50:30.482005+00:00", "prompt_tokens": 4508, "output_tokens": 1372, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:50:33.291558+00:00", "prompt_tokens": 3480, "output_tokens": 1033, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:50:44.059450+00:00", "prompt_tokens": 4624, "output_tokens": 4560, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:03.261965+00:00", "prompt_tokens": 5398, "output_tokens": 7887, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:10.739002+00:00", "prompt_tokens": 3469, "output_tokens": 3154, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:15.024664+00:00", "prompt_tokens": 2905, "output_tokens": 1515, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:33.361886+00:00", "prompt_tokens": 8062, "output_tokens": 1119, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:36.013368+00:00", "prompt_tokens": 4160, "output_tokens": 993, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:53.652764+00:00", "prompt_tokens": 8416, "output_tokens": 7503, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:51:58.953457+00:00", "prompt_tokens": 3112, "output_tokens": 2143, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:52:08.769687+00:00", "prompt_tokens": 3698, "output_tokens": 3780, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:52:13.607489+00:00", "prompt_tokens": 2835, "output_tokens": 2133, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:52:28.711796+00:00", "prompt_tokens": 4805, "output_tokens": 1056, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:52:31.540166+00:00", "prompt_tokens": 7236, "output_tokens": 1145, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:52:50.333830+00:00", "prompt_tokens": 5633, "output_tokens": 7706, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:07.486315+00:00", "prompt_tokens": 6924, "output_tokens": 7182, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:13.474282+00:00", "prompt_tokens": 4396, "output_tokens": 2157, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:18.128918+00:00", "prompt_tokens": 3171, "output_tokens": 1858, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:36.392661+00:00", "prompt_tokens": 5857, "output_tokens": 1252, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:39.037885+00:00", "prompt_tokens": 4254, "output_tokens": 1149, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:52.094274+00:00", "prompt_tokens": 6540, "output_tokens": 6952, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:53:59.853451+00:00", "prompt_tokens": 3776, "output_tokens": 3396, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:54:02.290741+00:00", "prompt_tokens": 2273, "output_tokens": 896, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:54:17.098507+00:00", "prompt_tokens": 3796, "output_tokens": 1469, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:54:19.638605+00:00", "prompt_tokens": 3935, "output_tokens": 1157, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:54:34.717884+00:00", "prompt_tokens": 4582, "output_tokens": 7587, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:54:45.423873+00:00", "prompt_tokens": 3609, "output_tokens": 4432, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:54:58.549632+00:00", "prompt_tokens": 4572, "output_tokens": 6244, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:55:16.719723+00:00", "prompt_tokens": 4000, "output_tokens": 1115, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:55:18.211606+00:00", "prompt_tokens": 2306, "output_tokens": 502, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:55:34.683442+00:00", "prompt_tokens": 4894, "output_tokens": 6887, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-06T01:55:49.193798+00:00", "prompt_tokens": 4668, "output_tokens": 5967, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash", "key_index": 1, "timestamp": "2026-11-06T01:56:10.999485+00:00", "prompt_tokens": 6343, "output_tokens": 2308, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-preview-tts", "timestamp": "2026-11-06T01:57:24.817410+00:00", "prompt_tokens": 181, "output_tokens": 1101}
