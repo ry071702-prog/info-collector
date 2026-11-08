@@ -68390,3 +68390,26 @@
 {"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-07T01:19:48.397338+00:00", "prompt_tokens": 2918, "output_tokens": 1807, "thinking_tokens": 0}
 {"model": "gemini-2.5-flash", "key_index": 1, "timestamp": "2026-11-07T01:19:59.131343+00:00", "prompt_tokens": 6155, "output_tokens": 1940, "thinking_tokens": 0}
 {"model": "gemini-2.5-flash-preview-tts", "timestamp": "2026-11-07T01:20:30.950762+00:00", "prompt_tokens": 151, "output_tokens": 1192}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:55:59.934753+00:00", "prompt_tokens": 4713, "output_tokens": 1397, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:56:02.580333+00:00", "prompt_tokens": 6935, "output_tokens": 1111, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:56:03.880393+00:00", "prompt_tokens": 2420, "output_tokens": 359, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:56:19.321659+00:00", "prompt_tokens": 5317, "output_tokens": 7390, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:56:38.861885+00:00", "prompt_tokens": 7737, "output_tokens": 7074, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:56:40.802075+00:00", "prompt_tokens": 2665, "output_tokens": 791, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:57:03.633180+00:00", "prompt_tokens": 5609, "output_tokens": 1169, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:57:06.659755+00:00", "prompt_tokens": 7114, "output_tokens": 1327, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:57:24.593350+00:00", "prompt_tokens": 6478, "output_tokens": 7259, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:57:41.716836+00:00", "prompt_tokens": 7331, "output_tokens": 7033, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:57:43.801182+00:00", "prompt_tokens": 2739, "output_tokens": 1033, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:57:45.651341+00:00", "prompt_tokens": 2749, "output_tokens": 729, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:58:05.919981+00:00", "prompt_tokens": 4080, "output_tokens": 1478, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:58:08.599793+00:00", "prompt_tokens": 2960, "output_tokens": 1017, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:58:12.248175+00:00", "prompt_tokens": 2763, "output_tokens": 1417, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:58:28.078513+00:00", "prompt_tokens": 4646, "output_tokens": 7588, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:58:43.479238+00:00", "prompt_tokens": 4281, "output_tokens": 6508, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:58:59.859248+00:00", "prompt_tokens": 3918, "output_tokens": 1316, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:59:03.477865+00:00", "prompt_tokens": 3834, "output_tokens": 1310, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:59:17.208159+00:00", "prompt_tokens": 4905, "output_tokens": 7330, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:59:33.867175+00:00", "prompt_tokens": 4762, "output_tokens": 7056, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash-lite", "key_index": 1, "timestamp": "2026-11-08T00:59:42.483331+00:00", "prompt_tokens": 3543, "output_tokens": 3623, "thinking_tokens": 0}
+{"model": "gemini-2.5-flash", "key_index": 1, "timestamp": "2026-11-08T01:00:08.342908+00:00", "prompt_tokens": 5227, "output_tokens": 1900, "thinking_tokens": 0}
