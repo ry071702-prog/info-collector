@@ -1,5 +1,11 @@
 [
   {
+    "timestamp": "2026-11-16T01:28:42.193504+00:00",
+    "classified": 165,
+    "raw_window_count": 200,
+    "stopped_early": false
+  },
+  {
     "timestamp": "2026-11-15T01:24:30.978584+00:00",
     "classified": 185,
     "raw_window_count": 207,
@@ -51,12 +57,6 @@
     "timestamp": "2026-11-07T01:20:00.102485+00:00",
     "classified": 231,
     "raw_window_count": 259,
-    "stopped_early": false
-  },
-  {
-    "timestamp": "2026-11-06T01:56:11.746163+00:00",
-    "classified": 255,
-    "raw_window_count": 291,
     "stopped_early": false
   }
 ]
